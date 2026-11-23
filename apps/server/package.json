@@ -1,0 +1,40 @@
+{
+  "name": "@video-x/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/entrypoints/http.ts",
+    "worker": "tsx src/entrypoints/worker.ts",
+    "build": "node ../../tooling/build-server.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test --test-concurrency=1 test/*.test.ts",
+    "db:migrate": "tsx src/entrypoints/migrate.ts",
+    "account:create": "tsx src/entrypoints/account.ts",
+    "demo:seed": "tsx src/entrypoints/seed.ts",
+    "contracts:generate": "tsx src/entrypoints/openapi.ts",
+    "dev:bootstrap": "tsx src/entrypoints/dev-bootstrap.ts"
+  },
+  "dependencies": {
+    "@fastify/cookie": "11.0.2",
+    "@fastify/rate-limit": "10.3.0",
+    "@fastify/swagger": "9.5.2",
+    "@sinclair/typebox": "0.34.52",
+    "@video-x/contracts": "workspace:*",
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
+    "cheerio": "1.1.2",
+    "dotenv": "17.2.3",
+    "drizzle-orm": "0.45.4",
+    "fastify": "5.12.8",
+    "pg": "8.16.3",
+    "pg-boss": "12.38.2"
+  },
+  "devDependencies": {
+    "@types/pg": "8.15.6"
+  },
+  "files": [
+    "dist",
+    "migrations"
+  ]
+}

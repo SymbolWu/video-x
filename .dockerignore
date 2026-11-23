@@ -1,0 +1,15 @@
+.git
+**/node_modules
+**/dist
+**/.turbo
+**/build
+**/.gradle
+**/local.properties
+.env
+.env.*
+.runtime
+.tools
+.artifacts
+apps/android
+packages/sdk-kotlin
+docs

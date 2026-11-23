@@ -1,0 +1,365 @@
+/* The approved HTML and the live workbench consume the same stylesheets. */
+@import "../../../design/2026-11-redesign/preview/studio/base.css";
+@import "../../../design/2026-11-redesign/preview/studio/admin.css";
+@import "../../../design/2026-11-redesign/preview/studio/workbench.css";
+@import "../../../design/2026-11-redesign/preview/studio/ingest.css";
+@import "../../../design/2026-11-redesign/preview/studio/studio.css";
+
+.intake-layout .nav-group {
+  display: contents;
+}
+.studio-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.studio-logout {
+  padding: 3px 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.intake-layout .ig-title {
+  text-align: left;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+.intake-layout .ig-table .select-trigger {
+  display: inline-flex;
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  gap: 6px;
+  border: 1px solid #51434c;
+  background: #2b252a;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #dfcbd5;
+}
+.intake-layout .ig-table .select-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.intake-layout .ig-table .select-chevron {
+  width: 10px;
+}
+.ig-table .ig-row-actions button:hover,
+.ig-title:hover {
+  text-decoration: underline;
+}
+.ig-table input[type="checkbox"] {
+  padding: 0;
+}
+.ig-actions .ig-secondary {
+  color: var(--muted);
+}
+.intake-layout .ig-preview {
+  align-items: start;
+}
+.ig-table .ig-group {
+  border-top: 2px solid #52404d;
+}
+.ig-table .ig-group .ig-identity {
+  min-height: 50px;
+}
+.ig-group-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ig-group-line button {
+  text-align: left;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list) .dialog {
+  width: min(900px, calc(100vw - 40px));
+  max-width: 900px;
+  border-radius: 13px;
+  background: #232126;
+  border: 1px solid #4c434b;
+  padding: 30px;
+  max-height: 90dvh;
+  overflow: auto;
+  display: block;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  h2 {
+  margin: 0;
+  font-size: 23px;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  header
+  button {
+  padding: 4px 9px;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  form {
+  display: block;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  .actions {
+  position: sticky;
+  bottom: -30px;
+  background: #232126;
+  padding: 18px 0;
+  margin-top: 18px;
+  border-top: 1px solid #3c3d49;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .actions
+  .primary {
+  background: #e4a1b5;
+  color: #25151d;
+  border-color: #e4a1b5;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  .ig-group-fields
+  label {
+  margin: 0;
+}
+.ig-dialog-note {
+  font-weight: 400;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list) {
+  background: #06070bc9;
+  backdrop-filter: blur(9px);
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .ig-publish-list {
+  margin: 12px 0;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .ig-episode-order
+  button {
+  margin-inline-start: 5px;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .select-trigger,
+.wb-panel .select-trigger {
+  text-align: left;
+  background: #19181d;
+  border: 1px solid #514850;
+  border-radius: 7px;
+  padding: 9px;
+  color: var(--text);
+  width: 100%;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  .ig-group-fields
+  .select-trigger {
+  height: 38px;
+}
+.wb-top a,
+.wb-top button.wb-back {
+  font-size: 12px;
+  color: #a8aebd;
+  padding: 0;
+}
+.wb-page .wb-layout button:not(.btn):not(.select-trigger):not(.active):hover {
+  background: #27242b;
+}
+.wb-page fieldset {
+  margin-block: 14px;
+}
+.wb-page .intake-chips button,
+.wb-page .artwork button {
+  border: 1px solid var(--line);
+  padding: 5px 9px;
+}
+.wb-page .wb-grid textarea {
+  min-height: 72px;
+}
+.wb-page .wb-panel .art-field img {
+  object-fit: contain;
+  max-height: 180px;
+}
+@media (max-width: 760px) {
+  .dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+    .dialog {
+    padding: 20px;
+  }
+  .dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+    .dialog
+    .actions {
+    bottom: -20px;
+  }
+  .wb-page .wb-footer {
+    flex-wrap: wrap;
+  }
+}
+
+/* Keep portal controls above the fixed navigation, including Radix option lists. */
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list) {
+  z-index: 100;
+}
+body:has(.intake-layout) .select-content {
+  z-index: 120;
+}
+.intake-layout .small,
+.dialog-backdrop .btn.small {
+  line-height: 1.5;
+}
+.dialog-backdrop:has(.intake-form) .dialog .ig-group-fields label {
+  margin: 18px 0;
+}
+.intake-layout .wb-panel .check-list label {
+  flex-direction: row;
+  align-items: center;
+}
+.intake-layout .wb-grid input:disabled {
+  opacity: 0.7;
+}
+
+.dialog-backdrop:has(.intake-scan) .dialog {
+  width: min(480px, calc(100vw - 40px));
+  padding: 26px;
+}
+.intake-scan label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 18px 0;
+}
+.dialog-backdrop:has(.intake-scan) .actions {
+  border: 0;
+  padding-bottom: 0;
+}
+.intake-layout .ig-row-actions .btn {
+  line-height: 1.6;
+}
+.source-form {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+.source-form label {
+  display: grid;
+  gap: 6px;
+}
+.source-form .btn {
+  justify-self: start;
+}
+.source-facts {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.source-facts strong {
+  font-weight: 550;
+  color: #e6c8d3;
+}
+.lookup-panel {
+  display: grid;
+  gap: 12px;
+}
+.lookup-panel > .btn {
+  justify-self: start;
+}
+.lookup-poster {
+  width: 54px;
+  height: 72px;
+  object-fit: contain;
+}
+.lookup-fields {
+  border: 1px solid #42383f;
+  border-radius: 8px;
+  overflow: auto;
+}
+.lookup-fields .lookup-line {
+  display: grid;
+  grid-template-columns: 34px 65px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  padding: 9px;
+  border-bottom: 1px solid #39333a;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.lookup-line:last-child {
+  border: 0;
+}
+.lookup-head {
+  background: #2a252c;
+}
+.lookup-choice {
+  display: block;
+  text-align: left;
+  padding: 8px;
+}
+.source-form input {
+  width: 100%;
+}
+.intake-layout .ig-filters {
+  scrollbar-width: thin;
+}
+.lookup-panel .ig-dialog-note {
+  margin: 4px 0;
+}
+.source-pending {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.source-refs > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 8px 0;
+}
+.source-refs summary {
+  cursor: pointer;
+}
+.source-refs a,
+.lookup-panel a {
+  color: var(--accent, #ee849a);
+}
+.intake-layout .ig-lookup-summary td {
+  padding: 9px 16px 12px 5%;
+  background: #252127;
+}
+.ig-lookup-summary .source-facts {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ig-result-review {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.ig-result-review .source-facts {
+  flex: 1 1 32rem;
+  min-width: 0;
+}
+.ig-result-review > button {
+  flex: none;
+}

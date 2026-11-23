@@ -1,0 +1,58 @@
+/*
+ * video-x 主题参考，2026-11-10。
+ * 颜色、字号、默认圆角与布局尺寸读取自 https://ltx.libray.workers.dev/。
+ * --vx-* 为语义重命名；尚未接入任何应用。
+ */
+:root {
+  color-scheme: dark;
+
+  --vx-bg: #0f1013;
+  --vx-panel: #17181d;
+  --vx-card: #1c1d23;
+  --vx-border: #2a2c34;
+  --vx-border-strong: #3a3d48;
+  --vx-text: #e8e8ec;
+  --vx-text-muted: #8c8f9a;
+  --vx-accent: #ff5c7a;
+  --vx-accent-soft: #ff5c7a24;
+  --vx-blue: #7aa7ff;
+  --vx-blue-soft: #7aa7ff1f;
+  --vx-primary: #2f5fd0;
+  --vx-primary-hover: #3a6be0;
+  --vx-chip: #262830;
+  --vx-control: #22242b;
+  --vx-gold: #ffc94d;
+  --vx-warning: #ffa95c;
+  --vx-warning-soft: #ffa95c24;
+  --vx-danger: #ff7b7b;
+  --vx-danger-soft: #ff6b6b1a;
+  --vx-success: #4cd498;
+  --vx-success-soft: #3ecf8e1f;
+
+  --vx-font:
+    -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans",
+    "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  --vx-font-ja:
+    -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN", "Noto Sans CJK JP", "Yu Gothic", "Meiryo",
+    sans-serif;
+  --vx-text-2xs: 11px;
+  --vx-text-xs: 12px;
+  --vx-text-sm: 13px;
+  --vx-text-base: 14px;
+  --vx-text-lg: 16px;
+  --vx-text-xl: 18px;
+  --vx-radius: 12px;
+  --vx-header-height: 62px;
+  --vx-sidebar-width: 260px;
+
+  /* 以下为 video-x 新增建议，未声称来自参考站。 */
+  --vx-space-1: 4px;
+  --vx-space-2: 8px;
+  --vx-space-3: 12px;
+  --vx-space-4: 16px;
+  --vx-space-6: 24px;
+  --vx-space-8: 32px;
+  --vx-touch-target: 44px;
+  --vx-focus-ring: 0 0 0 2px var(--vx-bg), 0 0 0 4px var(--vx-blue);
+}

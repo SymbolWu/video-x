@@ -1,0 +1,36 @@
+/* Shared detail/forms; field provenance stays in the review document. */
+.vx-personal{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin:22px 0}.vx-personal label{display:flex;align-items:center;gap:10px;font-size:12px;color:#b6b8c3}.vx-personal select{padding:8px 10px;min-height:38px}.vx-facts{margin:10px 0;display:grid;gap:0}.vx-fact{display:grid;grid-template-columns:116px minmax(0,1fr);padding:13px 0;border-bottom:1px solid #272932;font-size:12px;line-height:1.7}.vx-fact dt{color:#838896}.vx-fact dd{margin:0;overflow-wrap:anywhere;color:#d2d3db}.vx-form{display:grid;gap:15px;margin:22px 0}.vx-form label,.vx-file-panel>label{display:grid;gap:8px;font-size:12px;color:#b9bdca}.vx-form input:not([type=checkbox]),.vx-form select,.vx-form textarea{width:100%}.vx-form small{color:#858b9a;font-size:11px}.vx-file-panel{padding:24px;margin:20px 0}.vx-file-panel>.muted{margin:14px 0}.vx-dictionary{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:22px}.vx-dictionary article{padding:22px}.vx-dictionary article p{margin:12px 0}.vx-checks{display:flex;gap:12px;flex-wrap:wrap}.vx-checks label{display:flex;align-items:center}.vx-mobile-facts{margin:20px 0;font-size:12px}.vx-mobile-facts summary{padding:14px 0;color:#b6b8c3;cursor:pointer}.vx-episodes{margin:22px 0}.vx-episodes a{margin:12px 10px 0 0}.cx-mobile.xp-library-view{padding-top:9px}.xp-library-view .xp-mobile-top{margin-bottom:4px;min-height:42px}.xp-mobile-title{font-size:22px;font-weight:650;line-height:1.3}.xp-library-view .xp-browse-top{margin:0 0 12px;flex-wrap:nowrap;gap:8px}.xp-library-view .xp-library-tabs{gap:22px}.xp-library-view .xp-library-tabs a{padding:12px 0 11px}.xp-library-view .xp-browse-top>.btn{min-width:0;max-width:142px;min-height:40px;margin-bottom:0;padding:8px}.xp-library-view .xp-library-tools{margin:0;gap:8px}.xp-library-view .xp-library-tools .searchbox{min-height:42px}.xp-library-view .xp-library-tools select{min-height:40px;padding:8px;font-size:11px}.xp-library-view .xp-result-line{margin:12px 0;font-size:11px;min-height:16px}.xp-library-view .mobile-grid{margin-top:0}.xp-library-view .xp-mobile-top .avatar{width:34px;height:34px;font-size:13px}.xp-library-view .mobile-poster p{gap:3px;flex-wrap:wrap;font-size:9px}.xp-library-view .mobile-poster .rating{font-size:9px}.mobile-detail-content .vx-personal{gap:10px;margin:10px 0 22px}.mobile-detail-content .vx-personal label{font-size:11px}.mobile-detail-content .vx-fact{grid-template-columns:80px minmax(0,1fr);font-size:11px}.mobile-scroll .vx-file-panel{padding:16px}.bottom-sheet .vx-form{max-height:calc(75vh - 130px);overflow:auto;padding-right:4px}.cx-admin-table td,.data-table td{vertical-align:middle}.data-table td:last-child{min-width:140px}.data-table td:last-child .btn{margin-bottom:5px}.vx-review-row{padding:20px;border-bottom:1px solid #282a33}.vx-review-row h3{font-size:14px;margin-bottom:12px}.vx-review-row p{font-size:12px;color:#a7adbc;line-height:1.8}.vx-review-row .flex{margin-top:15px}@media(max-width:360px){.xp-library-view .xp-library-tabs{gap:17px}.xp-library-view .xp-library-tabs a{font-size:13px}.xp-library-view .xp-browse-top>.btn{max-width:124px;font-size:10px}.vx-personal{gap:8px}}
+
+/* Keep mobile film facets in a sheet; the result row also carries sorting. */
+.cx-mobile.xp-library-view .xp-result-line{gap:6px;margin:8px 0 12px;min-height:40px}
+.xp-library-view .xp-result-line>span:first-child{white-space:nowrap}
+.cx-mobile.xp-library-view .xp-result-line>.flex{gap:2px}
+.xp-compact-sort{max-width:112px;min-height:40px;font-size:11px;padding:8px 4px;border:0;background:transparent;color:#a7aab6}
+.cx-mobile.xp-library-view .xp-result-line .text{border:0;min-height:40px;padding:0 7px;color:#a7aab6;border-radius:7px}
+.cx-mobile.xp-library-view .xp-result-line .text:focus-visible{outline-offset:0}
+
+/* Library is a working browsing surface on desktop as well. */
+.xp-library-view>.xp-page-head{margin:0 0 20px}
+.xp-library-view>.xp-page-head .cx-kicker{display:none}
+.xp-library-view>.xp-page-head h1{font-size:28px;line-height:1.4}
+.xp-library-view>.xp-page-head p{margin-top:5px}
+.xp-result-line .text{border:0;padding:0 8px;min-height:36px}
+.xp-view:not(.cx-mobile).xp-library-view .xp-browse-top>.btn{max-width:270px}
+
+/* Group related maintenance fields without making the modal needlessly tall. */
+.modal:has(.vx-form){width:680px}
+.modal .vx-form{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px}
+.modal .vx-form>label{margin:0;align-content:start}
+.vx-form>.cx-error:empty{display:none}
+.modal .vx-form>label:has(textarea),.modal .vx-form>p{grid-column:1/-1}
+.modal .vx-form>label[data-fields="media_items.title"]{grid-column:1/-1}
+.modal:has(#xp-rating-filter){width:480px}
+.modal:has(#xp-rating-filter) .vx-form{grid-template-columns:1fr}
+@media(max-width:580px){.modal .vx-form{grid-template-columns:1fr}}
+
+.vx-dictionary-tabs{display:flex;gap:26px;margin-top:24px;border-bottom:1px solid #ffffff10;font-size:13px}.vx-dictionary-tabs a{padding:12px 0;color:#9399a8}.vx-dictionary-tabs [aria-current="page"]{color:#f0d5df;border-bottom:2px solid var(--accent)}
+/* Shared lists: compact primary controls, details in an explicit filter sheet. */
+.vl-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0;color:#9399a8;font-size:12px}.vl-bar>div{display:flex;align-items:center;gap:8px}.vl-bar select,.vl-direction{background:transparent;border:0;color:#c4c5ce;font-size:12px;min-height:40px;padding:7px 5px;max-width:140px}.vl-direction{white-space:nowrap;cursor:pointer}.vl-chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}.vl-chips .btn{font-size:11px;min-height:32px}.vl-filter-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:22px 0;max-height:58vh;overflow:auto;padding:2px 8px 2px 2px}.vl-filter-form label{display:grid;gap:8px;font-size:12px;color:#aeb3c1}.vl-filter-form input,.vl-filter-form select{width:100%;min-width:0}.vl-help{font-size:11px;color:#8b91a1;line-height:1.8}.modal:has(.vl-filter-form){width:650px}.cx-mobile .vl-bar{font-size:10px;gap:4px;margin:8px 0 12px}.cx-mobile .vl-bar>div{gap:2px}.cx-mobile .vl-bar select,.cx-mobile .vl-bar button{font-size:10px;padding:6px 4px;min-height:40px}.cx-mobile .vl-bar select{max-width:93px}.bottom-sheet:has(.vl-filter-form){max-height:88vh}.bottom-sheet .vl-filter-form{grid-template-columns:1fr;max-height:calc(70vh - 145px)}.cx-mobile .vl-chips{flex-wrap:nowrap;overflow:auto}.cx-mobile .vl-chips .btn{flex:none}.vl-edit-note{font-size:12px;color:#969cab;padding:12px 0}
+
+.vl-advanced{grid-column:1/-1;padding:14px 0;border-top:1px solid #30333c}.vl-advanced summary{font-size:12px;color:#c7b8c0;cursor:pointer}.vl-advanced-grid{overflow:visible;max-height:none}.bottom-sheet .vl-advanced-grid{max-height:none;overflow:visible}
+.bottom-sheet .vl-filter-form{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px}.bottom-sheet .vl-filter-form>label:has(#vl-q),.bottom-sheet .vl-filter-form>label:has(#vl-category){grid-column:1/-1}.bottom-sheet .vl-filter-form select{padding:10px 7px;font-size:11px}.bottom-sheet .vl-filter-form label{font-size:11px}

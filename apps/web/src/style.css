@@ -1,0 +1,266 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 25px max(5vw, 24px);
+  border-bottom: 1px solid #ffffff08;
+}
+.topbar nav {
+  display: flex;
+  gap: 9px;
+  flex: 1;
+  margin-left: 35px;
+}
+.topbar nav button {
+  border: 0;
+  background: none;
+  color: var(--muted);
+}
+.topbar nav button.active {
+  color: var(--accent);
+}
+.topbar > a:not(.brand) {
+  font-size: 12px;
+  color: var(--muted);
+}
+.topbar > button {
+  font-size: 12px;
+}
+.library {
+  max-width: 1400px;
+  padding: 35px max(5vw, 24px) 70px;
+  margin: auto;
+}
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.page-heading h1 {
+  font-size: 27px;
+}
+.page-heading > span {
+  font-size: 13px;
+}
+.tabs {
+  display: flex;
+  gap: 25px;
+  border-bottom: 1px solid var(--line);
+  margin: 14px 0 0;
+}
+.tabs button {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--muted);
+  padding: 15px 3px;
+  font-size: 17px;
+}
+.tabs button.active {
+  border-bottom: 3px solid var(--accent);
+  color: var(--text);
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 26px;
+}
+.poster-card {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+}
+.poster-card:hover {
+  background: none !important;
+  transform: translateY(-3px);
+}
+.poster-card h3 {
+  font-size: 16px;
+  font-weight: 550;
+  margin: 15px 0 8px;
+}
+.poster-card > div:last-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.poster-card b {
+  color: #e5bd91;
+  font-size: 12px;
+}
+.person-card {
+  text-align: center;
+  background: #181b22;
+  padding: 27px 18px;
+}
+.person-card p {
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.avatar {
+  width: 95px;
+  height: 95px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  margin: 0 auto 25px;
+  background: linear-gradient(135deg, #413a58, #25434b);
+  font-size: 32px;
+  color: #cfc6e2;
+}
+.series-card {
+  text-align: left;
+  padding: 25px;
+  min-height: 240px;
+  background: linear-gradient(140deg, #212c36, #211c2a);
+  grid-column: span 2;
+}
+.series-card h2 {
+  font-size: 22px;
+  margin-top: 35px;
+}
+.series-card p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.series-card small {
+  display: block;
+  margin-top: 28px;
+}
+.folder-icon {
+  font-size: 28px;
+  color: #cf9bb0;
+}
+.detail {
+  display: grid;
+  gap: 18px;
+}
+.detail h3 {
+  font-size: 14px;
+  margin: 10px 0 0;
+  color: #b9c0cd;
+}
+.synopsis {
+  font-size: 14px;
+  line-height: 2;
+  color: #c6cad3;
+}
+@media (max-width: 1000px) {
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .topbar {
+    gap: 12px;
+  }
+  .topbar nav {
+    margin-left: 5px;
+  }
+  .topbar > a:not(.brand) {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .topbar {
+    padding: 18px 20px;
+    gap: 5px;
+  }
+  .topbar nav {
+    gap: 0;
+  }
+  .topbar nav button {
+    padding: 9px;
+  }
+  .library {
+    padding: 15px 20px 50px;
+  }
+  .page-heading h1 {
+    font-size: 22px;
+  }
+  .page-heading > span {
+    display: none;
+  }
+  .cards {
+    gap: 20px 13px;
+  }
+  .poster-card h3 {
+    font-size: 14px;
+  }
+  .hero-placeholder {
+    padding: 13px;
+  }
+  .hero-placeholder strong {
+    font-size: 16px;
+  }
+  .poster-card > div:last-child {
+    font-size: 10px;
+    display: block;
+  }
+  .filters input {
+    min-width: 60%;
+    font-size: 13px;
+  }
+  .avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 25px;
+  }
+  .person-card {
+    padding: 18px 10px;
+  }
+  .person-card h3 {
+    font-size: 14px;
+  }
+  .person-card p {
+    display: none;
+  }
+  .person-card small {
+    font-size: 10px;
+  }
+  .series-card {
+    grid-column: span 3;
+    min-height: 180px;
+  }
+  .series-card h2 {
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .library-heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .topbar {
+    padding: 14px 20px;
+  }
+  .tabs {
+    margin-top: 0;
+  }
+  .filters {
+    margin: 16px 0;
+  }
+}
+
+.work-player {
+  display: grid;
+  gap: 10px;
+}
+.work-player video {
+  width: 100%;
+  max-height: 55vh;
+  background: #09090b;
+  border-radius: 12px;
+}
+.work-player > button {
+  justify-self: start;
+}

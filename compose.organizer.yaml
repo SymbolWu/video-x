@@ -1,0 +1,16 @@
+# Optional same-volume intake. Use with compose.yaml and compose.media.yaml.
+# API mounts stay read-only. Only these two subdirectories are writable by the worker.
+services:
+  worker:
+    volumes:
+      - type: bind
+        source: ${VIDEO_X_INBOX_HOST_DIR:?Set the existing Download directory}
+        target: /media/library/Download
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${VIDEO_X_LIBRARY_HOST_DIR:?Set the existing target directory}
+        target: /media/library/Library
+        bind:
+          create_host_path: false
+

@@ -1,0 +1,42 @@
+{
+  "name": "video-x",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "pnpm --filter @video-x/server test",
+    "check": "pnpm typecheck && pnpm test && pnpm build && pnpm contracts:check",
+    "db:local": "node tooling/local-db.mjs start",
+    "db:stop": "node tooling/local-db.mjs stop",
+    "db:migrate": "pnpm --filter @video-x/server db:migrate",
+    "account:create": "pnpm --filter @video-x/server account:create",
+    "demo:seed": "pnpm --filter @video-x/server demo:seed",
+    "contracts:generate": "pnpm --filter @video-x/server contracts:generate && pnpm exec openapi-typescript packages/contracts/openapi.json -o packages/sdk-ts/src/generated.ts && node tooling/generate-kotlin.mjs",
+    "contracts:check": "node tooling/check-contracts.mjs",
+    "android:build": "cd apps/android && ./gradlew :app:assembleDebug",
+    "dev:bootstrap": "pnpm --filter @video-x/server dev:bootstrap",
+    "dev:worker": "pnpm --filter @video-x/server worker",
+    "android:test": "cd apps/android && ./gradlew :app:testDebugUnitTest"
+  },
+  "devDependencies": {
+    "turbo": "2.5.6",
+    "typescript": "5.9.3",
+    "tsx": "4.23.15",
+    "@types/node": "24.10.1",
+    "openapi-typescript": "7.13.0",
+    "prettier": "3.6.2",
+    "esbuild": "0.28.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild": "0.28.2"
+    }
+  }
+}

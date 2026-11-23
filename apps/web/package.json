@@ -1,0 +1,27 @@
+{
+  "name": "@video-x/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5180 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@video-x/contracts": "workspace:*",
+    "@video-x/sdk-ts": "workspace:*",
+    "@video-x/ui": "workspace:*",
+    "@video-x/design-tokens": "workspace:*",
+    "@tanstack/react-query": "5.90.10",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "vite": "8.3.8",
+    "@vitejs/plugin-react": "6.3.0",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "esbuild": "0.28.2"
+  }
+}

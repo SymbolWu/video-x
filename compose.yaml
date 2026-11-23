@@ -1,0 +1,87 @@
+name: video-x
+x-runtime: &runtime
+  image: video-x-api:${VIDEO_X_IMAGE_TAG:-m1-local}
+  build:
+    context: .
+    target: runtime
+  init: true
+  restart: unless-stopped
+  environment: &environment
+    NODE_ENV: production
+    VIDEO_X_DEPLOYMENT: compose
+    VIDEO_X_STORAGE_LAYOUT: ${VIDEO_X_STORAGE_LAYOUT:-}
+    VIDEO_X_ART_ROOT: /var/lib/video-x/art
+    VIDEO_X_MEDIA_ROOT: /media/library
+    HOST: 0.0.0.0
+    PORT: 5120
+    DATABASE_URL: postgresql://video_x:${VIDEO_X_DB_PASSWORD:?Set VIDEO_X_DB_PASSWORD in .env.compose}@db:5432/video_x
+    ALLOWED_ORIGINS: http://127.0.0.1:8180,http://localhost:8180
+    COOKIE_SECURE: "false"
+  depends_on:
+    db:
+      condition: service_healthy
+  volumes:
+    - artwork:/var/lib/video-x/art
+  read_only: true
+  tmpfs:
+    - /tmp
+services:
+  db:
+    image: postgres:16.14-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: video_x
+      POSTGRES_USER: video_x
+      POSTGRES_PASSWORD: ${VIDEO_X_DB_PASSWORD:?Set VIDEO_X_DB_PASSWORD in .env.compose}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U video_x -d video_x"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  migrate:
+    <<: *runtime
+    profiles: [tools]
+    restart: "no"
+    command: [node, dist/entrypoints/migrate.js]
+  api:
+    <<: *runtime
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:5120/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+  worker:
+    <<: *runtime
+    environment:
+      <<: *environment
+      VIDEO_X_JAVDB_BASE_URL: ${VIDEO_X_JAVDB_BASE_URL:-https://javdb.com}
+      VIDEO_X_JAVDB_COOKIE: ${VIDEO_X_JAVDB_COOKIE:-}
+      VIDEO_X_JAVDB_IMAGE_HOSTS: ${VIDEO_X_JAVDB_IMAGE_HOSTS:-}
+    command: [node, dist/entrypoints/worker.js]
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+  gateway:
+    image: video-x-gateway:${VIDEO_X_IMAGE_TAG:-m1-local}
+    build:
+      context: .
+      target: gateway
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:8180:8080
+    depends_on:
+      api:
+        condition: service_healthy
+volumes:
+  artwork:
+  postgres:

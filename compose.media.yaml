@@ -1,0 +1,13 @@
+# Optional read-only media mount for the API and the scan worker.
+x-media: &media
+  type: bind
+  source: ${VIDEO_X_MEDIA_HOST_DIR:?Set the marked media directory}
+  target: /media/library
+  read_only: true
+  bind:
+    create_host_path: false
+services:
+  api:
+    volumes: [*media]
+  worker:
+    volumes: [*media]

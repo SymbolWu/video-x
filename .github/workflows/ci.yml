@@ -1,0 +1,82 @@
+name: verify
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  application:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16.14-alpine
+        env:
+          POSTGRES_USER: video_x
+          POSTGRES_PASSWORD: ci-ephemeral-only
+          POSTGRES_DB: video_x_dev
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U video_x -d video_x_dev"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://video_x:ci-ephemeral-only@127.0.0.1:5432/video_x_dev
+      TEST_DATABASE_URL: postgresql://video_x:ci-ephemeral-only@127.0.0.1:5432/video_x_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - run: pnpm install --frozen-lockfile
+      - name: Install media probe for integration tests
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: pnpm db:migrate
+      - run: pnpm check
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install Android SDK components
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Compile native client and verify generated contract
+        working-directory: apps/android
+        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon --console=plain
+  images:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      VIDEO_X_DB_PASSWORD: ci-ephemeral-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build isolated stack
+        run: docker compose build
+      - name: Migrate explicitly and start
+        run: |
+          docker compose up -d db
+          docker compose run --rm migrate
+          docker compose up -d --wait
+      - name: Verify shipped runtime
+        run: |
+          docker compose exec -T worker ffprobe -version
+          curl --fail --retry 10 --retry-delay 2 --retry-all-errors http://127.0.0.1:8180/api/health/ready
+          curl --fail http://127.0.0.1:8180/manage/
+      - name: Tear down disposable CI stack
+        if: always()
+        run: docker compose down -v
