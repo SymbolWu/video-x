@@ -2,12 +2,15 @@ import {
   BindForm,
   QueueSource,
   LookupForm,
-  SourceFacts,
+  DraftCoverage,
+  FieldPreview,
+  lookupLabel,
   fetching,
 } from "./SourceReview";
 import {
   StoragePicker,
-  MoveStatus,moveDestination,
+  MoveStatus,
+  moveDestination,
   moveActive,
   useStorage,
 } from "./StoragePicker";
@@ -34,6 +37,59 @@ const tabs = {
   reviewed: "已确认",
   published: "已发布",
 } as const;
+const stageTabs = {
+  all: "全部",
+  pending: "待核对",
+  reviewed: "已确认",
+  published: "已发布",
+} as const;
+function IntakeCover({ row }: { row: Row }) {
+  const [open, setOpen] = useState(false);
+  const draft = row.fields.posterId,
+    source = row.lookup?.candidate?.posterId;
+  const ids = [...new Set([draft, source].filter((id): id is string => !!id))];
+  if (!ids.length)
+    return (
+      <span className="queue-no-cover">
+        <StudioIcon name="film" />
+        <small>缺封面</small>
+      </span>
+    );
+  return (
+    <>
+      <button
+        type="button"
+        className="queue-cover"
+        onClick={() => setOpen(true)}
+        aria-label={"放大" + row.fields.title + "的封面"}
+      >
+        <img src={"/api/art/" + ids[0]} alt="" />
+        <small>{draft ? "草稿" : "候选"}</small>
+      </button>
+      {open && (
+        <Modal
+          title={"封面预览 · " + row.fields.title}
+          close={() => setOpen(false)}
+        >
+          <div className="cover-compare">
+            {ids.map((id) => (
+              <figure key={id}>
+                <figcaption>
+                  {id === draft
+                    ? id === source
+                      ? "草稿与来源封面"
+                      : "当前草稿"
+                    : "来源候选"}
+                </figcaption>
+                <img src={"/api/art/" + id} alt={row.fields.title + "封面"} />
+              </figure>
+            ))}
+          </div>
+        </Modal>
+      )}
+    </>
+  );
+}
 function poster(r: Row) {
   return r.fields.posterId ? "/api/art/" + r.fields.posterId : fallbackPoster;
 }
@@ -57,10 +113,18 @@ function missing(r: Row) {
     .filter(Boolean)
     .join("、");
 }
-function ReviewCard({ row: r, edit }: { row: Row; edit: () => void }) {
+function ReviewCard({
+  row: r,
+  edit,
+  compare,
+}: {
+  row: Row;
+  edit: () => void;
+  compare?: () => void;
+}) {
   return (
     <article>
-      <img src={poster(r)} alt={r.fields.title + "封面"} />
+      <IntakeCover row={r} />
       <div>
         <h3>{r.fields.title}</h3>
         <p>
@@ -77,15 +141,13 @@ function ReviewCard({ row: r, edit }: { row: Row; edit: () => void }) {
         <p className="ig-muted">{r.relativePath}</p>
         <MoveStatus row={r} />
         <p>{r.fields.summary || "暂无简介"}</p>
+        <DraftCoverage row={r} />
+        {r.lookup?.candidate && compare && (
+          <button type="button" className="cell-action" onClick={compare}>
+            核对来源字段
+          </button>
+        )}
         <div className="ig-gaps">
-          {missing(r)
-            .split("、")
-            .filter(Boolean)
-            .map((t) => (
-              <span className="ig-pill" key={t}>
-                缺{t}
-              </span>
-            ))}
           {issue(r) && <span className="ig-error">{issue(r)}</span>}
         </div>
       </div>
@@ -110,6 +172,7 @@ export function Intake({
 }) {
   const cache = useQueryClient(),
     [status, filter] = useState<keyof typeof tabs>("all"),
+    [stage, setStage] = useState<keyof typeof stageTabs>("all"),
     [page, setPage] = useState(1),
     [q, setQ] = useState("");
   const [dialog, setDialog] = useState<{
@@ -182,32 +245,20 @@ export function Intake({
         ),
       ),
   });
-  const artwork = useQuery({
-    queryKey: ["intake", "mast-posters"],
-    queryFn: async () =>
-      (
-        await unwrap(
-          api.GET("/api/imports", { params: { query: { pageSize: 20 } } }),
-        )
-      ).items
-        .filter(
-          (r, i, all) =>
-            r.fields.posterId &&
-            all.findIndex(
-              (x) =>
-                x.fields.posterId === r.fields.posterId ||
-                x.fields.title.replace(/[·\s]*(上篇|下篇)$/, "") ===
-                  r.fields.title.replace(/[·\s]*(上篇|下篇)$/, ""),
-            ) === i,
-        )
-        .slice(0, 5),
-  });
   const queue = useQuery({
-    queryKey: ["intake", page, status, q],
+    queryKey: ["intake", page, stage, status, q],
     queryFn: () =>
       unwrap(
         api.GET("/api/imports", {
-          params: { query: { page, pageSize: 20, status, q: q || undefined } },
+          params: {
+            query: {
+              page,
+              pageSize: 20,
+              status,
+              stage: stage === "all" ? undefined : stage,
+              q: q || undefined,
+            },
+          },
         }),
       ),
     refetchInterval: (q) =>
@@ -398,32 +449,54 @@ export function Intake({
   }
   return (
     <section className="ig-page">
-      <header className="studio-mast">
-        <div className="studio-contact" aria-hidden="true">
-          {artwork.data?.slice(0, 5).map((m) => (
-            <img key={m.id} src={"/api/art/" + m.fields.posterId} alt="" />
-          ))}
-        </div>
-        <div className="studio-mast-copy">
-          <h1>录入工作台</h1>
-          <p>
-            {data?.scanning ? (
-              "正在扫描并读取媒体信息…"
-            ) : (
-              <>
-                <span>{counts.data?.pending ?? "…"}</span> 条待核对 <i />{" "}
-                <span>{counts.data?.reviewed ?? "…"}</span> 条已确认，等待发布
-              </>
-            )}
-          </p>
-          <div className="ig-actions">
- {storage.data?.inbox?<button className="btn primary" onClick={()=>setPicker("inbox")}><StudioIcon name="folder"/>从 {storage.data.inbox.split("/").at(-1)} 选择文件</button>:<a className="btn primary" href="#settings">设置下载目录</a>}
- {storage.data?.inbox&&<small className="vx-inbox-path">{storage.data.volume} / {storage.data.inbox}</small>}
- </div>
-        </div>
+      <header className="queue-heading">
+        <h1>录入工作台</h1>
+        {storage.data?.inbox ? (
+          <button className="btn primary" onClick={() => setPicker("inbox")}>
+            <StudioIcon name="folder" />从{" "}
+            {storage.data.inbox.split("/").at(-1)} 选择文件
+          </button>
+        ) : (
+          <a className="btn primary" href="#settings">
+            设置下载目录
+          </a>
+        )}
       </header>
-      <div className="studio-section">
-        <h2>录入队列</h2>
+      {storage.data?.inbox && (
+        <p className="inbox-location">
+          <StudioIcon name="folder" />
+          {storage.data.volume} / {storage.data.inbox}
+        </p>
+      )}
+      <div className="queue-toolbar">
+        <nav aria-label="录入队列状态">
+          {(Object.keys(stageTabs) as (keyof typeof stageTabs)[]).map((k) => (
+            <button
+              key={k}
+              aria-pressed={stage === k}
+              onClick={() => {
+                setStage(k);
+                setPage(1);
+              }}
+            >
+              {stageTabs[k]} <small>{counts.data?.[k] ?? "—"}</small>
+            </button>
+          ))}
+        </nav>
+        <Select
+          label="更多状态"
+          value={status}
+          onValueChange={(v) => {
+            filter(v as keyof typeof tabs);
+            setPage(1);
+          }}
+          options={[
+            { value: "all", label: "更多状态" },
+            ...Object.entries(tabs)
+              .filter(([k]) => !(k in stageTabs))
+              .map(([value, label]) => ({ value, label })),
+          ]}
+        />
         <form
           id="ig-search"
           role="search"
@@ -446,56 +519,36 @@ export function Intake({
           />
         </form>
       </div>
-      <div className="ig-toolbar">
-        <nav className="ig-filters" aria-label="录入队列状态">
-          {(Object.keys(tabs) as (keyof typeof tabs)[]).map((k) => (
-            <button
-              key={k}
-              className={status === k ? "active" : ""}
-              aria-pressed={status === k}
-              onClick={() => {
-                filter(k);
-                setPage(1);
-              }}
-            >
-              {tabs[k]} <small>{counts.data?.[k] ?? "—"}</small>
-            </button>
-          ))}
-        </nav>
-      </div>
-      <div className="ig-selection">
+      <div className="queue-batch" role="group" aria-label="批量操作">
         <div>
           <strong>
-            {selection.length
-              ? "已选 " + selection.length + " 条草稿"
-              : "勾选同一作品的上下集，可创建分集容器"}
+            {selection.length ? "已选 " + selection.length + " 项" : "选择文件"}
           </strong>
           {selection.some((r) => !selectable.some((x) => x.id === r.id)) && (
-            <small>
-              其中{" "}
-              {
-                selection.filter((r) => !selectable.some((x) => x.id === r.id))
-                  .length
-              }{" "}
-              条不在当前显示范围
-            </small>
+            <small>含其他页草稿</small>
           )}
+          <button
+            disabled={!selection.length || busy}
+            onClick={() => select([])}
+          >
+            取消选择
+          </button>
         </div>
-        <div className="ig-actions">
-          {!!selection.length && storage.data?.inbox && (
-            <button
-              className="btn ghost small"
-              disabled={
-                busy ||
-                selection.some(
-                  (r) => r.availability !== "present" || moveActive(r),
-                )
-              }
-              onClick={() => setPicker([...selection])}
-            >
-              批量设置目标目录
-            </button>
-          )}
+        <div role="group" aria-label="文件整理">
+          <button
+            disabled={
+              !storage.data?.inbox ||
+              !selection.length ||
+              busy ||
+              selection.some(
+                (r) => r.availability !== "present" || moveActive(r),
+              )
+            }
+            onClick={() => setPicker([...selection])}
+          >
+            <StudioIcon name="folder" />
+            设置整理目标
+          </button>
           <button
             className="btn ghost small"
             data-action="ig-group-new"
@@ -523,6 +576,31 @@ export function Intake({
           >
             创建分集容器
           </button>
+        </div>
+        <div role="group" aria-label="资料补充">
+          <button
+            disabled={busy || !selection.length}
+            onClick={() => {
+              setBulkCategory(selection[0]!.fields.categoryId);
+              setOrganizeRows([...selection]);
+              setError("");
+            }}
+          >
+            设置主分类
+          </button>
+          <button
+            disabled={
+              !selection.length ||
+              busy ||
+              selection.some((r) => fetching(r.lookup))
+            }
+            onClick={() => setBatchLookup([...selection])}
+          >
+            抓取所选
+          </button>
+        </div>
+        <div role="group" aria-label="核对与发布">
+          {" "}
           <button
             disabled={
               busy ||
@@ -549,40 +627,13 @@ export function Intake({
             data-action="ig-publish"
             onClick={() => void preparePublish(selection)}
           >
-            发布所选
+            {selection.some((r) => r.move) ? "移动并发布" : "发布所选"}
           </button>
-          {selection.length > 0 && (
-            <button
-              className="btn ghost small"
-              disabled={busy || selection.some((r) => fetching(r.lookup))}
-              onClick={() => setBatchLookup([...selection])}
-            >
-              抓取所选
-            </button>
-          )}
-          {selection.length > 0 && (
-            <button
-              className="btn ghost small"
-              disabled={busy}
-              onClick={() => {
-                setBulkCategory(selection[0]!.fields.categoryId);
-                setOrganizeRows([...selection]);
-                setError("");
-              }}
-            >
-              更多整理
-            </button>
-          )}
-          {selection.length > 0 && (
-            <button className="btn ghost small" onClick={() => select([])}>
-              取消选择
-            </button>
-          )}
         </div>
       </div>
       {groupOpen && (
         <Modal
-          title={existingGroup ? "调整分集容器" : "建立分集组 · 创建容器"}
+          title={existingGroup ? "调整分集容器" : "创建分集容器"}
           close={() => !busy && showGroup(false)}
         >
           <form
@@ -612,9 +663,6 @@ export function Intake({
               }, "已保存分集容器，请核对后发布。");
             }}
           >
-            <p className="ig-dialog-intro">
-              创建一个不直接播放的容器，把所选视频放在它下面。各集保留资料和视频文件。
-            </p>
             <div className="ig-group-fields">
               <label>
                 容器名称
@@ -655,7 +703,7 @@ export function Intake({
                 <div className="ig-container-preview">
                   {<img src={poster(source)} alt="容器封面" />}
                   <div>
-                    <span className="ig-pill purple">容器 · 不直接播放</span>
+                    <small>容器资料预览 · 按集播放</small>
                     <h3>{groupName}</h3>
                     <p>
                       {source.categoryName} ·{" "}
@@ -667,6 +715,7 @@ export function Intake({
                   </div>
                 </div>
               )}
+              <h3 className="order-heading">分集顺序</h3>
               <ol aria-label="分集顺序" className="ig-episode-order">
                 {groupRows.map((r, i) => (
                   <li key={r.id}>
@@ -698,13 +747,10 @@ export function Intake({
                 ))}
               </ol>
             </div>
-            <p className="ig-dialog-note">
-              沿用所选资料的封面、简介、演员、年份和分类。各集保留自己的文件。当前顺序对应第{" "}
-              {start}～{start + groupRows.length - 1}{" "}
-              集，保存后仍须人工核对与发布。
-            </p>
+
             <ErrorNotice error={error} />
             <div className="actions">
+              <small className="group-foot-caption">各集保留自己的文件</small>
               <button
                 type="button"
                 className="btn ghost small"
@@ -799,7 +845,7 @@ export function Intake({
           </div>
         </Modal>
       )}
-      {lookupId && <QueueSource id={lookupId} close={() => showLookup("")} />}
+
       {batchLookup && (
         <Modal
           title={"抓取所选 " + batchLookup.length + " 条草稿"}
@@ -823,6 +869,7 @@ export function Intake({
             setError("");
             if (picker === "inbox") {
               filter("all");
+              setStage("all");
               setQ("");
               setPage(1);
             }
@@ -850,6 +897,7 @@ export function Intake({
                   <ReviewCard
                     key={r.id}
                     row={r}
+                    compare={() => showLookup(r.id)}
                     edit={() => {
                       setBatch(null);
                       open(r, "edit");
@@ -887,9 +935,7 @@ export function Intake({
                     {r.fields.title}
                     <span>
                       {r.move
-                        ? r.move.source +
-                          " → " +
-                          moveDestination(r.move)
+                        ? r.move.source + " → " + moveDestination(r.move)
                         : r.group
                           ? "分集"
                           : "作品"}
@@ -977,11 +1023,9 @@ export function Intake({
       {data &&
         !["online", "unregistered"].includes(data.rootStatus) &&
         !data.scanning && (
-          <p role="status">
-            媒体卷暂不可用，请在系统状态中检查下载目录。
-          </p>
+          <p role="status">上次检查未确认媒体卷在线，可在系统状态中查看。</p>
         )}
-      <ErrorNotice error={queue.error || (!dialog && error)} />
+      <ErrorNotice error={queue.error || storage.error || (!dialog && error)} />
       {notice && <p role="status">{notice}</p>}
       <div className="ig-table-scroll">
         <table className="ig-table">
@@ -1010,13 +1054,11 @@ export function Intake({
                 />
               </th>
               {[
-                "作品 / 编号 / 文件",
-                "演职员",
-                "分类 / 系列",
-                "发行 / 中文",
-                "获取结果 / 缺项",
-                "核对状态",
-                "操作",
+                "封面 / 作品 / 文件",
+                "当前草稿",
+                "资料核对",
+                "状态 / 整理目标",
+                "草稿操作",
               ].map((t) => (
                 <th key={t} scope="col">
                   {t}
@@ -1027,7 +1069,7 @@ export function Intake({
           <tbody>
             {!data?.items.length && (
               <tr>
-                <td colSpan={8} className="ig-empty">
+                <td colSpan={6} className="ig-empty">
                   {!data
                     ? "正在读取录入队列…"
                     : data.scanning
@@ -1041,8 +1083,7 @@ export function Intake({
             {ordered.map(({ r, groupHeader }) => {
               const chosen = selection.some((x) => x.id === r.id),
                 peek = previewAll !== expanded.includes(r.id);
-              const gaps = missing(r),
-                problem = issue(r),
+              const problem = issue(r),
                 g = r.group,
                 published = !!r.publishedMediaId;
               const edit = () =>
@@ -1052,7 +1093,7 @@ export function Intake({
                   {groupHeader && g && (
                     <tr className="ig-group">
                       <td />
-                      <td colSpan={5}>
+                      <td colSpan={3}>
                         <div className="ig-group-line">
                           <button
                             className="ig-group-toggle"
@@ -1133,10 +1174,7 @@ export function Intake({
                         </td>
                         <td>
                           <div className="ig-identity">
-                            <img
-                              src={poster(r)}
-                              alt={r.fields.title + "封面"}
-                            />
+                            <IntakeCover row={r} />
                             <div>
                               <button
                                 type="button"
@@ -1164,30 +1202,7 @@ export function Intake({
                             </div>
                           </div>
                         </td>
-                        <td>
-                          <div className="ig-two-lines">
-                            {r.actors.length ||
-                            r.fields.sourceNames?.actors.length ? (
-                              [
-                                ...r.actors,
-                                ...(r.fields.sourceNames?.actors ?? []),
-                              ].join("、")
-                            ) : (
-                              <span className="ig-missing">无演员</span>
-                            )}
-                          </div>
-                          {r.directors?.length ||
-                          r.fields.sourceNames?.directors.length ? (
-                            <small className="ig-muted">
-                              导演{" "}
-                              {[
-                                ...(r.directors ?? []),
-                                ...(r.fields.sourceNames?.directors ?? []),
-                              ].join("、")}
-                            </small>
-                          ) : null}
-                        </td>
-                        <td>
+                        <td className="draft-glance">
                           <Select
                             label={r.fields.title + "的分类"}
                             value={r.fields.categoryId}
@@ -1198,123 +1213,122 @@ export function Intake({
                             }))}
                             onValueChange={(id) => void updateCategory(r, id)}
                           />
-                          <div className="ig-sub">
+                          <small>
+                            {r.fields.releaseDate ||
+                              r.fields.releaseYear ||
+                              "日期未填"}
+                          </small>
+                          <small>
                             {[
-                              ...r.series,
-                              ...(r.fields.sourceNames?.series ?? []),
-                            ].join("、") || "未关联系列"}
-                          </div>
+                              ...r.actors,
+                              ...(r.fields.sourceNames?.actors ?? []),
+                            ].join("、") || "演员未填"}
+                          </small>
                         </td>
-                        <td>
-                          <div>
-                            {r.fields.releaseDate ??
-                              r.fields.releaseYear ??
-                              "日期未知"}
-                          </div>
-                          <div className="ig-sub">
-                            中文：
-                            {r.fields.supportsChinese == null
-                              ? "未知"
-                              : r.fields.supportsChinese
-                                ? "支持"
-                                : "不支持"}
-                          </div>
+                        <td className="queue-coverage">
+                          <small>{lookupLabel(r.lookup)}</small>
+                          <DraftCoverage row={r} />
+                          {!published && (
+                            <button
+                              className="cell-action"
+                              onClick={() => showLookup(r.id)}
+                            >
+                              {r.lookup?.candidate
+                                ? "核对字段"
+                                : r.lookup?.state === "choices"
+                                  ? "选择匹配影片"
+                                  : r.lookup?.state === "failed"
+                                    ? "查看失败原因"
+                                    : fetching(r.lookup)
+                                      ? "查看抓取进度"
+                                      : "抓取资料"}
+                            </button>
+                          )}
                         </td>
-                        <td>
-                          <span
+                        <td className="queue-destination">
+                          <strong
                             className={
-                              "ig-source" + (problem ? " ig-error" : "")
-                            }
-                          >
-                            {r.availability === "unbound"
-                              ? "待绑定文件"
-                              : problem || "已读取文件"}
-                          </span>
-                          <div className="ig-sub">
-                            {r.availability === "unbound"
-                              ? "手动草稿"
-                              : "本地文件探测"}
-                          </div>
-                          {r.lookup && <div className="ig-sub">当前草稿</div>}
-                          <div className="ig-gaps">
-                            {gaps ? (
-                              gaps.split("、").map((t) => (
-                                <span className="ig-pill" key={t}>
-                                  缺{t}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="ig-complete">常用项齐全</span>
-                            )}
-                            {problem && (
-                              <span className="ig-pill danger">有发布阻断</span>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          <span
-                            className={
-                              "ig-pill " +
-                              (published || r.reviewed ? "success" : "")
+                              published || r.reviewed ? "good" : "warn"
                             }
                           >
                             {published
                               ? "已发布"
                               : r.reviewed
-                                ? "已人工确认"
+                                ? "已确认"
                                 : "待核对"}
-                          </span>
+                          </strong>
                           <MoveStatus row={r} />
-                        </td>
-                        <td className="ig-row-actions">
-                          {storage.data?.inbox &&
-                            !published &&
-                            r.availability === "present" &&
-                            !moveActive(r) && (
-                              <button
-                                className="btn ghost small"
-                                onClick={() => setPicker([r])}
-                              >
-                                {r.move ? "更改目标" : "设整理目标"}
-                              </button>
-                            )}
-                          {r.move?.error && (
-                            <button
-                              className="btn ghost small"
-                              disabled={busy}
-                              onClick={() =>
-                                void perform(
-                                  () =>
-                                    unwrap(
-                                      api.POST("/api/imports/{id}/publish", {
-                                        params: { path: { id: r.id } },
-                                        body: { expectedRevision: r.revision },
-                                      }),
-                                    ),
-                                  "已提交重试。",
-                                )
-                              }
-                            >
-                              重试整理
-                            </button>
+                          {problem && !published && (
+                            <small className="warn">{problem}</small>
                           )}
-                          {!published && (
-                            <>
-                              {!r.lookup && (
-                                <button className="btn ghost small" onClick={() => showLookup(r.id)}>
-                                  抓取资料
-                                </button>
-                              )}
-                              {r.availability === "unbound" && (
+                          {!r.move && !problem && <small>原文件位置</small>}
+                          <div className="file-actions">
+                            {" "}
+                            {storage.data?.inbox &&
+                              !published &&
+                              r.availability === "present" &&
+                              !moveActive(r) && (
                                 <button
                                   className="btn ghost small"
-                                  onClick={() => bindRow(r)}
+                                  onClick={() => setPicker([r])}
                                 >
-                                  绑定文件
+                                  {r.move ? "更改目标" : "设整理目标"}
                                 </button>
                               )}
-                            </>
-                          )}
+                            {r.move?.error && (
+                              <button
+                                className="btn ghost small"
+                                disabled={busy}
+                                onClick={() =>
+                                  void perform(
+                                    () =>
+                                      unwrap(
+                                        api.POST("/api/imports/{id}/publish", {
+                                          params: { path: { id: r.id } },
+                                          body: {
+                                            expectedRevision: r.revision,
+                                          },
+                                        }),
+                                      ),
+                                    "已提交重试。",
+                                  )
+                                }
+                              >
+                                重试整理
+                              </button>
+                            )}
+                            {r.probeStatus === "failed" && (
+                              <button
+                                className="btn ghost small"
+                                disabled={busy}
+                                onClick={() =>
+                                  void perform(
+                                    () =>
+                                      unwrap(
+                                        api.POST("/api/imports/manual", {
+                                          body: {
+                                            relativePath: r.relativePath,
+                                          },
+                                        }),
+                                      ),
+                                    "已重新检查文件，请核对探测结果。",
+                                  )
+                                }
+                              >
+                                重试探测
+                              </button>
+                            )}
+                            {!published && r.availability === "unbound" && (
+                              <button
+                                className="cell-action"
+                                onClick={() => bindRow(r)}
+                              >
+                                绑定文件
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                        <td className="ig-row-actions">
                           <button
                             className="btn ghost small"
                             aria-expanded={peek}
@@ -1354,64 +1368,20 @@ export function Intake({
                               >
                                 完整编辑
                               </button>
-                              {r.probeStatus === "failed" && (
-                                <button
-                                  className="btn ghost small"
-                                  disabled={busy}
-                                  onClick={() =>
-                                    void perform(
-                                      () =>
-                                        unwrap(
-                                          api.POST("/api/imports/manual", {
-                                            body: {
-                                              relativePath: r.relativePath,
-                                            },
-                                          }),
-                                        ),
-                                      "已重新检查文件，请核对探测结果。",
-                                    )
-                                  }
-                                >
-                                  重试探测
-                                </button>
-                              )}
                             </>
                           )}
                         </td>
                       </tr>
-                      {r.lookup && (
-                        <tr
-                          className="ig-lookup-summary"
-                          aria-label={r.fields.title + "的来源结果"}
-                        >
-                          <td colSpan={8}>
-                            <div className="ig-result-review">
-                              <SourceFacts lookup={r.lookup} />
-                              {!published && (
-                                <button className="btn ghost small" onClick={() => showLookup(r.id)}>
-                                  {r.lookup.candidate ? "核对字段" : r.lookup.state === "choices"
-                                    ? "选择匹配影片" : r.lookup.state === "failed"
-                                    ? "查看失败原因" : "查看抓取进度"}
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
                       {peek && (
                         <tr className="ig-detail">
-                          <td colSpan={8}>
+                          <td colSpan={6}>
                             <div className="ig-preview">
                               <img
                                 src={poster(r)}
                                 alt={r.fields.title + "封面"}
                               />
                               <div>
-                                <span className="ig-eyebrow">简介</span>
-                                <p>
-                                  {r.fields.summary ||
-                                    "暂无简介，允许之后补充。"}
-                                </p>
+                                <FieldPreview row={r} />
                                 <div className="ig-meta">
                                   <span>
                                     演员：
@@ -1483,9 +1453,7 @@ export function Intake({
           {previewAll ? "收起所有行内预览" : "展开所有行内预览"}
         </button>
       </div>
-      <p className="ig-legend">
-        常用项检查标题、封面、演员、发行日期、简介和分类。缺演员、封面等可以稍后补充；齐全的资料仍须人工核对。
-      </p>
+
       {data && data.total > 20 && <Pager {...data} onChange={setPage} />}
       {dialog && dialog.kind !== "edit" && (
         <Modal
@@ -1532,6 +1500,20 @@ export function Intake({
             </button>
           </div>
         </Modal>
+      )}
+      {lookupId && (
+        <QueueSource
+          id={lookupId}
+          close={() => showLookup("")}
+          changed={(next) => {
+            setBatchRows((old) =>
+              old.map((r) => (r.id === next.id ? next : r)),
+            );
+            setDialog((old) =>
+              old?.row.id === next.id ? { ...old, row: next } : old,
+            );
+          }}
+        />
       )}
     </section>
   );

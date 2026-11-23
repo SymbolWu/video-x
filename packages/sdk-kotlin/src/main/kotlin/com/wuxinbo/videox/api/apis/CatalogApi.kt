@@ -19,6 +19,7 @@ import com.wuxinbo.videox.api.models.Franchise
 import com.wuxinbo.videox.api.models.FranchiseCreate
 import com.wuxinbo.videox.api.models.FranchisePage
 import com.wuxinbo.videox.api.models.FranchisePatch
+import com.wuxinbo.videox.api.models.FranchiseProfile
 import com.wuxinbo.videox.api.models.ManagementMediaPage
 import com.wuxinbo.videox.api.models.MediaDetail
 import com.wuxinbo.videox.api.models.MediaPage
@@ -27,6 +28,7 @@ import com.wuxinbo.videox.api.models.Person
 import com.wuxinbo.videox.api.models.PersonCreate
 import com.wuxinbo.videox.api.models.PersonPage
 import com.wuxinbo.videox.api.models.PersonPatch
+import com.wuxinbo.videox.api.models.PersonProfile
 import com.wuxinbo.videox.api.models.ScanResult
 
 interface CatalogApi {
@@ -163,6 +165,28 @@ interface CatalogApi {
     suspend fun getBrowseFacts(): Response<BrowseFacts>
 
     /**
+     * GET api/franchises/{id}
+     * 
+     * 
+     * Responses:
+     *  - 200: Default Response
+     *  - 400: Default Response
+     *  - 401: Default Response
+     *  - 403: Default Response
+     *  - 404: Default Response
+     *  - 409: Default Response
+     *  - 413: Default Response
+     *  - 415: Default Response
+     *  - 429: Default Response
+     *  - 500: Default Response
+     *
+     * @param id 
+     * @return [FranchiseProfile]
+     */
+    @GET("api/franchises/{id}")
+    suspend fun getFranchiseProfile(@Path("id") id: java.util.UUID): Response<FranchiseProfile>
+
+    /**
      * GET api/media/{id}
      * 
      * 
@@ -183,6 +207,28 @@ interface CatalogApi {
      */
     @GET("api/media/{id}")
     suspend fun getMedia(@Path("id") id: java.util.UUID): Response<MediaDetail>
+
+    /**
+     * GET api/people/{id}
+     * 
+     * 
+     * Responses:
+     *  - 200: Default Response
+     *  - 400: Default Response
+     *  - 401: Default Response
+     *  - 403: Default Response
+     *  - 404: Default Response
+     *  - 409: Default Response
+     *  - 413: Default Response
+     *  - 415: Default Response
+     *  - 429: Default Response
+     *  - 500: Default Response
+     *
+     * @param id 
+     * @return [PersonProfile]
+     */
+    @GET("api/people/{id}")
+    suspend fun getPersonProfile(@Path("id") id: java.util.UUID): Response<PersonProfile>
 
     /**
      * GET api/catalog/archive

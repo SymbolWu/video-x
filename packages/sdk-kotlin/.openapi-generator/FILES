@@ -30,6 +30,7 @@ src/main/kotlin/com/wuxinbo/videox/api/models/Franchise.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/FranchiseCreate.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/FranchisePage.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/FranchisePatch.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/FranchiseProfile.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/GroupInfo.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/GroupInput.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/GroupMember.kt
@@ -55,6 +56,7 @@ src/main/kotlin/com/wuxinbo/videox/api/models/Person.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PersonCreate.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PersonPage.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PersonPatch.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/PersonProfile.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PlanCount.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PlaybackAck.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PlaybackEvent.kt

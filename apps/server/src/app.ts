@@ -442,6 +442,22 @@ export async function createApp(
     },
     (req) => catalog.createPerson(req.viewer.id, req.body),
   );
+  app.get<{ Params: { id: string } }>(
+    "/api/people/:id",
+    {
+      schema: {
+        ...authSchema,
+        operationId: "getPersonProfile",
+        tags: ["Catalog"],
+        params: C.IdParams,
+        response: response(C.PersonProfile),
+      },
+    },
+    async (req) => ({
+      record: await catalog.person(req.viewer.id, req.params.id),
+      ...(await catalog.filmographyFacts("person", req.params.id)),
+    }),
+  );
   app.patch<{ Params: { id: string }; Body: Static<typeof C.PersonPatch> }>(
     "/api/people/:id",
     {
@@ -481,6 +497,22 @@ export async function createApp(
       },
     },
     (req) => catalog.createFranchise(req.body),
+  );
+  app.get<{ Params: { id: string } }>(
+    "/api/franchises/:id",
+    {
+      schema: {
+        ...authSchema,
+        operationId: "getFranchiseProfile",
+        tags: ["Catalog"],
+        params: C.IdParams,
+        response: response(C.FranchiseProfile),
+      },
+    },
+    async (req) => ({
+      record: await catalog.franchise(req.params.id),
+      ...(await catalog.filmographyFacts("franchise", req.params.id)),
+    }),
   );
   app.patch<{ Params: { id: string }; Body: Static<typeof C.FranchisePatch> }>(
     "/api/franchises/:id",

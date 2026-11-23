@@ -121,6 +121,13 @@ export const Franchise = obj("Franchise", {
   workCount: T.Integer(),
   revision: T.Integer(),
 });
+const filmographyFacts = {
+  firstYear: nullable(T.Integer()),
+  lastYear: nullable(T.Integer()),
+  cast: T.Array(T.String()),
+};
+export const PersonProfile = obj("PersonProfile", { record: T.Ref(Person), ...filmographyFacts });
+export const FranchiseProfile = obj("FranchiseProfile", { record: T.Ref(Franchise), ...filmographyFacts });
 export const FranchiseCreate = obj("FranchiseCreate", {
   coverId: T.Optional(nullable(id())),
   name: T.String({ minLength: 1, maxLength: 300 }),
@@ -468,16 +475,19 @@ export const DirectoryView = obj("DirectoryView", {
     T.Object({
       name: T.String(),
       folder: T.Boolean(),
+      videoCount: T.Optional(T.Integer({ minimum: 0 })),
       draftId: T.Optional(id()),
     }),
   ),
   used: T.Integer(),
+  totalVideoCount: T.Optional(T.Integer({ minimum: 0 })),
   pending: T.Optional(T.Integer()),
   availableBytes: T.Optional(T.String()),
   limit: T.Integer(),
 });
 export const BrowseDirectory = T.Object(
   {
+    summaryOnly: T.Optional(T.Boolean()),
     area: T.Optional(
       T.Union([T.Literal("inbox"), T.Literal("volume"), T.Literal("target")]),
     ),
@@ -538,6 +548,7 @@ export const ImportQueue = obj("ImportQueue", {
 export const ImportQuery = T.Object(
   {
     groupId: T.Optional(id()),
+    stage: T.Optional(T.Union([T.Literal("pending"), T.Literal("reviewed"), T.Literal("published")])),
     q: commonQuery.q,
     page: commonQuery.page,
     pageSize: commonQuery.pageSize,
@@ -670,6 +681,8 @@ export const schemas = [
   ManagementMediaPage,
   PersonPage,
   FranchisePage,
+  PersonProfile,
+  FranchiseProfile,
 ];
 export type MediaDto = Static<typeof Media>;
 export type MediaDetailDto = Static<typeof MediaDetail>;

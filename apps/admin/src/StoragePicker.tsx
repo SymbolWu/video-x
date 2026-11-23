@@ -1,7 +1,8 @@
+import { formatBytes } from "./formatBytes";
 import { lazy, Suspense, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, unwrap, type Schemas } from "@video-x/sdk-ts";
-import { Modal, Select, ErrorNotice } from "@video-x/ui";
+import { Modal, ErrorNotice } from "@video-x/ui";
 import { StudioIcon } from "./StudioIcon";
 import "./storage.css";
 const DirectoryTree = lazy(() =>
@@ -76,6 +77,44 @@ export function StoragePicker({
       : rows
         ? (targets.find((t) => t.key === target)?.label ?? "整理位置")
         : (inbox?.split("/").at(-1) ?? "下载目录");
+  const directory = useQuery({
+    queryKey: ["storage", "target-picker", target, dir],
+    enabled: !!rows && !!target,
+    queryFn: () =>
+      unwrap(
+        api.GET("/api/storage/browse", {
+          params: { query: { area: "target", target, dir } },
+        }),
+      ),
+  });
+  const counts = useQueries({
+    queries: (rows ? targets : []).map((t) => ({
+      queryKey: ["storage", "category-count", t.key],
+      queryFn: async () =>
+        (
+          await unwrap(
+            api.GET("/api/storage/browse", {
+              params: {
+                query: { area: "target", target: t.key, summaryOnly: true },
+              },
+            }),
+          )
+        ).totalVideoCount ?? null,
+      staleTime: 60_000,
+    })),
+  });
+  const folderName = newFolder.trim();
+  const invalidFolder =
+    adding &&
+    (!folderName ||
+      folderName.startsWith(".") ||
+      /[/\\:\u0000-\u001f]/u.test(folderName) ||
+      directory.data?.entries.some((e) => e.name === folderName));
+  function navigate(path: string) {
+    setDir(path);
+    setFolder("");
+    add(false);
+  }
   function pick(file: string) {
     setSelected((old) =>
       old.includes(file)
@@ -88,7 +127,13 @@ export function StoragePicker({
   const ready = configure
     ? !!dir
     : rows
-      ? !!(target && rows.length)
+      ? !!(
+          target &&
+          rows.length &&
+          directory.data &&
+          !directory.error &&
+          !invalidFolder
+        )
       : !!selected.length;
   async function apply() {
     if (!ready || busy) return;
@@ -115,6 +160,9 @@ export function StoragePicker({
             },
           }),
         );
+        await cache.invalidateQueries({
+          queryKey: ["storage", "target-picker"],
+        });
       } else if (bind) {
         const result = await unwrap(
           api.POST("/api/imports/{id}/file", {
@@ -171,33 +219,22 @@ export function StoragePicker({
       }}
     >
       <fieldset className="storage-picker" disabled={busy}>
-        <div className="vx-device">
-          <StudioIcon name="folder" />
-          <div>
-            <strong>{volume || "媒体卷"}</strong>
-            <small>
-              {configure
-                ? "选择用来接收新影片的目录"
-                : rows
-                  ? "选择分类和归档子目录"
-                  : [volume, inbox].filter(Boolean).join(" / ")}
-            </small>
+        {!rows && (
+          <div className="vx-device">
+            <StudioIcon name="folder" />
+            <div>
+              <strong>{volume || "媒体卷"}</strong>
+              <small>
+                {configure
+                  ? "选择用来接收新影片的目录"
+                  : rows
+                    ? "选择分类和归档子目录"
+                    : [volume, inbox].filter(Boolean).join(" / ")}
+              </small>
+            </div>
           </div>
-          {rows && (
-            <Select
-              label="目标分类"
-              value={target ?? ""}
-              options={targets.map((t) => ({ label: t.label, value: t.key }))}
-              onValueChange={(k) => {
-                setChosen(k);
-                setDir("");
-                setFolder("");
-                add(false);
-              }}
-            />
-          )}
-        </div>
-        {config.data && (
+        )}
+        {config.data && !rows && (
           <Suspense
             fallback={
               <div className="vx-directory vx-directory-loading" role="status">
@@ -209,7 +246,6 @@ export function StoragePicker({
               key={[area, target, initial].join("|")}
               area={area}
               title={title}
-              target={rows ? target : undefined}
               inbox={inbox}
               dir={dir}
               onDir={(p) => {
@@ -224,23 +260,154 @@ export function StoragePicker({
           </Suspense>
         )}
         {rows && (
-          <div className="vx-tree-extra">
-            {adding ? (
-              <label>
-                新建子目录
-                <input
-                  aria-label="子目录名"
-                  placeholder="输入子目录名称"
-                  value={newFolder}
-                  onChange={(e) => setFolder(e.target.value)}
-                />
-              </label>
-            ) : (
-              <button type="button" onClick={() => add(true)}>
-                ＋ 新建子目录
-              </button>
-            )}
-          </div>
+          <>
+            <div className="target-columns">
+              <section>
+                <h3>
+                  整理分类 <small>含子目录</small>
+                </h3>
+                <div className="target-list">
+                  {targets.map((t, i) => (
+                    <button
+                      type="button"
+                      aria-pressed={target === t.key}
+                      key={t.key}
+                      onClick={() => {
+                        setChosen(t.key);
+                        navigate("");
+                      }}
+                    >
+                      <StudioIcon name="folder" />
+                      {t.label}
+                      <small>
+                        {counts[i]?.data != null
+                          ? counts[i].data + " 个"
+                          : counts[i]?.isFetching
+                            ? "统计中…"
+                            : "未读取"}
+                      </small>
+                    </button>
+                  ))}
+                </div>
+              </section>
+              <section>
+                <h3>
+                  归档目录 <small>本层视频数</small>
+                </h3>
+                <div className="target-list">
+                  {dir && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigate(dir.split("/").slice(0, -1).join("/"))
+                      }
+                    >
+                      ← 上一级
+                    </button>
+                  )}
+                  {directory.data && (
+                    <>
+                      <button
+                        type="button"
+                        aria-pressed="true"
+                        onClick={() => {
+                          add(false);
+                          setFolder("");
+                        }}
+                      >
+                        <StudioIcon name="folder" />
+                        {dir.split("/").at(-1) || "当前分类目录"}
+                        <small>{directory.data.used} 个</small>
+                      </button>
+                      {directory.data.entries.map((entry) => (
+                        <button
+                          type="button"
+                          key={entry.name}
+                          onClick={() =>
+                            navigate(
+                              [dir, entry.name].filter(Boolean).join("/"),
+                            )
+                          }
+                        >
+                          <StudioIcon name="folder" />
+                          {entry.name}
+                          <small>
+                            {entry.videoCount == null
+                              ? "未读取"
+                              : entry.videoCount + " 个"}{" "}
+                            ›
+                          </small>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                  {target && directory.isPending && (
+                    <p role="status">读取目录中…</p>
+                  )}
+                  <ErrorNotice error={directory.error} />
+                </div>
+                {directory.data && (
+                  <button
+                    className="target-new"
+                    type="button"
+                    onClick={() => {
+                      add(!adding);
+                      setFolder("");
+                    }}
+                  >
+                    {adding ? "取消新建" : "＋ 新建子目录"}
+                  </button>
+                )}
+                {adding && (
+                  <label className="target-input">
+                    子目录名称
+                    <input
+                      autoFocus
+                      maxLength={120}
+                      value={newFolder}
+                      onChange={(e) => setFolder(e.target.value)}
+                    />
+                  </label>
+                )}
+                {adding && folderName && invalidFolder && (
+                  <p role="alert">请输入有效且未被占用的子目录名。</p>
+                )}
+              </section>
+            </div>
+            <section className="move-preview">
+              <h3>移动预览</h3>
+              <p>
+                {[directory.data?.volume, title, dir, adding ? folderName : ""]
+                  .filter(Boolean)
+                  .join(" / ")}
+              </p>
+              {directory.data && !invalidFolder && (
+                <small>
+                  目录已有 {adding ? 0 : directory.data.used} 个　·　本次移入 +
+                  {rows.length}　·　本批完成后{" "}
+                  {(adding ? 0 : directory.data.used) + rows.length} 个
+                </small>
+              )}
+              <ul>
+                {rows.map((r) => (
+                  <li key={r.id}>
+                    <StudioIcon name="film" />
+                    {r.relativePath.split("/").at(-1)}
+                    <small>{formatBytes(Number(r.sizeBytes))}</small>
+                  </li>
+                ))}
+              </ul>
+              {directory.data && (
+                <small>
+                  {!!directory.data.limit &&
+                    "目录上限 " + directory.data.limit + " 个　"}
+                  {directory.data.availableBytes &&
+                    "磁盘可用 " +
+                      formatBytes(Number(directory.data.availableBytes))}
+                </small>
+              )}
+            </section>
+          </>
         )}
         {area === "inbox" && selected.length > 0 && (
           <div className="vx-picked">

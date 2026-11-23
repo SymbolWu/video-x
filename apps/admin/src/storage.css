@@ -276,6 +276,113 @@
   color: var(--accent, #e98ba0);
 }
 
-body:has(.storage-picker) .select-content{z-index:180}
+body:has(.storage-picker) .select-content {
+  z-index: 180;
+}
 
-.vx-directory-loading{box-sizing:border-box;height:calc(clamp(170px,30vh,350px) + 83px);padding:45px 18px;color:#bdb1c1}.vx-existing-file{margin-left:auto;color:#efbdd0;font-size:12px;white-space:nowrap}
+.vx-directory-loading {
+  box-sizing: border-box;
+  height: calc(clamp(170px, 30vh, 350px) + 83px);
+  padding: 45px 18px;
+  color: #bdb1c1;
+}
+.vx-existing-file {
+  margin-left: auto;
+  color: #efbdd0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.storage-picker .target-columns {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(180px, 1.4fr);
+  gap: 16px;
+}
+.storage-picker h3 {
+  font-size: 13px;
+  margin: 0 0 8px;
+}
+.target-columns h3 small {
+  color: #a9a4ad;
+  font-weight: 400;
+  margin-left: 5px;
+}
+.target-list {
+  min-height: 116px;
+  max-height: 225px;
+  overflow: auto;
+  padding: 4px;
+  background: #17181b;
+  border: 1px solid #3c3b40;
+  border-radius: 4px;
+}
+.target-list button,
+.move-preview li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-wrap: anywhere;
+}
+.target-list button {
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 3px;
+  text-align: left;
+  background: transparent;
+  color: #d0cbd3;
+  font-size: 13px;
+}
+.target-list button:hover,
+.target-list button[aria-pressed="true"] {
+  background: #322a2f;
+  color: #f2d9e3;
+}
+.target-list small,
+.move-preview li small {
+  margin-left: auto;
+  color: #aca4ad;
+  white-space: nowrap;
+}
+.storage-picker .target-input {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0;
+  font-size: 12px;
+}
+.target-input input {
+  height: 32px;
+  border-radius: 4px;
+}
+.storage-picker .target-new {
+  font-size: 12px;
+  border: 0;
+  background: transparent;
+  padding: 6px 0;
+  color: #d9bbc7;
+}
+.move-preview {
+  border-top: 1px solid #343438;
+  padding-top: 10px;
+}
+.move-preview > p {
+  color: #e6d7df;
+  font-size: 13px;
+  margin: 4px 0;
+}
+.move-preview ul {
+  list-style: none;
+  padding: 0;
+  max-height: 125px;
+  overflow: auto;
+}
+.move-preview li {
+  padding: 5px 2px;
+  border-bottom: 1px solid #323135;
+}
+@media (max-width: 580px) {
+  .storage-picker .target-columns {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}

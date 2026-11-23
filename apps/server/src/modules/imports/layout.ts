@@ -167,7 +167,7 @@ export async function selectInbox(
 export async function browse(
   db: Database,
   root: string,
-  q: { area?: string; target?: string; dir?: string },
+  q: { area?: string; target?: string; dir?: string; summaryOnly?: boolean },
 ) {
   const cfg = layout(root);
   const inbox = await activeInbox(db, root),
@@ -204,6 +204,32 @@ export async function browse(
   const mount = t?.root ?? root;
   const folder = t ? checkTarget(root, t, sub) : path.join(inbox!, sub);
   const all = await listDirectory(mount, folder);
+  if (t && q.summaryOnly) {
+    const directories = all.filter(e => e.folder).map(e => path.join(folder, e.name));
+    const used = all.filter(e => !e.folder).length;
+    let totalVideoCount = used;
+    while (directories.length) {
+      const parent = directories.pop()!;
+      for (const entry of await listDirectory(mount, parent)) {
+        if (entry.folder) directories.push(path.join(parent, entry.name));
+        else totalVideoCount++;
+      }
+    }
+    return { volume: path.basename(mount), inbox, targets, entries: [], used, totalVideoCount, limit: t.limit };
+  }
+  const folders = all.filter((entry) => entry.folder);
+  const countedFolders = [];
+  if (t) {
+    for (const entry of folders) {
+      try {
+        const children = await listDirectory(mount, path.join(folder, entry.name));
+        countedFolders.push({ ...entry, videoCount: children.filter((child) => !child.folder).length });
+      } catch {
+        // One unavailable child must not hide its readable siblings.
+        countedFolders.push(entry);
+      }
+    }
+  }
   const prefix = folder ? folder + "/" : "";
   const capacity = await statfs(path.join(mount, folder), { bigint: true });
   const drafts = t
@@ -221,11 +247,11 @@ export async function browse(
     : [];
   const onDisk = new Set(all.filter((e) => !e.folder).map((e) => e.name));
   return {
-    volume,
+    volume: path.basename(mount),
     inbox,
     targets,
     entries: t
-      ? all.filter((e) => e.folder)
+      ? countedFolders
       : all.map((e) => ({ ...e, draftId: byName.get(e.name) })),
     pending: reservations.filter(
       (d) => !onDisk.has(path.basename(d.target_path)),

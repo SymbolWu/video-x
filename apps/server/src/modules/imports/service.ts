@@ -50,7 +50,7 @@ export class Imports {
       unbound: sql`f.id IS NULL`,
       lookupFailed: sql`l.state='failed'`,
       retrieved: sql`l.state='succeeded'`,
-      pending: sql`i.reviewed_revision IS NULL`,
+      pending: sql`i.reviewed_revision IS NULL AND i.stage<>'published'`,
       missing: sql`(i.draft->>'posterId' IS NULL OR nullif(btrim(i.draft->>'summary'),'') IS NULL OR i.draft->>'releaseYear' IS NULL OR (jsonb_array_length(i.draft->'actorIds')=0 AND coalesce(jsonb_array_length(i.draft->'sourceNames'->'actors'),0)=0) OR i.draft->>'categoryId'='20000000-0000-4000-8000-000000000001')`,
       reviewed: sql`i.reviewed_revision IS NOT NULL AND i.stage<>'published'`,
       failed: sql`f.probe_status='failed'`,
@@ -59,7 +59,7 @@ export class Imports {
     };
     const term = q.q?.trim() ?? "";
     const pattern = "%" + term.replace(/[%_\\]/g, "\\$&") + "%";
-    const where = sql`i.merged_into_id IS NULL AND ${q.groupId ? sql`i.draft->'group'->>'id'=${q.groupId}` : sql`true`} AND ${filters[q.status ?? "all"]} AND ${term ? sql`(i.draft->>'title' ILIKE ${pattern} OR i.draft->>'identifier' ILIKE ${pattern} OR f.relative_path ILIKE ${pattern} OR EXISTS(SELECT 1 FROM video_x.people p WHERE ((i.draft->'actorIds') ? p.id::text OR (i.draft->'directorIds') ? p.id::text) AND p.full_name ILIKE ${pattern}))` : sql`true`}`;
+    const where = sql`i.merged_into_id IS NULL AND ${q.groupId ? sql`i.draft->'group'->>'id'=${q.groupId}` : sql`true`} AND (${filters[q.status ?? "all"]}) AND (${filters[q.stage ?? "all"]}) AND ${term ? sql`(i.draft->>'title' ILIKE ${pattern} OR i.draft->>'identifier' ILIKE ${pattern} OR f.relative_path ILIKE ${pattern} OR EXISTS(SELECT 1 FROM video_x.people p WHERE ((i.draft->'actorIds') ? p.id::text OR (i.draft->'directorIds') ? p.id::text) AND p.full_name ILIKE ${pattern}))` : sql`true`}`;
     const items = await this.db.query<Row>(
       sql`SELECT ${columns} ${joins} WHERE ${where} ORDER BY i.created_at DESC,i.id LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`,
     );

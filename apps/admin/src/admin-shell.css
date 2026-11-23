@@ -2,9 +2,9 @@ html {
   scrollbar-gutter: stable;
 }
 .vx-admin {
-  --vx-rail-width: 202px;
+  --vx-rail-width: 184px;
   min-height: 100dvh;
-  background: #151518;
+  background: #141517;
   color: #eeeaf0;
 }
 .vx-rail {
@@ -14,9 +14,9 @@ html {
   display: flex;
   flex-direction: column;
   z-index: 10;
-  background: #111114;
+  background: #101113;
   border-right: 1px solid #302d33;
-  padding: 0 12px 16px;
+  padding: 0 15px 13px;
 }
 .vx-logo {
   font:
@@ -24,7 +24,7 @@ html {
     BlinkMacSystemFont,
     sans-serif;
   letter-spacing: -2.2px;
-  padding: 24px 13px 20px;
+  padding: 16px 10px 18px;
 }
 .vx-logo span {
   color: #dea2b6;
@@ -49,21 +49,28 @@ html {
   display: flex;
   gap: 11px;
   align-items: center;
-  padding: 7px 11px;
-  min-height: 36px;
-  border-radius: 7px;
-  color: #beb9c2;
+  position: relative;
+  padding: 0 10px;
+  min-height: 34px;
+  border-radius: 0;
+  color: #b9b9c0;
   font-size: 13px;
   line-height: 1.4;
-  margin: 2px 0;
+  margin: 0;
 }
 .vx-rail nav a:hover {
-  background: #242127;
+  background: #191a1d;
 }
 .vx-rail nav a[aria-current] {
-  color: #f0bdce;
-  background: #30242d;
-  box-shadow: inset 2px 0 #dc9eaf;
+  color: #faf8fa;
+  font-weight: 600;
+}
+.vx-rail nav a[aria-current]::before {
+  content: "";
+  position: absolute;
+  inset: 9px auto 9px 0;
+  width: 2px;
+  background: #da9fae;
 }
 .vx-admin svg.icon {
   flex: none;
@@ -76,7 +83,7 @@ html {
   margin-left: auto;
   border-radius: 4px;
   padding: 0 5px;
-  background: #372b35;
+  background: transparent;
   color: #e5b7c9;
   font-weight: 600;
 }
@@ -107,15 +114,15 @@ html {
   min-width: 0;
 }
 .vx-toolbar {
-  height: 56px;
+  height: 46px;
   box-sizing: border-box;
   border-bottom: 1px solid #302d33;
-  padding-inline: clamp(18px, 3vw, 44px);
+  padding-inline: 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  background: #17161a;
+  background: #141517;
 }
 .vx-toolbar div,
 .vx-toolbar a {
@@ -148,7 +155,7 @@ html {
   line-height: 18px;
 }
 .vx-content {
-  padding: 25px clamp(18px, 3vw, 44px) 40px;
+  padding: 18px 24px 30px;
   max-width: 1740px;
   margin: auto;
   min-width: 0;
@@ -194,7 +201,7 @@ body:has(.intake-layout) .dialog-backdrop {
     overflow-x: auto;
   }
   .vx-rail nav section {
-    margin: 2px 0;
+    margin: 0;
   }
   .vx-rail nav a {
     white-space: nowrap;
@@ -209,3 +216,49 @@ body:has(.intake-layout) .dialog-backdrop {
     padding: 16px;
   }
 }
+
+/* Applies to the shared dialog portal only while the intake queue is open. */
+body:has(.ig-page) .dialog-backdrop .dialog:has(.intake-form,.ig-review-list,.storage-picker,.cover-compare) {
+  display: block;
+  width: min(720px,calc(100vw - 28px));
+  max-width: 720px;
+  max-height: 85dvh;
+  overflow: auto;
+  padding: 0 20px 16px;
+  border: 1px solid #46454a;
+  border-radius: 7px;
+  background: #1c1d20;
+}
+body:has(.ig-page) .dialog-backdrop .dialog > header {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  position: sticky; top: 0; z-index: 1;
+  margin: 0 -20px 16px; padding: 13px 20px;
+  background: #1c1d20; border-bottom: 1px solid #353539;
+}
+body:has(.ig-page) .dialog-backdrop .dialog > header h2 { margin: 0; font-size: 17px; font-weight: 620; }
+body:has(.ig-page) .dialog .ig-group-fields { display: grid; gap: 12px; grid-template-columns: 1.2fr 1fr minmax(80px,.45fr); }
+body:has(.ig-page) .dialog .ig-group-fields label { display: grid; gap: 4px; margin: 0; font-weight: 500; font-size: 12px; }
+body:has(.ig-page) .dialog .ig-group-fields :is(input,.select-trigger) {
+  width: 100%; min-height: 34px; height: 34px; margin: 0; padding: 0 9px; background: #16171a;
+  border-radius: 4px; border: 1px solid #44434a;
+}
+body:has(.ig-page) .dialog .ig-tree { background: transparent; padding: 0; border: 0; margin: 13px 0 0; }
+body:has(.ig-page) .dialog .ig-container-preview {
+  display: flex; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid #343438; border-radius: 4px; background: #222226;
+}
+body:has(.ig-page) .dialog .ig-container-preview img { width: 48px; height: 67px; object-fit: cover; border-radius: 3px; }
+body:has(.ig-page) .dialog .ig-container-preview :is(h3,p) { margin: 2px 0; }
+body:has(.ig-page) .dialog .order-heading { margin: 15px 0 8px; font-size: 13px; }
+body:has(.ig-page) .dialog .ig-episode-order { padding: 0; margin: 0; border: 1px solid #353539; border-radius: 4px; }
+body:has(.ig-page) .dialog .ig-episode-order li { padding: 7px 10px; border-left: 0; }
+body:has(.ig-page) .dialog .group-foot-caption { margin-right: auto; color: #a9a5ac; }
+body:has(.ig-page) .dialog .intake-form .actions, body:has(.ig-page) .dialog > .actions {
+  position: sticky; bottom: -16px; margin: 16px -20px -16px; min-height: 50px; padding: 10px 20px;
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  background: #191a1d; border-top: 1px solid #353539;
+}
+body:has(.ig-page) .dialog .ig-review-list article:has(.queue-cover,.queue-no-cover) {
+  display: grid; grid-template-columns: 58px minmax(0,1fr) auto; align-items: start; gap: 12px; padding: 12px 0;
+}
+body:has(.ig-page) .dialog .ig-review-list article > div p { margin: 2px 0; }
+@media(max-width:580px) { body:has(.ig-page) .dialog .ig-group-fields { grid-template-columns: 1fr; } }

@@ -1,0 +1,300 @@
+.record-index .catalog-heading h1,
+.record-page h1 {
+  font-size: 25px;
+  font-weight: 640;
+  letter-spacing: -0.035em;
+}
+.record-index .catalog-heading button,
+.profile-info header button {
+  min-height: 30px;
+  padding: 4px 10px;
+  font-size: 13px;
+  border-radius: 4px;
+}
+.record-index .catalog-tools {
+  margin: 10px 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #303135;
+}
+.record-index .catalog-search {
+  flex: 0 1 255px;
+  border-radius: 4px;
+}
+.record-index .catalog-search input,
+.record-index .catalog-search button {
+  height: 29px;
+}
+.record-index .catalog-options {
+  gap: 5px;
+  margin: 0;
+  padding: 0 8px;
+  border: solid #39393d;
+  border-width: 0 1px;
+  background: transparent;
+  border-radius: 0;
+}
+.record-index .catalog-tools :is(.select-trigger, button:not([type="submit"])) {
+  min-height: 30px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.record-index .catalog-options button,
+.record-index .catalog-tools > .select-trigger {
+  background: transparent;
+  border-color: transparent;
+  width: auto;
+  min-width: 0;
+}
+.record-index .catalog-options button:hover {
+  background: #28282d;
+}
+.record-grid,
+.works-grid {
+  display: grid;
+}
+.actor-grid {
+  grid-template-columns: repeat(auto-fill, minmax(106px, 1fr));
+  gap: 18px 14px;
+}
+.series-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 167px), 1fr));
+  gap: 12px;
+}
+.record-grid a {
+  min-width: 0;
+  text-decoration: none;
+}
+.record-art,
+.work-poster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #28282d;
+  color: #afa3ac;
+  border-radius: 3px;
+}
+.record-art img,
+.work-poster img {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  width: 100%;
+  object-fit: cover;
+}
+.record-art.portrait {
+  aspect-ratio: 1 / 1.02;
+  font-size: 25px;
+}
+.record-art.portrait img {
+  object-position: 50% 27%;
+}
+.record-art.montage {
+  gap: 1px;
+  background: #1c1c23;
+}
+.record-art.montage img {
+  flex: 1 1 0;
+  width: 0;
+  object-position: 50% 32%;
+}
+.record-caption h3,
+.works-grid strong {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 5px 0 1px;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 580;
+  color: #f4f1f4;
+}
+.record-caption p {
+  display: flex;
+  gap: 6px;
+  color: #afabb2;
+  font-size: 12px;
+  margin: 0;
+}
+.person-tile .record-caption p {
+  justify-content: space-between;
+}
+.person-tile:hover .portrait,
+.series-tile:hover,
+.works-grid button:hover .work-poster {
+  outline: 1px solid #b997a2;
+  outline-offset: 2px;
+}
+.series-tile {
+  position: relative;
+  height: clamp(132px, 9vw, 142px);
+  overflow: hidden;
+  border-radius: 5px;
+}
+.series-tile .montage {
+  position: absolute;
+  inset: 0;
+}
+.series-tile .record-caption {
+  position: absolute;
+  inset: auto 0 0;
+  height: 33.333%;
+  min-height: 44px;
+  padding: 0 9px 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(28, 28, 35, 0.78) 25%,
+    rgba(28, 28, 35, 0.96) 72%,
+    #1c1c23
+  );
+}
+.series-tile h3 {
+  line-height: 17px;
+  margin: 0 0 2px;
+  text-shadow: 0 1px 2px #111;
+}
+.series-tile p {
+  font-size: 11px;
+  line-height: 14px;
+  color: #d3cfd7;
+}
+.series-tile p span + span::before {
+  content: "·";
+  margin-right: 6px;
+}
+.record-back {
+  display: inline-block;
+  color: #c5bbc2;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.profile-intro,
+.profile-info header,
+.profile-works header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.profile-intro {
+  gap: 22px;
+  border-bottom: 1px solid #303135;
+  padding-bottom: 20px;
+}
+.profile-intro > .portrait {
+  width: 110px;
+  aspect-ratio: 4 / 5;
+  flex: none;
+}
+.profile-intro > .montage {
+  width: 206px;
+  aspect-ratio: 16 / 10;
+  flex: none;
+}
+.profile-info {
+  min-width: 0;
+  flex: 1;
+}
+.profile-info header {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.profile-info header button {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.profile-info header svg {
+  width: 14px;
+  height: 14px;
+}
+.record-page :is(h1, h2, dd) {
+  margin: 0;
+}
+.profile-info dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 27px;
+  margin: 12px 0 0;
+}
+.profile-info dt,
+.profile-info p span {
+  font-size: 12px;
+  color: #aaa6ae;
+}
+.profile-info dd,
+.profile-info p {
+  margin-top: 2px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.profile-info p {
+  margin: 8px 0 0;
+}
+.profile-info p span {
+  margin-right: 10px;
+}
+.profile-works header {
+  margin: 17px 0 12px;
+  min-height: 29px;
+}
+.profile-works h2 {
+  font-size: 18px;
+}
+.profile-works header button {
+  margin-left: auto;
+  padding: 3px 7px;
+  font-size: 12px;
+}
+.works-grid {
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+  gap: 19px 14px;
+}
+.works-grid button {
+  min-width: 0;
+  align-self: start;
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+.works-grid .work-poster {
+  aspect-ratio: 2 / 3;
+}
+.works-grid small,
+.profile-works small {
+  color: #aba7ad;
+  font-size: 12px;
+}
+@media (min-width: 1500px) {
+  .actor-grid {
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  }
+}
+@media (max-width: 780px) {
+  .series-grid {
+    grid-template-columns: repeat(auto-fill, minmax(142px, 1fr));
+    gap: 10px;
+  }
+  .actor-grid,
+  .works-grid {
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 14px 10px;
+  }
+  .profile-intro {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .profile-intro > .portrait {
+    width: 64px;
+  }
+  .profile-intro > .montage {
+    width: 86px;
+    aspect-ratio: 4/5;
+  }
+}

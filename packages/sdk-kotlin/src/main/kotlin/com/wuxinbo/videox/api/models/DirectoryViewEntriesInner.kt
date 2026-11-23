@@ -30,6 +30,7 @@ import com.squareup.moshi.JsonClass
 /**
  * @param name
  * @param folder
+ * @param videoCount
  * @param draftId
  */
 
@@ -41,6 +42,9 @@ data class DirectoryViewEntriesInner (
 
     @Json(name = "folder")
     val folder: kotlin.Boolean,
+
+    @Json(name = "videoCount")
+    val videoCount: kotlin.Int? = null,
 
     @Json(name = "draftId")
     val draftId: java.util.UUID? = null

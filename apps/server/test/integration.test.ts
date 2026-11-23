@@ -220,6 +220,16 @@ test("actor and series have their own category, query and stable sort", async ()
   );
   assert.equal(series.json().total, 1);
   assert.equal(series.json().items[0].workCount, 3);
+  for (const [route, id] of [["people", ids.actor], ["franchises", ids.franchise]]) {
+    const profile = await request("GET", "/api/" + route + "/" + id);
+    assert.equal(profile.statusCode, 200, profile.body);
+    const facts = profile.json();
+    assert.equal(facts.record.id, id);
+    assert.equal(facts.firstYear, 2024);
+    assert.equal(facts.lastYear, 2025);
+    assert.deepEqual(facts.cast, route === "people" ? [] : [people.json().items[0].fullName]);
+    assert.equal((await request("GET", "/api/" + route + "/" + randomUUID())).statusCode, 404);
+  }
 });
 test("personal favorite, rating and watched state are independent and cancelable", async () => {
   let m = await detail();
@@ -1338,6 +1348,13 @@ test("Download selection, target planning, manual publication and recoverable mo
           : []),
       ],
     });
+    await mkdir(join(root, "Library", "archive"));
+    await writeFile(join(root, "Library", "archive", "existing.mkv"), "fixture");
+    await writeFile(join(root, "Library", "archive", "notes.txt"), "fixture");
+    const listing = await ok("GET", "/api/storage/browse?area=target&target=local");
+    assert.equal(listing.entries.find((e: { name: string }) => e.name === "archive")?.videoCount, 1);
+    assert.equal(listing.used, 0);
+    assert.equal((await ok("GET", "/api/storage/browse?area=target&target=local&summaryOnly=true")).totalVideoCount, 1);
     const source = join(root, "Download", "A.mp4");
     execFileSync("ffmpeg", [
       "-loglevel",
@@ -1390,6 +1407,9 @@ test("Download selection, target planning, manual publication and recoverable mo
       409,
     );
     await act(a, "review");
+    const reviewed = await ok("GET", "/api/imports?stage=reviewed&status=missing");
+    assert.ok(reviewed.items.some((item: {id: string}) => item.id === a));
+    assert.ok(!reviewed.items.some((item: {id: string}) => item.id === b));
     const staleReviewed = await act(b, "review");
     await ok("POST", "/api/imports/targets", await plan([b], "local"));
     assert.equal((await row(b)).reviewed, false);

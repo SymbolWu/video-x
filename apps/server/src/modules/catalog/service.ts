@@ -274,6 +274,22 @@ export class Catalog {
     if (!f) throw notFound();
     return f;
   }
+  async filmographyFacts(kind: "person" | "franchise", id: string) {
+    const actor = kind === "person";
+    const membership = actor
+      ? sql`EXISTS (SELECT 1 FROM video_x.credits cr WHERE cr.media_id=m.id AND cr.person_id=${id} AND cr.job='actor')`
+      : sql`EXISTS (SELECT 1 FROM video_x.franchise_items fi WHERE fi.media_id=m.id AND fi.franchise_id=${id})`;
+    const [facts] = await this.db.query<{ firstYear: number | null; lastYear: number | null; cast: string[] }>(
+      sql`WITH works AS (SELECT m.id,m.release_year FROM video_x.media_items m WHERE ${live} AND ${membership})
+          SELECT min(release_year) AS "firstYear",max(release_year) AS "lastYear",
+            ARRAY(SELECT p.full_name FROM works w JOIN video_x.credits c ON c.media_id=w.id AND c.job='actor'
+                  JOIN video_x.people p ON p.id=c.person_id AND p.archived_at IS NULL
+                  WHERE ${actor ? sql`p.id<>${id}` : sql`true`}
+                  GROUP BY p.id,p.full_name ORDER BY count(DISTINCT w.id) DESC,p.full_name,p.id LIMIT 4) AS "cast"
+          FROM works`,
+    );
+    return facts!;
+  }
   async createPerson(profileId: string, input: Static<typeof PersonCreate>) {
     const [row] = await this.db.query<{ id: string }>(
       sql`INSERT INTO video_x.people(portrait_asset_id,full_name,detailed_name,gender,primary_category_id) VALUES(${input.portraitId ?? null},${input.fullName.trim()},${input.detailedName ?? null},${input.gender ?? "unknown"},${input.categoryId}) RETURNING id`,

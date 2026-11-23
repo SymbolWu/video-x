@@ -97,13 +97,14 @@ interface ImportsApi {
      *  - 429: Default Response
      *  - 500: Default Response
      *
+     * @param summaryOnly  (optional)
      * @param area  (optional)
      * @param target  (optional)
      * @param dir  (optional)
      * @return [DirectoryView]
      */
     @GET("api/storage/browse")
-    suspend fun browseStorageDirectory(@Query("area") area: AreaBrowseStorageDirectory? = null, @Query("target") target: kotlin.String? = null, @Query("dir") dir: kotlin.String? = null): Response<DirectoryView>
+    suspend fun browseStorageDirectory(@Query("summaryOnly") summaryOnly: kotlin.Boolean? = null, @Query("area") area: AreaBrowseStorageDirectory? = null, @Query("target") target: kotlin.String? = null, @Query("dir") dir: kotlin.String? = null): Response<DirectoryView>
 
     /**
      * POST api/imports/drafts
@@ -196,6 +197,16 @@ interface ImportsApi {
 
 
     /**
+    * enum for parameter stage
+    */
+    enum class StageListImports(val value: kotlin.String) {
+        @Json(name = "pending") PENDING("pending"),
+        @Json(name = "reviewed") REVIEWED("reviewed"),
+        @Json(name = "published") PUBLISHED("published")
+    }
+
+
+    /**
     * enum for parameter status
     */
     enum class StatusListImports(val value: kotlin.String) {
@@ -229,6 +240,7 @@ interface ImportsApi {
      *  - 500: Default Response
      *
      * @param groupId  (optional)
+     * @param stage  (optional)
      * @param q  (optional)
      * @param page  (optional, default to 1)
      * @param pageSize  (optional, default to 24)
@@ -236,7 +248,7 @@ interface ImportsApi {
      * @return [ImportQueue]
      */
     @GET("api/imports")
-    suspend fun listImports(@Query("groupId") groupId: java.util.UUID? = null, @Query("q") q: kotlin.String? = null, @Query("page") page: kotlin.Int? = 1, @Query("pageSize") pageSize: kotlin.Int? = 24, @Query("status") status: StatusListImports? = null): Response<ImportQueue>
+    suspend fun listImports(@Query("groupId") groupId: java.util.UUID? = null, @Query("stage") stage: StageListImports? = null, @Query("q") q: kotlin.String? = null, @Query("page") page: kotlin.Int? = 1, @Query("pageSize") pageSize: kotlin.Int? = 24, @Query("status") status: StatusListImports? = null): Response<ImportQueue>
 
     /**
      * GET api/sources

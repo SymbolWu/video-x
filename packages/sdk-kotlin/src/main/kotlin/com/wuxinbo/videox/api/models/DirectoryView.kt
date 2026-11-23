@@ -36,6 +36,7 @@ import com.squareup.moshi.JsonClass
  * @param used
  * @param limit
  * @param volume
+ * @param totalVideoCount
  * @param pending
  * @param availableBytes
  */
@@ -60,6 +61,9 @@ data class DirectoryView (
 
     @Json(name = "volume")
     val volume: kotlin.String? = null,
+
+    @Json(name = "totalVideoCount")
+    val totalVideoCount: kotlin.Int? = null,
 
     @Json(name = "pending")
     val pending: kotlin.Int? = null,

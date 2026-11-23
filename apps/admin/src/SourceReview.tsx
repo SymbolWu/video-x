@@ -193,6 +193,70 @@ function current(
       return f[k];
   }
 }
+export function DraftCoverage({ row }: { row: Row }) {
+  const candidate = row.lookup?.candidate;
+  const saved: string[] = [],
+    proposed: string[] = [],
+    missing: string[] = [];
+  for (const k of keys) {
+    const draft = current(row, k),
+      offer = candidate?.[k];
+    if (present(draft)) saved.push(labels[k]);
+    if (
+      present(offer) &&
+      !row.lookup?.appliedFields.includes(k) &&
+      JSON.stringify(offer) !== JSON.stringify(draft)
+    )
+      proposed.push(labels[k]);
+    if (!present(draft) && !present(offer)) missing.push(labels[k]);
+  }
+  (row.categoryName === "未分类" ? missing : saved).push("分类");
+  return (
+    <div className="field-coverage">
+      <p>
+        <b>草稿已有</b>
+        <span>{saved.join("、") || "—"}</span>
+      </p>
+      {candidate && (
+        <p className="candidate">
+          <b>待采用</b>
+          <span>{proposed.join("、") || "—"}</span>
+        </p>
+      )}
+      <p className="missing">
+        <b>{candidate ? "仍缺" : "草稿待补"}</b>
+        <span>{missing.join("、") || "—"}</span>
+      </p>
+    </div>
+  );
+}
+export function FieldPreview({ row }: { row: Row }) {
+  return (
+    <div className="field-preview">
+      {keys.map((k) => (
+        <div key={k}>
+          <small>{labels[k]}</small>
+          <div>
+            <Display field={k} value={current(row, k)} />
+          </div>
+          {present(row.lookup?.candidate?.[k]) && (
+            <small>
+              候选　
+              <Display field={k} value={row.lookup?.candidate?.[k]} />
+            </small>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+export function lookupLabel(lookup?: Lookup | null) {
+  return lookup
+    ? (lookup.provider === "javdb" ? "JavDB" : lookup.provider) +
+        " · " +
+        stateLabels[lookup.state]
+    : "本地资料";
+}
 function Display({
   value,
   field,
@@ -416,7 +480,15 @@ export function SourceReview({
     </div>
   );
 }
-export function QueueSource({ id, close }: { id: string; close: () => void }) {
+export function QueueSource({
+  id,
+  close,
+  changed,
+}: {
+  id: string;
+  close: () => void;
+  changed?: (row: Row) => void;
+}) {
   const cache = useQueryClient();
   const q = useQuery({
     queryKey: ["intake", "draft", id],
@@ -426,7 +498,10 @@ export function QueueSource({ id, close }: { id: string; close: () => void }) {
   });
   return (
     <Modal
-      title={(q.data?.lookup?.candidate ? "核对字段 · " : "在线抓取 · ") + (q.data?.fields.title ?? "读取中")}
+      title={
+        (q.data?.lookup?.candidate ? "核对字段 · " : "在线抓取 · ") +
+        (q.data?.fields.title ?? "读取中")
+      }
       close={close}
     >
       <div className="intake-form">
@@ -434,7 +509,10 @@ export function QueueSource({ id, close }: { id: string; close: () => void }) {
         {q.data && (
           <SourceReview
             row={q.data}
-            changed={(r) => cache.setQueryData(["intake", "draft", id], r)}
+            changed={(r) => {
+              cache.setQueryData(["intake", "draft", id], r);
+              changed?.(r);
+            }}
           />
         )}
       </div>

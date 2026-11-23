@@ -1,7 +1,16 @@
-import { CatalogTable, FilmCards, PersonWorks } from "./CatalogTable";
+import { CatalogTable, FilmCards } from "./CatalogTable";
+import { RecordGrid, RecordDetail } from "./RecordCatalog";
 import { StudioIcon } from "./StudioIcon";
 import { SystemStatus } from "./SystemStatus";
-import React, { useEffect, useState, type FormEvent } from "react";
+import React, {
+  lazy,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { createRoot } from "react-dom/client";
 import {
   QueryClient,
@@ -9,24 +18,22 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { api, unwrap, type Schemas } from "@video-x/sdk-ts";
-import {
-  Select,
-  AuthGate,
-  Brand,
-  ErrorNotice,
-  Modal,
-  Pager,
-} from "@video-x/ui";
+import { Select, AuthGate, ErrorNotice, Modal, Pager } from "@video-x/ui";
 import "@video-x/design-tokens";
 import "./style.css";
 import "./catalog-table.css";
+import "./record-catalog.css";
 import { Artwork } from "./Artwork";
-import {StudioCard} from "./StudioCard";
+import { StudioCard } from "./StudioCard";
 import { DictionaryPage, DictionaryLinks } from "./Dictionary";
 import { ActorEnrichment, ArchivedRecords } from "./CatalogTools";
 import { StudioExtra } from "./StudioExtra";
-import { Intake } from "./Intake";
-import { AdminShell,routes,labels,type Kind } from "./AdminShell";
+
+import { AdminShell, routes, labels, type Kind } from "./AdminShell";
+
+const Intake = lazy(() =>
+  import("./Intake").then((module) => ({ default: module.Intake })),
+);
 
 const client = new QueryClient({
   defaultOptions: { queries: { retry: false, staleTime: 10000 } },
@@ -39,8 +46,14 @@ function locationKind(): Kind {
   return (
     legacyDestination() ??
     (Object.keys(routes) as Kind[]).find(
-      (k) => routes[k] === location.hash.slice(1),
-    ) ?? "intake"
+      (k) => routes[k] === location.hash.slice(1).split("/")[0],
+    ) ??
+    "intake"
+  );
+}
+function profileId() {
+  return (
+    location.hash.match(/^#(?:actors|series)\/([0-9a-f-]{36})$/i)?.[1] ?? ""
   );
 }
 function Admin({ logout }: { logout: () => Promise<void> }) {
@@ -50,7 +63,11 @@ function Admin({ logout }: { logout: () => Promise<void> }) {
     [searchInput, setSearchInput] = useState(""),
     [pageSize, setPageSize] = useState(24),
     [filmView, setFilmView] = useState<"cards" | "table">("cards"),
-    [worksPerson, setWorksPerson] = useState<Schemas["Person"] | null>(null),
+    [detailId, setDetailId] = useState(profileId),
+    [detailEditor, setDetailEditor] = useState<
+      Schemas["Person"] | Schemas["Franchise"] | null
+    >(null),
+    [workEditor, setWorkEditor] = useState<string | null>(null),
     [categoryId, setCategory] = useState(""),
     [sort, setSort] = useState<"createdAt" | "name" | "year" | "count">(
       kind === "people" || kind === "franchises" ? "count" : "createdAt",
@@ -60,6 +77,10 @@ function Admin({ logout }: { logout: () => Promise<void> }) {
     [editId, setEditId] = useState<string | null>(null),
     [create, setCreate] = useState(false),
     [error, setError] = useState("");
+  const listOrigin = useRef<{ id: string; scroll: number } | null>(null);
+  function rememberRecord(id: string) {
+    listOrigin.current = { id, scroll: window.scrollY };
+  }
   const categories = useQuery({
     queryKey: ["categories"],
     queryFn: () => unwrap(api.GET("/api/categories")),
@@ -74,7 +95,9 @@ function Admin({ logout }: { logout: () => Promise<void> }) {
   };
   const list = useQuery({
     queryKey: ["list", kind, params],
-    enabled: ["media", "people", "franchises", "categories"].includes(kind),
+    enabled:
+      !detailId &&
+      ["media", "people", "franchises", "categories"].includes(kind),
     queryFn: async () => {
       if (kind === "media")
         return {
@@ -131,15 +154,31 @@ function Admin({ logout }: { logout: () => Promise<void> }) {
   useEffect(() => {
     const restore = () => {
       const destination = legacyDestination();
-      if (destination) history.replaceState(history.state, "", "#" + routes[destination]);
-      changeKind(locationKind(), false);
+      if (destination)
+        history.replaceState(history.state, "", "#" + routes[destination]);
+      const next = locationKind();
+      const id = profileId();
+      if (next !== kind) changeKind(next, false);
+      setDetailId(id);
+      setWorkEditor(null);
+      setDetailEditor(null);
+      if (id || next !== kind) window.scrollTo({ top: 0 });
     };
     if (legacyDestination()) restore();
     window.addEventListener("hashchange", restore);
     return () => window.removeEventListener("hashchange", restore);
-  }, []);
+  }, [kind]);
+  useLayoutEffect(() => {
+    if (detailId || !list.data || !listOrigin.current) return;
+    const { id, scroll } = listOrigin.current;
+    listOrigin.current = null;
+    window.scrollTo(0, scroll);
+    document.getElementById("catalog-" + id)?.focus({ preventScroll: true });
+  }, [detailId, list.data]);
+
   function changeKind(k: Kind, push = true) {
-    if (push && location.hash !== "#"+routes[k])
+    listOrigin.current = null;
+    if (push && location.hash !== "#" + routes[k])
       history.pushState(null, "", "#" + routes[k]);
     setKind(k);
     setToolsOpen(false);
@@ -151,7 +190,9 @@ function Admin({ logout }: { logout: () => Promise<void> }) {
     setQ("");
     setSearchInput("");
     setDirection("desc");
-    setWorksPerson(null);
+    setDetailId("");
+    setDetailEditor(null);
+    setWorkEditor(null);
     setEditId(null);
   }
   const [personEditor, setPersonEditor] = useState<Schemas["Person"] | null>(
@@ -176,25 +217,88 @@ function Admin({ logout }: { logout: () => Promise<void> }) {
     }
   }
 
-  const pending = useQuery({queryKey:["intake","pending-count"], queryFn:async()=> (await unwrap(api.GET("/api/imports",{params:{query:{status:"pending",pageSize:1}}}))).total});
+  const pending = useQuery({
+    queryKey: ["intake", "pending-count"],
+    queryFn: async () =>
+      (
+        await unwrap(
+          api.GET("/api/imports", {
+            params: { query: { status: "pending", pageSize: 1 } },
+          }),
+        )
+      ).total,
+  });
+  const isRecordList = kind === "people" || kind === "franchises";
   const selected =
     list.data?.type === "people"
       ? list.data.items.find((x) => x.id === editId)
       : list.data?.type === "franchises"
         ? list.data.items.find((x) => x.id === editId)
         : null;
+  function renderFilters() {
+    return (
+      <div className="catalog-options" id="catalog-options">
+        <Select
+          label="分类"
+          value={categoryId}
+          onValueChange={(value) => {
+            setCategory(value);
+            setPage(1);
+          }}
+          options={[
+            { value: "", label: "全部分类" },
+            ...(categories.data ?? []).map((c) => ({
+              value: c.id,
+              label: c.name,
+            })),
+          ]}
+        />
+        <Select
+          label="排序字段"
+          value={sort}
+          onValueChange={(value) => {
+            setSort(value as typeof sort);
+            setPage(1);
+          }}
+          options={[
+            { value: "createdAt", label: "添加时间" },
+            { value: "name", label: "名称" },
+            kind === "media"
+              ? { value: "year", label: "发行年份" }
+              : { value: "count", label: "作品数量" },
+          ]}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setDirection(direction === "asc" ? "desc" : "asc");
+            setPage(1);
+          }}
+        >
+          {direction === "asc" ? "↑ 升序" : "↓ 降序"}
+        </button>
+      </div>
+    );
+  }
   return (
     <>
-    <AdminShell kind={kind} pending={pending.data} logout={()=>void logout().catch(e=>setError(e.message))}>
-          {kind === "tags" || kind === "organizations" ? (
-            <DictionaryPage key={kind} tags={kind === "tags"} />
-          ) : kind === "enrich" ? (
-            <ActorEnrichment editPerson={setPersonEditor} />
-          ) : kind === "archive" ? (
-            <ArchivedRecords />
-          ) : kind === "settings" ? (<SystemStatus />) : kind === "collections" || kind === "jobs" ? (
-            <StudioExtra key={kind} kind={kind} />
-          ) : kind === "intake" ? (
+      <AdminShell
+        kind={kind}
+        pending={pending.data}
+        logout={() => void logout().catch((e) => setError(e.message))}
+      >
+        {kind === "tags" || kind === "organizations" ? (
+          <DictionaryPage key={kind} tags={kind === "tags"} />
+        ) : kind === "enrich" ? (
+          <ActorEnrichment editPerson={setPersonEditor} />
+        ) : kind === "archive" ? (
+          <ArchivedRecords />
+        ) : kind === "settings" ? (
+          <SystemStatus />
+        ) : kind === "collections" || kind === "jobs" ? (
+          <StudioExtra key={kind} kind={kind} />
+        ) : kind === "intake" ? (
+          <Suspense fallback={<p role="status">读取录入工作台…</p>}>
             <Intake
               categories={categories.data ?? []}
               toMedia={(id) => {
@@ -202,82 +306,92 @@ function Admin({ logout }: { logout: () => Promise<void> }) {
                 setEditId(id);
               }}
             />
-          ) : (
-            <>
-              <div className="catalog-heading">
-                <div>
-                  <h1>
-                    {kind === "people"
-                      ? "演员维护"
-                      : kind === "franchises"
-                        ? "系列维护"
-                        : kind === "categories"
-                          ? "分类维护"
-                          : labels[kind]}
-                    {list.data && (
-                      <small>
-                        {list.data.total}{" "}
-                        {kind === "media"
-                          ? "部"
-                          : kind === "people"
-                            ? "人"
-                            : "项"}
-                      </small>
-                    )}
-                  </h1>
-                </div>
-                {kind !== "media" && (
-                  <button
-                    className="primary"
-                    onClick={() => {
-                      setError("");
-                      setCreate(true);
-                    }}
-                  >
-                    ＋ 新增
-                    {kind === "people"
-                      ? "演员"
-                      : kind === "franchises"
-                        ? "系列"
-                        : "分类"}
-                  </button>
-                )}
+          </Suspense>
+        ) : detailId && isRecordList ? (
+          <RecordDetail
+            key={detailId}
+            actors={kind === "people"}
+            id={detailId}
+            edit={setDetailEditor}
+            editFilm={setWorkEditor}
+          />
+        ) : (
+          <div className={isRecordList ? "record-index" : undefined}>
+            <div className="catalog-heading">
+              <div>
+                <h1>
+                  {kind === "people"
+                    ? "演员"
+                    : kind === "franchises"
+                      ? "系列"
+                      : kind === "categories"
+                        ? "分类维护"
+                        : labels[kind]}
+                  {list.data && (
+                    <small>
+                      {list.data.total}{" "}
+                      {kind === "media"
+                        ? "部"
+                        : kind === "people"
+                          ? "人"
+                          : "项"}
+                    </small>
+                  )}
+                </h1>
               </div>
-              {kind !== "categories" && (
-                <div className="catalog-tools">
-                  <form
-                    className="catalog-search"
-                    role="search"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      setQ(searchInput.trim());
-                      setPage(1);
-                    }}
-                  >
-                    <input
-                      type="search"
-                      aria-label="搜索资料"
-                      maxLength={120}
-                      value={searchInput}
-                      placeholder={
-                        kind === "media"
-                          ? "搜索片名、编号或演员"
-                          : kind === "people"
-                            ? "搜索常用名或详细名称"
-                            : "搜索系列名称或说明"
+              {kind !== "media" && (
+                <button
+                  className="primary"
+                  onClick={() => {
+                    setError("");
+                    setCreate(true);
+                  }}
+                >
+                  ＋ 新增
+                  {kind === "people"
+                    ? "演员"
+                    : kind === "franchises"
+                      ? "系列"
+                      : "分类"}
+                </button>
+              )}
+            </div>
+            {kind !== "categories" && (
+              <div className="catalog-tools">
+                <form
+                  className="catalog-search"
+                  role="search"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setQ(searchInput.trim());
+                    setPage(1);
+                  }}
+                >
+                  <input
+                    type="search"
+                    aria-label="搜索资料"
+                    maxLength={120}
+                    value={searchInput}
+                    placeholder={
+                      kind === "media"
+                        ? "搜索片名、编号或演员"
+                        : kind === "people"
+                          ? "搜索常用名或详细名称"
+                          : "搜索系列名称或说明"
+                    }
+                    onChange={(e) => {
+                      setSearchInput(e.target.value);
+                      if (!e.target.value) {
+                        setQ("");
+                        setPage(1);
                       }
-                      onChange={(e) => {
-                        setSearchInput(e.target.value);
-                        if (!e.target.value) {
-                          setQ("");
-                          setPage(1);
-                        }
-                      }}
-                    />
-                    <button type="submit" aria-label="搜索">
-                      <StudioIcon name="search" />
-                    </button>
-                  </form>
+                    }}
+                  />
+                  <button type="submit" aria-label="搜索">
+                    <StudioIcon name="search" />
+                  </button>
+                </form>
+                {!isRecordList && (
                   <button
                     aria-controls="catalog-options"
                     aria-expanded={toolsOpen}
@@ -285,140 +399,103 @@ function Admin({ logout }: { logout: () => Promise<void> }) {
                   >
                     排序与筛选
                   </button>
-                  {categoryId && (
-                    <button
-                      onClick={() => {
-                        setCategory("");
-                        setPage(1);
-                      }}
-                      aria-label="清除分类筛选"
-                    >
-                      {categories.data?.find((c) => c.id === categoryId)?.name} ×
-                    </button>
-                  )}
-                  {q && <span className="catalog-result">“{q}” 的结果</span>}
-                  {kind === "media" && (
-                    <div role="group" aria-label="影片展示方式" className="catalog-view-switch">
-                      <button type="button" aria-pressed={filmView === "cards"} onClick={() => setFilmView("cards")}>
-                        <StudioIcon name="grid" /> 卡片
-                      </button>
-                      <button type="button" aria-pressed={filmView === "table"} onClick={() => setFilmView("table")}>
-                        <StudioIcon name="list" /> 列表
-                      </button>
-                    </div>
-                  )}
-                  <Select
-                    label="每页条数"
-                    value={String(pageSize)}
-                    onValueChange={(v) => {
-                      setPageSize(Number(v));
-                      setPage(1);
-                    }}
-                    options={[24, 50, 100].map((n) => ({
-                      value: String(n),
-                      label: n + " 条 / 页",
-                    }))}
-                  />
-                </div>
-              )}
-              {kind !== "categories" && toolsOpen && (
-                <div className="catalog-options" id="catalog-options">
-                  <Select
-                    label="分类"
-                    value={categoryId}
-                    onValueChange={(value) => {
-                      setCategory(value);
-                      setPage(1);
-                    }}
-                    options={[
-                      { value: "", label: "全部分类" },
-                      ...(categories.data ?? []).map((c) => ({
-                        value: c.id,
-                        label: c.name,
-                      })),
-                    ]}
-                  />
-                  <Select
-                    label="排序字段"
-                    value={sort}
-                    onValueChange={(value) => {
-                      setSort(value as typeof sort);
-                      setPage(1);
-                    }}
-                    options={[
-                      { value: "createdAt", label: "添加时间" },
-                      { value: "name", label: "名称" },
-                      kind === "media"
-                        ? { value: "year", label: "发行年份" }
-                        : { value: "count", label: "作品数量" },
-                    ]}
-                  />
+                )}
+                {isRecordList && renderFilters()}
+                {!isRecordList && categoryId && (
                   <button
-                    type="button"
                     onClick={() => {
-                      setDirection(direction === "asc" ? "desc" : "asc");
+                      setCategory("");
                       setPage(1);
                     }}
+                    aria-label="清除分类筛选"
                   >
-                    {direction === "asc" ? "↑ 升序" : "↓ 降序"}
+                    {categories.data?.find((c) => c.id === categoryId)?.name} ×
                   </button>
-                </div>
-              )}
-              <ErrorNotice error={error || list.error || categories.error} />
-              {list.isPending ? (
-                <div className="empty">正在读取资料…</div>
-              ) : list.data?.items.length === 0 ? (
-                <div className="empty">暂时没有符合条件的资料</div>
-              ) : list.data?.type === "franchises" ? (
-                <div className="studio-cards">
-                  {list.data.items.map((f) => (
-                    <StudioCard
-                      key={f.id}
-                      title={f.name}
-                      subtitle={f.description ?? ""}
-                      meta={f.categoryName + " · " + f.workCount + " 部作品"}
-                      images={
-                        f.coverIds?.length
-                          ? f.coverIds
-                          : f.coverId
-                            ? [f.coverId]
-                            : []
-                      }
-                      action="编辑系列"
-                      open={() => setEditId(f.id)}
-                    />
-                  ))}
-                </div>
-              ) : list.data?.type === "categories" ? (
-                <div className="studio-cards">
-                  {list.data.items.map((c) => (
-                    <StudioCard
-                      key={c.id}
-                      title={c.name}
-                      subtitle={
-                        c.parentId
-                          ? (categories.data?.find((p) => p.id === c.parentId)
-                              ?.name ?? "子分类")
-                          : "顶级分类"
-                      }
-                      meta={c.isVisible ? "片库中显示" : "已隐藏"}
-                      action={c.isVisible ? "隐藏分类" : "显示分类"}
-                      open={() => void checkVisibility(c)}
-                    />
-                  ))}
-                </div>
-              ) : list.data?.type === "media" && filmView === "cards" ? (
-                <FilmCards films={list.data.items} edit={setEditId} />
-              ) : (
-                list.data && (
-                  <CatalogTable
-                    rows={list.data}
-                    edit={setEditId}
-                    works={setWorksPerson}
+                )}
+                {q && <span className="catalog-result">“{q}” 的结果</span>}
+                {kind === "media" && (
+                  <div
+                    role="group"
+                    aria-label="影片展示方式"
+                    className="catalog-view-switch"
+                  >
+                    <button
+                      type="button"
+                      aria-pressed={filmView === "cards"}
+                      onClick={() => setFilmView("cards")}
+                    >
+                      <StudioIcon name="grid" /> 卡片
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={filmView === "table"}
+                      onClick={() => setFilmView("table")}
+                    >
+                      <StudioIcon name="list" /> 列表
+                    </button>
+                  </div>
+                )}
+                <Select
+                  label="每页条数"
+                  value={String(pageSize)}
+                  onValueChange={(v) => {
+                    setPageSize(Number(v));
+                    setPage(1);
+                  }}
+                  options={[24, 50, 100].map((n) => ({
+                    value: String(n),
+                    label: n + " 条 / 页",
+                  }))}
+                />
+              </div>
+            )}
+            {kind !== "categories" &&
+              !isRecordList &&
+              toolsOpen &&
+              renderFilters()}
+            <ErrorNotice error={error || list.error || categories.error} />
+            {list.isPending ? (
+              <div className="empty">正在读取资料…</div>
+            ) : list.data?.items.length === 0 ? (
+              <div className="empty">暂时没有符合条件的资料</div>
+            ) : list.data?.type === "franchises" ? (
+              <RecordGrid
+                records={list.data.items}
+                remember={rememberRecord}
+                actors={false}
+              />
+            ) : list.data?.type === "people" ? (
+              <RecordGrid
+                records={list.data.items}
+                remember={rememberRecord}
+                actors
+              />
+            ) : list.data?.type === "categories" ? (
+              <div className="studio-cards">
+                {list.data.items.map((c) => (
+                  <StudioCard
+                    key={c.id}
+                    title={c.name}
+                    subtitle={
+                      c.parentId
+                        ? (categories.data?.find((p) => p.id === c.parentId)
+                            ?.name ?? "子分类")
+                        : "顶级分类"
+                    }
+                    meta={c.isVisible ? "片库中显示" : "已隐藏"}
+                    action={c.isVisible ? "隐藏分类" : "显示分类"}
+                    open={() => void checkVisibility(c)}
                   />
-                )
-              )}
-              {list.data && kind !== "categories" && (
+                ))}
+              </div>
+            ) : list.data?.type === "media" && filmView === "cards" ? (
+              <FilmCards films={list.data.items} edit={setEditId} />
+            ) : (
+              list.data && <CatalogTable rows={list.data} edit={setEditId} />
+            )}
+            {list.data &&
+              kind !== "categories" &&
+              (!isRecordList || list.data.total > pageSize) && (
                 <Pager
                   {...list.data}
                   onChange={(n) => {
@@ -427,20 +504,22 @@ function Admin({ logout }: { logout: () => Promise<void> }) {
                   }}
                 />
               )}
-            </>
-          )}
-    </AdminShell>
-      {worksPerson && (
-        <PersonWorks
-          person={worksPerson}
-          close={() => setWorksPerson(null)}
-          renderEditor={(id, close) => (
-            <MediaEditor
-              id={id}
-              categories={categories.data ?? []}
-              close={close}
-            />
-          )}
+          </div>
+        )}
+      </AdminShell>
+      {detailEditor && (
+        <EntityEditor
+          kind={"fullName" in detailEditor ? "people" : "franchises"}
+          selected={detailEditor}
+          categories={categories.data ?? []}
+          close={() => setDetailEditor(null)}
+        />
+      )}
+      {workEditor && (
+        <MediaEditor
+          id={workEditor}
+          categories={categories.data ?? []}
+          close={() => setWorkEditor(null)}
         />
       )}
       {visibility && (
