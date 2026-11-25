@@ -338,7 +338,10 @@ function Editor({
           )}
           {publication?.state === "failed" && (
             <div className="editor-notice" role="alert" data-tone="attention">
-              <span>{retryError || publication.error}</span>
+              <span>
+                {publication.replacement && "替换未完成，原绑定已保留。"}
+                {retryError || publication.error}
+              </span>
               {publication.replacement && publication.retryable && (
                 <button
                   type="button"
@@ -348,7 +351,7 @@ function Editor({
                   {retrying ? "正在重试…" : "重试替换"}
                 </button>
               )}
-              <a href="#jobs">查看后台任务</a>
+              {!publication.replacement && <a href="#jobs">查看后台任务</a>}
             </div>
           )}
           <PublishedFiles

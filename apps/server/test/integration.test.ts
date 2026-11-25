@@ -1858,12 +1858,18 @@ test("Download selection, target planning, manual publication and recoverable mo
           409,
         );
         await ok("POST", publishPath, request);
-        await writeFile(targetFile, "collision", { flag: "wx" });
+        const candidateFile = join(root, "Download", name);
         const job = await runId(candidate);
-        await runMove(db, root, job);
-        assert.equal((await row(candidate)).move.state, "failed");
-        assert.equal((await play("play")).editionId, old.id);
-        await unlink(targetFile);
+        await rename(candidateFile, candidateFile + ".hold");
+        try {
+          await runMove(db, root, job);
+          const failed = await row(candidate);
+          assert.equal(failed.move.state, "failed");
+          assert.match(failed.move.error, /找不到待整理的源文件/);
+          assert.equal((await play("play")).editionId, old.id);
+        } finally {
+          await rename(candidateFile + ".hold", candidateFile);
+        }
         await ok("POST", publishPath, {
           ...request,
           expectedRevision: (await row(candidate)).revision,

@@ -185,7 +185,11 @@ export async function stageFile(
     (await rootMarker(primary)) !== p.source_marker
   )
     throw problem("源盘离线或标识不符。");
-  const src = await openVideo(primary, p.source_path);
+  const src = await openVideo(primary, p.source_path).catch((error) => {
+    if (error.code === "ENOENT")
+      throw problem("找不到待整理的源文件。请检查录入时登记的位置，再重试。");
+    throw error;
+  });
   try {
     if (src.size !== p.size_bytes || src.mtime !== p.mtime_ns)
       throw problem("源文件已改变，请重新探测。");
