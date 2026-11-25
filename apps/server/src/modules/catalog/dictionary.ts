@@ -6,13 +6,32 @@ import {
   type Transaction,
 } from "../../platform/db.js";
 import type { Static } from "@sinclair/typebox";
-import type { DictionaryWrite } from "@video-x/contracts";
+import type {
+  DictionaryWrite,
+  DictionaryChoiceQuery,
+} from "@video-x/contracts";
 export class Dictionary {
   constructor(private db: Database) {}
   list() {
     return this.db
       .query(sql`SELECT t.id,t.name,'tag' kind,t.primary_category_id AS "categoryId",t.attribute_group detail,t.is_visible AS "isVisible",t.revision::int,(SELECT count(*)::int FROM video_x.media_tags l WHERE l.tag_id=t.id) AS "workCount" FROM video_x.tags t WHERE t.archived_at IS NULL
  UNION ALL SELECT o.id,o.name,'studio',null,o.description,true,o.revision::int,(SELECT count(DISTINCT m.media_id)::int FROM video_x.media_organizations m WHERE m.organization_id=o.id) FROM video_x.organizations o WHERE o.archived_at IS NULL ORDER BY name,id`);
+  }
+  async choices(q: Static<typeof DictionaryChoiceQuery>) {
+    const tag = q.kind === "tag",
+      page = q.page ?? 1,
+      pageSize = q.pageSize ?? 24;
+    const selected = q.ids?.split(",") ?? [];
+    const from = tag ? sql`video_x.tags` : sql`video_x.organizations`;
+    const pattern = "%" + (q.q ?? "").replace(/[\\%_]/g, "\\$&") + "%";
+    const where = sql`archived_at IS NULL AND ${selected.length ? sql`id::text IN (SELECT jsonb_array_elements_text(${JSON.stringify(selected)}::jsonb))` : tag ? sql`is_visible` : sql`true`} AND ${tag && q.categoryId ? sql`primary_category_id=${q.categoryId}` : sql`true`} AND name ILIKE ${pattern}`;
+    const [count] = await this.db.query(
+      sql`SELECT count(*)::int total FROM ${from} WHERE ${where}`,
+    );
+    const items = await this.db.query(
+      sql`SELECT id,name,${tag ? sql`attribute_group` : sql`description`} AS detail FROM ${from} WHERE ${where} ORDER BY name,id LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}`,
+    );
+    return { items, page, pageSize, total: count!.total };
   }
   async save(
     x: Static<typeof DictionaryWrite>,

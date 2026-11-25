@@ -18,6 +18,8 @@ src/main/kotlin/com/wuxinbo/videox/api/models/Collection.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/CollectionCreate.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/CollectionItems.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/CollectionPatch.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/DictionaryChoice.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/DictionaryChoicePage.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DictionaryEdit.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DictionaryEntry.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DictionaryWrite.kt
@@ -25,6 +27,8 @@ src/main/kotlin/com/wuxinbo/videox/api/models/DirectoryView.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DirectoryViewEntriesInner.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DirectoryViewTargetsInner.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DownloadDirectory.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/EditionInfo.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/EditionTarget.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/ErrorResponse.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/Franchise.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/FranchiseCreate.kt
@@ -65,12 +69,14 @@ src/main/kotlin/com/wuxinbo/videox/api/models/PlaybackPlan.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PlaybackRequest.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PlaybackSession.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/Profile.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/PublishEdition.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RevisionInput.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RunLookup.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RuntimeStatus.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RuntimeStatusArt.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RuntimeStatusDisksInner.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RuntimeStatusMedia.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/RuntimeStatusMediaRootsInner.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RuntimeStatusMediaSpace.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RuntimeStatusWorker.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/ScanResult.kt

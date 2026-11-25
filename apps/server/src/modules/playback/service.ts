@@ -31,6 +31,7 @@ async function source(
   root: string,
   mediaId: string,
   partId?: string,
+  editionId?: string,
 ) {
   const [r] =
     await tx.query(sql`SELECT e.id edition,p.id part,p.bound_content_revision,f.content_revision,f.relative_path,
@@ -41,7 +42,7 @@ async function source(
  FROM video_x.media_items m JOIN video_x.editions e ON e.media_id=m.id
  JOIN video_x.edition_parts p ON p.edition_id=e.id JOIN video_x.media_files f ON f.id=p.file_id
  JOIN video_x.storage_roots r ON r.id=f.root_id WHERE m.id=${mediaId} AND m.published_at IS NOT NULL AND m.archived_at IS NULL
- AND e.archived_at IS NULL AND r.archived_at IS NULL AND ${partId ? sql`p.id=${partId}` : sql`e.is_default`} ORDER BY p.part_no LIMIT 1`);
+ AND e.archived_at IS NULL AND r.archived_at IS NULL AND ${partId ? sql`p.id=${partId}` : editionId ? sql`e.id=${editionId}` : sql`e.is_default`} ORDER BY p.part_no LIMIT 1`);
   if (!r)
     throw new AppError(404, "NO_MEDIA_FILE", "这部作品还没有可播放的文件。");
   if (r.parts !== 1) throw invalid("当前播放器支持单文件版本。");
@@ -54,10 +55,7 @@ async function source(
     throw unavailable();
   return r;
 }
-async function openChecked(
-  root: string,
-  r: Awaited<ReturnType<typeof source>>,
-) {
+async function openChecked(r: Awaited<ReturnType<typeof source>>) {
   try {
     if ((await rootMarker(r.mount_path)) !== r.expected_marker)
       throw unavailable();
@@ -78,8 +76,19 @@ export class Playback {
     private root: string,
   ) {}
   async plan(tx: Reader, profile: string, input: Request): Promise<Plan> {
-    const r = await source(tx, this.root, input.mediaId);
-    const handle = await openChecked(this.root, r);
+    const [resume] = !input.editionId
+      ? await tx.query(
+          sql`SELECT e.id FROM video_x.user_media_state s JOIN video_x.editions e ON e.id=s.resume_edition_id AND e.media_id=s.media_id AND e.archived_at IS NULL WHERE s.media_id=${input.mediaId} AND s.profile_id=${profile}`,
+        )
+      : [];
+    const r = await source(
+      tx,
+      this.root,
+      input.mediaId,
+      undefined,
+      input.editionId ?? resume?.id,
+    );
+    const handle = await openChecked(r);
     await handle.close();
     const [progress] = await tx.query(
       sql`SELECT part_id,position_ms,completed_at FROM video_x.playback_progress WHERE profile_id=${profile} AND edition_id=${r.edition}`,
@@ -123,11 +132,13 @@ export class Playback {
         (same.profile_id !== viewer.id ||
           same.device_id !== viewer.deviceId ||
           same.media_id !== input.mediaId ||
+          (input.editionId && same.edition_id !== input.editionId) ||
           same.ended_at)
       )
         throw invalid("这次播放会话已不可用。");
       const plan = await this.plan(tx, viewer.id, {
         ...input,
+        editionId: same?.edition_id ?? input.editionId,
         intent: same ? "restart" : input.intent,
       });
       if (same) {
@@ -163,7 +174,7 @@ export class Playback {
     if (s.ended_at) throw invalid("播放会话已结束。");
     const r = await source(this.db, this.root, s.media_id, s.start_part_id);
     return {
-      file: await openChecked(this.root, r),
+      file: await openChecked(r),
       size: Number(r.size_bytes),
       mime: r.container_format === "mp4" ? "video/mp4" : "video/x-matroska",
     };
@@ -206,7 +217,7 @@ export class Playback {
       )
         throw invalid("播放器未定位到指定断点，已保留原进度。");
       const r = await source(tx, this.root, s.media_id, s.start_part_id);
-      const opened = await openChecked(this.root, r);
+      const opened = await openChecked(r);
       await opened.close();
       if (
         evt.positionMs > Number(r.duration_ms) ||

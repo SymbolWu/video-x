@@ -1,0 +1,130 @@
+.vx-collection {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 18px 0 !important;
+  margin: 0 0 8px;
+  width: 100%;
+  text-align: left;
+}
+.vx-collection > div:nth-child(2) {
+  flex: 1;
+}
+.vx-collection b {
+  font-size: 15px;
+  font-weight: 550;
+}
+.vx-collection span {
+  display: block;
+  font-size: 11px;
+  color: var(--vx-muted);
+  margin-top: 5px;
+}
+.vx-cover-stack {
+  position: relative;
+  width: 70px;
+  height: 60px;
+  flex-shrink: 0;
+}
+.vx-cover-stack img {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  left: 0;
+  top: 0;
+  box-shadow: 2px 2px 8px #0008;
+}
+.vx-cover-stack img:nth-child(2) {
+  transform: rotate(8deg);
+  left: 9px;
+  top: 2px;
+  z-index: -0;
+}
+.vx-cover-stack img:first-child {
+  z-index: 1;
+  transform: rotate(-6deg);
+}
+.vx-folder-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 15px 0 !important;
+  text-align: left;
+}
+.vx-folder-choice > span:nth-child(2) {
+  flex: 1;
+  font-size: 14px;
+}
+.vx-folder-choice small {
+  display: block;
+  color: var(--vx-muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.vx-checkbox {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #5e6270;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+}
+.vx-checkbox.selected {
+  color: #172037;
+  background: #b7c0ff;
+  border-color: #b7c0ff;
+}
+.vx-desktop .vx-collection {
+  max-width: 500px;
+}
+.vx-new-folder,
+.vx-create-folder {
+  padding: 16px;
+}
+.vx-create-folder {
+  display: grid;
+  gap: 16px;
+}
+.vx-create-folder input {
+  margin-left: 12px;
+}
+
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 10px;
+}
+.collection-grid .vx-collection {
+  max-width: none;
+  margin: 0;
+  padding: 10px !important;
+  background: var(--vx-panel);
+  border-radius: 7px;
+  gap: 12px;
+}
+.vx-cover-stack {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+}
+.vx-cover-stack img {
+  height: 48px;
+  width: 48px;
+}
+.vx-cover-stack img:first-child {
+  transform: none;
+}
+.collection-grid .vx-collection > div:nth-child(2) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.vx-create-folder label {
+  display: grid;
+  gap: 6px;
+}
+.vx-create-folder input {
+  margin: 0;
+}

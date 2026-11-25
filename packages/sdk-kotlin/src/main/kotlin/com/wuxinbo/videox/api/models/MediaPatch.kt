@@ -29,6 +29,11 @@ import com.squareup.moshi.JsonClass
 
 /**
  * @param expectedRevision
+ * @param episodeOrder
+ * @param stillIds
+ * @param releaseDate
+ * @param identifier
+ * @param directorIds
  * @param tagIds
  * @param studioIds
  * @param posterId
@@ -47,6 +52,21 @@ data class MediaPatch (
 
     @Json(name = "expectedRevision")
     val expectedRevision: kotlin.Int,
+
+    @Json(name = "episodeOrder")
+    val episodeOrder: kotlin.collections.Set<java.util.UUID>? = null,
+
+    @Json(name = "stillIds")
+    val stillIds: kotlin.collections.Set<java.util.UUID>? = null,
+
+    @Json(name = "releaseDate")
+    val releaseDate: java.time.LocalDate? = null,
+
+    @Json(name = "identifier")
+    val identifier: kotlin.String? = null,
+
+    @Json(name = "directorIds")
+    val directorIds: kotlin.collections.Set<java.util.UUID>? = null,
 
     @Json(name = "tagIds")
     val tagIds: kotlin.collections.Set<java.util.UUID>? = null,

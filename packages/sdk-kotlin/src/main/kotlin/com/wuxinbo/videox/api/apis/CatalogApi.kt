@@ -11,6 +11,7 @@ import com.wuxinbo.videox.api.models.BrowseFacts
 import com.wuxinbo.videox.api.models.Category
 import com.wuxinbo.videox.api.models.CategoryCreate
 import com.wuxinbo.videox.api.models.CategoryVisibility
+import com.wuxinbo.videox.api.models.DictionaryChoicePage
 import com.wuxinbo.videox.api.models.DictionaryEdit
 import com.wuxinbo.videox.api.models.DictionaryEntry
 import com.wuxinbo.videox.api.models.DictionaryWrite
@@ -295,6 +296,52 @@ interface CatalogApi {
 
 
     /**
+    * enum for parameter kind
+    */
+    enum class KindListDictionaryChoices(val value: kotlin.String) {
+        @Json(name = "tag") TAG("tag"),
+        @Json(name = "studio") STUDIO("studio")
+    }
+
+
+    /**
+    * enum for parameter direction
+    */
+    enum class DirectionListDictionaryChoices(val value: kotlin.String) {
+        @Json(name = "asc") ASC("asc"),
+        @Json(name = "desc") DESC("desc")
+    }
+
+    /**
+     * GET api/dictionary/choices
+     * 
+     * 
+     * Responses:
+     *  - 200: Default Response
+     *  - 400: Default Response
+     *  - 401: Default Response
+     *  - 403: Default Response
+     *  - 404: Default Response
+     *  - 409: Default Response
+     *  - 413: Default Response
+     *  - 415: Default Response
+     *  - 429: Default Response
+     *  - 500: Default Response
+     *
+     * @param kind 
+     * @param q  (optional)
+     * @param categoryId  (optional)
+     * @param direction  (optional)
+     * @param page  (optional, default to 1)
+     * @param pageSize  (optional, default to 24)
+     * @param ids  (optional)
+     * @return [DictionaryChoicePage]
+     */
+    @GET("api/dictionary/choices")
+    suspend fun listDictionaryChoices(@Query("kind") kind: KindListDictionaryChoices, @Query("q") q: kotlin.String? = null, @Query("categoryId") categoryId: java.util.UUID? = null, @Query("direction") direction: DirectionListDictionaryChoices? = null, @Query("page") page: kotlin.Int? = 1, @Query("pageSize") pageSize: kotlin.Int? = 24, @Query("ids") ids: kotlin.String? = null): Response<DictionaryChoicePage>
+
+
+    /**
     * enum for parameter direction
     */
     enum class DirectionListFranchises(val value: kotlin.String) {
@@ -360,6 +407,30 @@ interface CatalogApi {
         @Json(name = "lastPlayed") LAST_PLAYED("lastPlayed")
     }
 
+
+    /**
+    * enum for parameter resolution
+    */
+    enum class ResolutionListManagementMedia(val value: kotlin.String) {
+        @Json(name = "2160p") _2160P("2160p"),
+        @Json(name = "1080p") _1080P("1080p"),
+        @Json(name = "720p") _720P("720p"),
+        @Json(name = "576p") _576P("576p"),
+        @Json(name = "480p") _480P("480p"),
+        @Json(name = "below360p") BELOW360P("below360p"),
+        @Json(name = "unknown") UNKNOWN("unknown")
+    }
+
+
+    /**
+    * enum for parameter chineseSubtitles
+    */
+    enum class ChineseSubtitlesListManagementMedia(val value: kotlin.String) {
+        @Json(name = "supported") SUPPORTED("supported"),
+        @Json(name = "unsupported") UNSUPPORTED("unsupported"),
+        @Json(name = "unknown") UNKNOWN("unknown")
+    }
+
     /**
      * GET api/manage/media
      * 
@@ -393,10 +464,12 @@ interface CatalogApi {
      * @param actorId  (optional)
      * @param franchiseId  (optional)
      * @param collectionId  (optional)
+     * @param resolution Resolution tier of the default edition. (optional)
+     * @param chineseSubtitles Catalog&#39;s Chinese support flag, as recorded in the film&#39;s metadata. (optional)
      * @return [ManagementMediaPage]
      */
     @GET("api/manage/media")
-    suspend fun listManagementMedia(@Query("q") q: kotlin.String? = null, @Query("categoryId") categoryId: java.util.UUID? = null, @Query("direction") direction: DirectionListManagementMedia? = null, @Query("page") page: kotlin.Int? = 1, @Query("pageSize") pageSize: kotlin.Int? = 24, @Query("favorite") favorite: kotlin.Boolean? = null, @Query("watched") watched: kotlin.Boolean? = null, @Query("year") year: kotlin.Int? = null, @Query("ratingMin") ratingMin: kotlin.Int? = null, @Query("unrated") unrated: kotlin.Boolean? = null, @Query("resumable") resumable: kotlin.Boolean? = null, @Query("episodesOnly") episodesOnly: kotlin.Boolean? = null, @Query("includeEpisodes") includeEpisodes: kotlin.Boolean? = null, @Query("sort") sort: SortListManagementMedia? = null, @Query("actorId") actorId: java.util.UUID? = null, @Query("franchiseId") franchiseId: java.util.UUID? = null, @Query("collectionId") collectionId: java.util.UUID? = null): Response<ManagementMediaPage>
+    suspend fun listManagementMedia(@Query("q") q: kotlin.String? = null, @Query("categoryId") categoryId: java.util.UUID? = null, @Query("direction") direction: DirectionListManagementMedia? = null, @Query("page") page: kotlin.Int? = 1, @Query("pageSize") pageSize: kotlin.Int? = 24, @Query("favorite") favorite: kotlin.Boolean? = null, @Query("watched") watched: kotlin.Boolean? = null, @Query("year") year: kotlin.Int? = null, @Query("ratingMin") ratingMin: kotlin.Int? = null, @Query("unrated") unrated: kotlin.Boolean? = null, @Query("resumable") resumable: kotlin.Boolean? = null, @Query("episodesOnly") episodesOnly: kotlin.Boolean? = null, @Query("includeEpisodes") includeEpisodes: kotlin.Boolean? = null, @Query("sort") sort: SortListManagementMedia? = null, @Query("actorId") actorId: java.util.UUID? = null, @Query("franchiseId") franchiseId: java.util.UUID? = null, @Query("collectionId") collectionId: java.util.UUID? = null, @Query("resolution") resolution: ResolutionListManagementMedia? = null, @Query("chineseSubtitles") chineseSubtitles: ChineseSubtitlesListManagementMedia? = null): Response<ManagementMediaPage>
 
 
     /**

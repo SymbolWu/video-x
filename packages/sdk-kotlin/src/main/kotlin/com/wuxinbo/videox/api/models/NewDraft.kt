@@ -28,12 +28,16 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 /**
+ * @param releaseDate
  * @param title
  * @param identifier
  */
 
 
 data class NewDraft (
+
+    @Json(name = "releaseDate")
+    val releaseDate: java.time.LocalDate,
 
     @Json(name = "title")
     val title: kotlin.String,

@@ -4,7 +4,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { AppError } from "../../platform/db.js";
 
-export const mediaExtension = /\.(?:mkv|mp4)$/i;
+export const mediaExtension = /\.(?:mkv|mp4) *$/i;
 const invalidRoot = () =>
   new AppError(
     409,
@@ -88,7 +88,17 @@ interface Probe {
   streams?: Track[];
 }
 export async function probeVideo(file: FileHandle, relative: string) {
-  const format = /\.mp4$/i.test(relative) ? "mov" : "matroska";
+  // Some legacy files carry a valid Matroska container under an MP4 filename.
+  // Peek without advancing the shared descriptor passed to ffprobe below.
+  const signature = Buffer.alloc(8);
+  const { bytesRead } = await file.read(signature, 0, signature.length, 0);
+  const isMatroska = bytesRead >= 4 && signature.readUInt32BE(0) === 0x1a45dfa3;
+  const isIsoMedia =
+    bytesRead === 8 && signature.toString("ascii", 4, 8) === "ftyp";
+  const format =
+    isMatroska || (!isIsoMedia && !/\.mp4 *$/i.test(relative))
+      ? "matroska"
+      : "mov";
   const bytes = await new Promise<Buffer>((resolve, reject) => {
     const proc = spawn(
       "ffprobe",

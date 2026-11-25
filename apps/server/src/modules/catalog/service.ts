@@ -6,6 +6,7 @@ import {
   FranchiseCreate,
   FranchisePatch,
   type Query,
+  type ManagementMediaQuery,
   type MediaDto,
   type MediaDetailDto,
   type PersonDto,
@@ -21,6 +22,7 @@ import {
 } from "../../platform/db.js";
 import type { SQL } from "drizzle-orm";
 import { replaceDictionaryLinks } from "./dictionary.js";
+import { chineseSubtitlesFilter, resolutionFilter } from "./media-filters.js";
 const live = sql`m.archived_at IS NULL AND m.published_at IS NOT NULL`;
 const textQuery = (q: string) => "%" + q.replace(/[\\%_]/g, "\\$&") + "%";
 function categoryScope(column: SQL, id: string | undefined) {
@@ -97,7 +99,7 @@ export class Catalog {
       FROM video_x.media_items m ${stateJoin(profileId)} WHERE ${live}`);
     return row!;
   }
-  async listMedia(profileId: string, q: Query) {
+  async listMedia(profileId: string, q: Query, filters = sql`true`) {
     const relation =
       q.actorId ||
       q.franchiseId ||
@@ -110,7 +112,7 @@ export class Catalog {
       : relation || q.includeEpisodes
         ? sql`true`
         : sql`m.parent_id IS NULL`;
-    const where = sql`${live} AND ${level}
+    const where = sql`${live} AND ${level} AND ${filters}
     AND ${q.favorite === undefined ? sql`true` : sql`COALESCE(u.is_favorite,false)=${q.favorite}`}
     AND ${q.watched === undefined ? sql`true` : sql`(u.watched_at IS NOT NULL)=${q.watched}`}
     AND ${q.year ? sql`m.release_year=${q.year}` : sql`true`}
@@ -136,11 +138,18 @@ export class Catalog {
     );
     return { items, total: count!.total, page: p.page, pageSize: p.pageSize };
   }
-  async listManagementMedia(profileId: string, q: Query) {
-    const page = await this.listMedia(profileId, q);
+  async listManagementMedia(profileId: string, q: ManagementMediaQuery) {
+    const page = await this.listMedia(
+      profileId,
+      q,
+      sql`${resolutionFilter(q.resolution)} AND ${chineseSubtitlesFilter(q.chineseSubtitles)}`,
+    );
     if (page.items.length === 0) return { ...page, items: [] };
 
-    const ids = sql.join(page.items.map((item) => sql`(${item.id}::uuid)`), sql`, `);
+    const ids = sql.join(
+      page.items.map((item) => sql`(${item.id}::uuid)`),
+      sql`, `,
+    );
     const summaries = await this.db.query<{
       id: string;
       identifier: string | null;
@@ -171,7 +180,10 @@ export class Catalog {
       ) files
     `);
     const byId = new Map(summaries.map((row) => [row.id, row]));
-    return { ...page, items: page.items.map((m) => ({ ...m, ...byId.get(m.id)! })) };
+    return {
+      ...page,
+      items: page.items.map((m) => ({ ...m, ...byId.get(m.id)! })),
+    };
   }
   async detail(profileId: string, id: string): Promise<MediaDetailDto> {
     const [m] = await this.db.query<MediaDto & { notes: string | null }>(
@@ -189,11 +201,34 @@ export class Catalog {
     const actors = await this.db.query<PersonDto>(
       sql`${personSelect(profileId)} WHERE p.archived_at IS NULL AND EXISTS(SELECT 1 FROM video_x.credits cr WHERE cr.media_id=${id} AND cr.person_id=p.id AND cr.job='actor') ORDER BY (SELECT min(cr.position) FROM video_x.credits cr WHERE cr.media_id=${id} AND cr.person_id=p.id AND cr.job='actor'),p.id`,
     );
+    const directors = await this.db.query<PersonDto>(
+      sql`${personSelect(profileId)} JOIN video_x.credits credit ON credit.person_id=p.id AND credit.media_id=${id} AND credit.job='director' WHERE p.archived_at IS NULL ORDER BY credit.position,p.id`,
+    );
+    const editions = await this.db.query<
+      NonNullable<MediaDetailDto["editions"]>[number]
+    >(
+      sql`SELECT e.id,e.name,e.is_default AS "isDefault",f.relative_path AS filename,vs.width,vs.height,
+        CASE WHEN r.status IN ('offline','identity_mismatch') THEN 'offline' ELSE f.availability END availability
+        FROM video_x.editions e JOIN video_x.edition_parts ep ON ep.edition_id=e.id AND ep.part_no=1
+        JOIN video_x.media_files f ON f.id=ep.file_id JOIN video_x.storage_roots r ON r.id=f.root_id
+        LEFT JOIN LATERAL (SELECT width,height FROM video_x.media_streams WHERE file_id=f.id AND kind='video' ORDER BY stream_index LIMIT 1) vs ON true
+        WHERE e.media_id=${id} AND e.archived_at IS NULL ORDER BY e.is_default DESC,e.created_at,e.id`,
+    );
+    const stills = await this.db.query(
+      sql`SELECT asset_id FROM video_x.media_images WHERE media_id=${id} AND purpose='still' ORDER BY position`,
+    );
+    const [state] = await this.db.query(
+      sql`SELECT resume_edition_id FROM video_x.user_media_state WHERE media_id=${id} AND profile_id=${profileId}`,
+    );
     const franchises = await this.db.query<FranchiseDto>(
       sql`${franchiseSelect} WHERE f.archived_at IS NULL AND EXISTS(SELECT 1 FROM video_x.franchise_items fi WHERE fi.media_id=${id} AND fi.franchise_id=f.id) ORDER BY f.name,f.id`,
     );
     return {
       ...m,
+      directors,
+      editions,
+      stillIds: stills.map((s) => s.asset_id),
+      resumeEditionId: state?.resume_edition_id ?? null,
       tagIds: (
         await this.db.query(
           sql`SELECT tag_id id FROM video_x.media_tags WHERE media_id=${id} ORDER BY tag_id`,
@@ -279,7 +314,11 @@ export class Catalog {
     const membership = actor
       ? sql`EXISTS (SELECT 1 FROM video_x.credits cr WHERE cr.media_id=m.id AND cr.person_id=${id} AND cr.job='actor')`
       : sql`EXISTS (SELECT 1 FROM video_x.franchise_items fi WHERE fi.media_id=m.id AND fi.franchise_id=${id})`;
-    const [facts] = await this.db.query<{ firstYear: number | null; lastYear: number | null; cast: string[] }>(
+    const [facts] = await this.db.query<{
+      firstYear: number | null;
+      lastYear: number | null;
+      cast: string[];
+    }>(
       sql`WITH works AS (SELECT m.id,m.release_year FROM video_x.media_items m WHERE ${live} AND ${membership})
           SELECT min(release_year) AS "firstYear",max(release_year) AS "lastYear",
             ARRAY(SELECT p.full_name FROM works w JOIN video_x.credits c ON c.media_id=w.id AND c.job='actor'
@@ -357,7 +396,19 @@ export class Catalog {
       categoryId: "primary_category_id",
       supportsChinese: "supports_chinese",
     });
+    if (input.releaseDate !== undefined) {
+      const year = Number(input.releaseDate.slice(0, 4));
+      if (year < 1800 || year > 2500)
+        throw new AppError(400, "INVALID_DATE", "发行日期超出范围。");
+      values.push(
+        sql`release_date=${input.releaseDate},release_year=${year},release_precision='day'`,
+      );
+    }
     if (
+      input.episodeOrder === undefined &&
+      input.identifier === undefined &&
+      input.directorIds === undefined &&
+      input.stillIds === undefined &&
       !values.length &&
       !input.actorIds &&
       !input.franchiseIds &&
@@ -368,14 +419,47 @@ export class Catalog {
     )
       throw new AppError(400, "EMPTY_PATCH", "请提交需要修改的内容");
     await this.db.transaction(async (tx) => {
-      const changed = await tx.query<{ revision: number }>(
-        sql`UPDATE video_x.media_items SET ${values.length ? sql.join(values, sql`, `) : sql`title=title`} WHERE id=${id} AND revision=${input.expectedRevision} AND archived_at IS NULL AND published_at IS NOT NULL RETURNING revision::int`,
+      const changed = await tx.query<{
+        revision: number;
+        release_date: string | null;
+        kind: string;
+      }>(
+        sql`UPDATE video_x.media_items SET ${values.length ? sql.join(values, sql`, `) : sql`title=title`} WHERE id=${id} AND revision=${input.expectedRevision} AND archived_at IS NULL AND published_at IS NOT NULL RETURNING revision::int,release_date,kind`,
       );
       await requireChanged(changed, () =>
         tx.query(
           sql`SELECT id FROM video_x.media_items WHERE id=${id} AND archived_at IS NULL AND published_at IS NOT NULL`,
         ),
       );
+      if (!changed[0]!.release_date)
+        throw new AppError(
+          400,
+          "DATE_REQUIRED",
+          "请填写完整的发行日期（年、月、日）。",
+        );
+      if (input.episodeOrder) {
+        if (changed[0]!.kind !== "group")
+          throw new AppError(400, "NOT_GROUP", "仅分集容器可以调整集序。");
+        const ids = input.episodeOrder;
+        const children = await tx.query(
+          sql`SELECT id,episode_number FROM video_x.media_items WHERE parent_id=${id} AND archived_at IS NULL AND published_at IS NOT NULL ORDER BY episode_number FOR UPDATE`,
+        );
+        const members = new Set(ids);
+        if (
+          children.length !== ids.length ||
+          !children.every((c) => members.has(c.id))
+        )
+          throw new AppError(
+            409,
+            "EPISODES_CHANGED",
+            "分集列表已变化，请重新打开核对。",
+          );
+        await tx.query(sql`SET CONSTRAINTS ALL DEFERRED`);
+        for (const [i, child] of ids.entries())
+          await tx.query(
+            sql`UPDATE video_x.media_items SET episode_number=${children[i]!.episode_number} WHERE id=${child} AND episode_number IS DISTINCT FROM ${children[i]!.episode_number}`,
+          );
+      }
       for (const [purpose, assetId] of [
         ["poster", input.posterId],
         ["backdrop", input.backdropId],
@@ -387,6 +471,35 @@ export class Catalog {
         if (assetId)
           await tx.query(
             sql`INSERT INTO video_x.media_images(media_id,asset_id,purpose,position,is_manual) VALUES(${id},${assetId},${purpose},1,true)`,
+          );
+      }
+      if (input.identifier !== undefined) {
+        await tx.query(
+          sql`DELETE FROM video_x.media_identifiers WHERE media_id=${id} AND scheme='catalog-number' AND is_primary`,
+        );
+        const identifier = input.identifier?.trim();
+        if (identifier)
+          await tx.query(sql`INSERT INTO video_x.media_identifiers(media_id,scheme,value,normalized_value,is_primary)
+          VALUES(${id},'catalog-number',${identifier},${identifier.normalize("NFKC").toUpperCase()},true)
+          ON CONFLICT(media_id,scheme,normalized_value) DO UPDATE SET value=excluded.value,is_primary=true`);
+      }
+      if (input.stillIds !== undefined) {
+        await tx.query(
+          sql`DELETE FROM video_x.media_images WHERE media_id=${id} AND purpose='still'`,
+        );
+        for (const [i, asset] of input.stillIds.entries())
+          await tx.query(
+            sql`INSERT INTO video_x.media_images(media_id,asset_id,purpose,position,is_manual) VALUES(${id},${asset},'still',${i + 1},true)`,
+          );
+      }
+      if (input.directorIds !== undefined) {
+        await checkActive(tx, "people", input.directorIds);
+        await tx.query(
+          sql`DELETE FROM video_x.credits WHERE media_id=${id} AND job='director'`,
+        );
+        for (const [n, person] of input.directorIds.entries())
+          await tx.query(
+            sql`INSERT INTO video_x.credits(media_id,person_id,job,position,is_manual) VALUES(${id},${person},'director',${n + 1},true)`,
           );
       }
       if (input.actorIds) {

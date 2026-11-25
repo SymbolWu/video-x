@@ -26,7 +26,7 @@ type Fields = Static<typeof ImportFields>;
 type Row = Static<typeof ImportRow>;
 const joins = sql`FROM video_x.import_items i LEFT JOIN video_x.import_item_files b ON b.item_id=i.id LEFT JOIN video_x.media_files f ON f.id=b.file_id LEFT JOIN video_x.storage_roots r ON r.id=f.root_id LEFT JOIN video_x.import_move_plans mp ON mp.item_id=i.id LEFT JOIN video_x.storage_roots mt ON mt.id=mp.target_root LEFT JOIN LATERAL (SELECT state,error FROM video_x.import_move_runs WHERE i.id=ANY(members) AND state<>'cancelled' ORDER BY created_at DESC LIMIT 1) mr ON true LEFT JOIN LATERAL (SELECT * FROM video_x.import_lookups WHERE item_id=i.id ORDER BY created_at DESC,id DESC LIMIT 1) l ON true`;
 
-const columns = sql`b.requires_move AS "needsTarget",r.mount_path AS "sourceMount",CASE WHEN mp.item_id IS NOT NULL OR mr.state IS NOT NULL THEN jsonb_build_object('target',coalesce(mp.target_key,mt.name,'') ,'directory',coalesce(mp.target_path,''),'source',coalesce(mp.source_path,f.relative_path,''),'state',coalesce(mr.state,'planned'),'error',mr.error) END AS move,i.id,i.revision::int,i.draft-'group' AS fields,i.draft->'group' AS "group",COALESCE(f.relative_path,'') AS "relativePath",COALESCE(f.size_bytes::text,'0') AS "sizeBytes",CASE WHEN l.id IS NOT NULL THEN jsonb_build_object('id',l.id,'provider',l.provider,'query',l.query,'state',l.state,'message',l.message,'choices',l.choices,'candidate',l.candidate,'appliedFields',l.applied_fields) END AS lookup,f.duration_ms::float8 AS "durationMs",f.container_format AS format,COALESCE(f.probe_status,'pending') AS "probeStatus",
+const columns = sql`b.requires_move AS "needsTarget",r.mount_path AS "sourceMount",CASE WHEN mp.item_id IS NOT NULL OR mr.state IS NOT NULL THEN jsonb_build_object('target',coalesce(mp.target_key,mt.name,'') ,'directory',coalesce(mp.target_path,''),'source',coalesce(mp.source_path,f.relative_path,''),'state',coalesce(mr.state,'planned'),'error',mr.error) END AS move,i.id,i.revision::int,i.draft-'group'-'editionTarget' AS fields,i.draft->'editionTarget' AS "editionTarget",i.draft->'group' AS "group",COALESCE(f.relative_path,'') AS "relativePath",COALESCE(f.size_bytes::text,'0') AS "sizeBytes",CASE WHEN l.id IS NOT NULL THEN jsonb_build_object('id',l.id,'provider',l.provider,'query',l.query,'state',l.state,'message',l.message,'choices',l.choices,'candidate',l.candidate,'appliedFields',l.applied_fields) END AS lookup,f.duration_ms::float8 AS "durationMs",f.container_format AS format,COALESCE(f.probe_status,'pending') AS "probeStatus",
   CASE WHEN f.id IS NULL THEN 'unbound' WHEN r.status IN ('offline','identity_mismatch') THEN 'offline' ELSE f.availability END AS availability,
   (i.reviewed_revision IS NOT NULL AND i.reviewed_revision=i.draft_revision) AS reviewed,i.published_media_id AS "publishedMediaId",
   (SELECT name FROM video_x.categories WHERE id=(i.draft->>'categoryId')::uuid) AS "categoryName",
@@ -51,7 +51,7 @@ export class Imports {
       lookupFailed: sql`l.state='failed'`,
       retrieved: sql`l.state='succeeded'`,
       pending: sql`i.reviewed_revision IS NULL AND i.stage<>'published'`,
-      missing: sql`(i.draft->>'posterId' IS NULL OR nullif(btrim(i.draft->>'summary'),'') IS NULL OR i.draft->>'releaseYear' IS NULL OR (jsonb_array_length(i.draft->'actorIds')=0 AND coalesce(jsonb_array_length(i.draft->'sourceNames'->'actors'),0)=0) OR i.draft->>'categoryId'='20000000-0000-4000-8000-000000000001')`,
+      missing: sql`(i.draft->>'posterId' IS NULL OR nullif(btrim(i.draft->>'summary'),'') IS NULL OR i.draft->>'releaseDate' IS NULL OR (jsonb_array_length(i.draft->'actorIds')=0 AND coalesce(jsonb_array_length(i.draft->'sourceNames'->'actors'),0)=0) OR i.draft->>'categoryId'='20000000-0000-4000-8000-000000000001')`,
       reviewed: sql`i.reviewed_revision IS NOT NULL AND i.stage<>'published'`,
       failed: sql`f.probe_status='failed'`,
       blocked: sql`(${blocked} OR mr.error IS NOT NULL OR (b.requires_move AND mp.item_id IS NULL AND i.published_media_id IS NULL) OR (${download ? sql`i.published_media_id IS NULL AND mp.item_id IS NULL AND r.mount_path=${this.root} AND starts_with(f.relative_path,${download + "/"})` : sql`false`}))`,
@@ -89,13 +89,15 @@ export class Imports {
         title,
         identifier: input.identifier?.trim() || null,
         categoryId: "20000000-0000-4000-8000-000000000001",
-        releaseYear: null,
+        releaseYear: Number(input.releaseDate.slice(0, 4)),
+        releaseDate: input.releaseDate,
         supportsChinese: null,
         summary: null,
         notes: null,
         actorIds: [],
         franchiseIds: [],
       };
+      await this.validateFields(tx, fields);
       const [item] = await tx.query(
         sql`INSERT INTO video_x.import_items(batch_id,item_key,execution_status,draft) VALUES(${batch!.id},${randomUUID()},'waiting_user',${JSON.stringify(fields)}::jsonb) RETURNING id`,
       );
@@ -132,6 +134,12 @@ export class Imports {
     return this.describe(row);
   }
   private async validateFields(tx: Transaction, fields: Fields) {
+    if (!fields.releaseDate)
+      throw new AppError(
+        400,
+        "DATE_REQUIRED",
+        "请填写完整的发行日期（年、月、日）。",
+      );
     if (!fields.title.trim())
       throw new AppError(400, "TITLE_REQUIRED", "请填写片名");
     if (
@@ -144,7 +152,9 @@ export class Imports {
       throw notFound();
     if (
       fields.releaseDate &&
-      Number(fields.releaseDate.slice(0, 4)) !== fields.releaseYear
+      (Number(fields.releaseDate.slice(0, 4)) !== fields.releaseYear ||
+        fields.releaseYear < 1800 ||
+        fields.releaseYear > 2500)
     )
       throw new AppError(400, "INVALID_DATE", "发行日期必须与发行年份一致。");
     await checkActive(tx, "people", fields.directorIds ?? []);
@@ -189,7 +199,7 @@ export class Imports {
         : sql`NOT(draft ? 'group')`;
       for (const [n, m] of input.members.entries()) {
         const [ok] = await tx.query(
-          sql`UPDATE video_x.import_items SET draft=jsonb_set(draft,'{group}',${JSON.stringify({ id: groupId, title, sourceId: input.sourceId ?? input.members[0]!.id, position: n + (input.startNumber ?? 1) })}::jsonb),draft_revision=draft_revision+1,reviewed_revision=null,reviewed_at=null,reviewed_by=null,stage=CASE WHEN stage='ready' THEN 'probed' ELSE stage END WHERE id=${m.id} AND revision=${m.revision} AND stage<>'published' AND merged_into_id IS NULL AND EXISTS(SELECT 1 FROM video_x.import_item_files b WHERE b.item_id=import_items.id) AND ${membership} RETURNING id`,
+          sql`UPDATE video_x.import_items SET draft=jsonb_set(draft,'{group}',${JSON.stringify({ id: groupId, title, sourceId: input.sourceId ?? input.members[0]!.id, position: n + (input.startNumber ?? 1) })}::jsonb),draft_revision=draft_revision+1,reviewed_revision=null,reviewed_at=null,reviewed_by=null,stage=CASE WHEN stage='ready' THEN 'probed' ELSE stage END WHERE id=${m.id} AND revision=${m.revision} AND stage<>'published' AND merged_into_id IS NULL AND NOT (draft ? 'editionTarget') AND EXISTS(SELECT 1 FROM video_x.import_item_files b WHERE b.item_id=import_items.id) AND ${membership} RETURNING id`,
         );
         if (!ok) throw conflict();
       }
@@ -206,9 +216,54 @@ export class Imports {
       return { id };
     });
   }
-  decide(id: string, revision: number, profile: string, publish: boolean) {
+  decide(
+    id: string,
+    revision: number,
+    profile: string,
+    publish: boolean,
+    edition?: { mediaId: string; name: string },
+  ) {
     return this.db.transaction(async (tx) => {
       await tx.query(sql`SELECT pg_advisory_xact_lock(72649009)`);
+      if (edition) {
+        const row = await this.row(tx, id);
+        const name = edition.name.trim();
+        if (!name || row.group) throw problem("请选择单个文件并填写版本名称。");
+        if (
+          row.editionTarget &&
+          (row.editionTarget.mediaId !== edition.mediaId ||
+            row.editionTarget.name !== name)
+        )
+          throw conflict();
+        if (row.publishedMediaId) {
+          if (row.publishedMediaId === edition.mediaId && row.editionTarget)
+            return row;
+          throw conflict();
+        }
+        if (!row.reviewed) throw problem("请先在录入工作台人工核对文件。");
+        const [target] = await tx.query(
+          sql`SELECT m.id,m.release_date FROM video_x.media_items m JOIN video_x.import_items i ON i.id=${id} JOIN video_x.import_batches b ON b.id=i.batch_id AND b.library_id=m.library_id WHERE m.id=${edition.mediaId} AND m.kind IN ('movie','video','episode') AND m.published_at IS NOT NULL AND m.archived_at IS NULL FOR UPDATE OF m`,
+        );
+        if (!target) throw problem("目标作品不可用。");
+        if (!target.release_date || !row.fields.releaseDate)
+          throw new AppError(
+            400,
+            "DATE_REQUIRED",
+            "请先补齐作品和草稿的发行日期。",
+          );
+        if (!row.editionTarget) {
+          const running = await tx.query(
+            sql`SELECT id FROM video_x.import_move_runs WHERE ${id}::uuid=ANY(members) AND state NOT IN ('done','cancelled')`,
+          );
+          if (running.length)
+            throw problem("此文件已有整理任务，请等待任务完成。");
+          const [changed] = await tx.query(
+            sql`UPDATE video_x.import_items SET draft=jsonb_set(draft,'{editionTarget}',${JSON.stringify({ mediaId: edition.mediaId, name })}::jsonb) WHERE id=${id} AND revision=${revision} RETURNING revision::int`,
+          );
+          if (!changed) throw conflict();
+          revision = changed.revision;
+        } else revision = row.revision;
+      }
       if (publish && (await queueMove(tx, this.root, id, revision, profile)))
         return this.row(tx, id);
       return this.decideTx(tx, id, revision, profile, publish);
@@ -261,6 +316,10 @@ export class Imports {
   }
   private async attachMetadata(tx: Transaction, media: string, d: Fields) {
     d = await publishedRelations(tx, d);
+    for (const [i, asset] of (d.stillIds ?? []).entries())
+      await tx.query(
+        sql`INSERT INTO video_x.media_images(media_id,asset_id,purpose,position,is_manual) VALUES(${media},${asset},'still',${i + 1},true)`,
+      );
     await replaceDictionaryLinks(tx, media, d);
     for (const [purpose, assetId] of [
       ["poster", d.posterId],
@@ -333,7 +392,6 @@ export class Imports {
     )
       throw new AppError(409, "REVIEW_REQUIRED", "请先人工确认当前草稿。");
     const d = i.draft as Fields;
-    await this.validateFields(tx, d);
     let valid = false;
     if (
       allowedRoot(this.root, f.mount_path) &&
@@ -360,23 +418,47 @@ export class Imports {
         "FILE_UNAVAILABLE",
         "文件离线、内容已更换或探测失败。请重新扫描后核对。",
       );
+    await this.validateFields(tx, d);
     if (!publish) {
       await tx.query(
         sql`UPDATE video_x.import_items SET stage='ready',reviewed_revision=draft_revision,reviewed_at=now(),reviewed_by=(SELECT account_id FROM video_x.profiles WHERE id=${profile}) WHERE id=${id}`,
       );
     } else {
-      const [m] = await tx.query(
-        sql`INSERT INTO video_x.media_items(library_id,kind,parent_id,parent_kind,episode_number,title,primary_category_id,summary,notes,release_year,release_date,release_precision,supports_chinese,published_at) VALUES(${f.library_id},${group ? "episode" : "movie"},${group?.id ?? null},${group ? "group" : null},${group?.position ?? null},${d.title},${d.categoryId},${d.summary},${d.notes},${d.releaseYear},${d.releaseDate ?? null},${d.releaseDate ? "day" : d.releaseYear ? "year" : "unknown"},${d.supportsChinese},now()) RETURNING id`,
-      );
-      const media = m!.id;
-      const identifier = d.identifier?.trim();
-      if (identifier)
-        await tx.query(
-          sql`INSERT INTO video_x.media_identifiers(media_id,scheme,value,normalized_value,is_primary) VALUES(${media},'catalog-number',${identifier},${identifier.normalize("NFKC").toUpperCase()},true)`,
+      const target = i.draft.editionTarget as
+        | { mediaId: string; name: string }
+        | undefined;
+      let media: string, mediaKind: string, isDefault: boolean;
+      let mediaRevision = 1;
+      if (target) {
+        if (group || i.draft.group)
+          throw problem("分集组不能作为追加版本发布。");
+        const [m] = await tx.query(
+          sql`UPDATE video_x.media_items SET title=title WHERE id=${target.mediaId} AND library_id=${f.library_id} AND published_at IS NOT NULL AND archived_at IS NULL AND kind IN ('movie','episode','video') RETURNING id,kind,revision::int`,
         );
-      await this.attachMetadata(tx, media, d);
+        if (!m) throw problem("无法追加到目标作品。");
+        media = m.id;
+        mediaKind = m.kind;
+        mediaRevision = m.revision;
+        const existing = await tx.query(
+          sql`SELECT id FROM video_x.editions WHERE media_id=${media} AND is_default AND archived_at IS NULL`,
+        );
+        isDefault = !existing.length;
+      } else {
+        const [m] = await tx.query(
+          sql`INSERT INTO video_x.media_items(library_id,kind,parent_id,parent_kind,episode_number,title,primary_category_id,summary,notes,release_year,release_date,release_precision,supports_chinese,published_at) VALUES(${f.library_id},${group ? "episode" : "movie"},${group?.id ?? null},${group ? "group" : null},${group?.position ?? null},${d.title},${d.categoryId},${d.summary},${d.notes},${d.releaseYear},${d.releaseDate ?? null},${d.releaseDate ? "day" : d.releaseYear ? "year" : "unknown"},${d.supportsChinese},now()) RETURNING id`,
+        );
+        media = m!.id;
+        mediaKind = group ? "episode" : "movie";
+        isDefault = true;
+        const identifier = d.identifier?.trim();
+        if (identifier)
+          await tx.query(
+            sql`INSERT INTO video_x.media_identifiers(media_id,scheme,value,normalized_value,is_primary) VALUES(${media},'catalog-number',${identifier},${identifier.normalize("NFKC").toUpperCase()},true)`,
+          );
+        await this.attachMetadata(tx, media, d);
+      }
       const [v] = await tx.query(
-        sql`INSERT INTO video_x.editions(media_id,media_kind,name,is_default) VALUES(${media},${group ? "episode" : "movie"},'原版',true) RETURNING id`,
+        sql`INSERT INTO video_x.editions(media_id,media_kind,name,is_default) VALUES(${media},${mediaKind},${target?.name ?? "原版"},${isDefault}) RETURNING id`,
       );
       await tx.query(
         sql`INSERT INTO video_x.edition_parts(edition_id,part_no,file_id,bound_content_revision) VALUES(${v!.id},1,${f.id},${f.content_revision})`,
@@ -384,7 +466,7 @@ export class Imports {
       await tx.query(
         sql`UPDATE video_x.import_items SET stage='published',execution_status='completed',published_media_id=${media},published_edition_id=${v!.id},published_at=now() WHERE id=${id}`,
       );
-      await tx.emit({ mediaId: media, revision: 1 });
+      await tx.emit({ mediaId: media, revision: mediaRevision });
     }
     return this.row(tx, id);
   }

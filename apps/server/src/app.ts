@@ -1,4 +1,4 @@
-import Fastify, { type FastifyRequest } from "fastify";
+import Fastify from "fastify";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import cookie from "@fastify/cookie";
@@ -359,14 +359,14 @@ export async function createApp(
     },
     (req) => catalog.listMedia(req.viewer.id, req.query),
   );
-  app.get<{ Querystring: C.Query }>(
+  app.get<{ Querystring: C.ManagementMediaQuery }>(
     "/api/manage/media",
     {
       schema: {
         ...authSchema,
         operationId: "listManagementMedia",
         tags: ["Catalog"],
-        querystring: C.MediaListQuery,
+        querystring: C.ManagementMediaListQuery,
         response: response(C.ManagementMediaPage),
       },
     },
@@ -819,6 +819,25 @@ export async function createApp(
     },
     (req) => catalog.facts(req.viewer.id),
   );
+  app.post<{ Params: { id: string }; Body: Static<typeof C.PublishEdition> }>(
+    "/api/imports/:id/publish-edition",
+    {
+      schema: {
+        ...operation("publishImportAsEdition"),
+        params: C.IdParams,
+        body: C.T.Ref(C.PublishEdition),
+        response: response(C.ImportRow),
+      },
+    },
+    (r) =>
+      imports.decide(
+        r.params.id,
+        r.body.expectedRevision,
+        r.viewer.id,
+        true,
+        r.body,
+      ),
+  );
   registerArt(app, db);
   registerPlayback(app, db, mediaRoot, authSchema);
   app.get(
@@ -834,6 +853,19 @@ export async function createApp(
     (req) => catalog.archive(req.viewer.id),
   );
   const dictionary = new Dictionary(db);
+  app.get<{ Querystring: Static<typeof C.DictionaryChoiceQuery> }>(
+    "/api/dictionary/choices",
+    {
+      schema: {
+        ...authSchema,
+        operationId: "listDictionaryChoices",
+        tags: ["Catalog"],
+        querystring: C.DictionaryChoiceQuery,
+        response: response(C.DictionaryChoicePage),
+      },
+    },
+    (r) => dictionary.choices(r.query),
+  );
   app.get(
     "/api/dictionary",
     {

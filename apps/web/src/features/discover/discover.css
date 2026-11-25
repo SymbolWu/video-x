@@ -1,0 +1,123 @@
+.vx-discover-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 10px;
+  min-height: clamp(210px, 24vw, 340px);
+  margin-top: 22px;
+  display: grid;
+  align-items: end;
+  background: var(--vx-panel);
+}
+.vx-discover-hero > img,
+.vx-discover-hero > .vx-art-empty {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  object-position: center 35%;
+}
+.vx-discover-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, #101114ee 0%, #10111480 45%, transparent 80%),
+    linear-gradient(0deg, #10111490, transparent 50%);
+}
+.vx-discover-hero > div {
+  padding: clamp(18px, 3vw, 44px);
+  max-width: min(630px, 95%);
+}
+.vx-discover-hero h2 {
+  font-size: clamp(24px, 3vw, 42px);
+  line-height: 1.16;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.vx-discover-hero p,
+.vx-discover-hero span {
+  color: #dddde3;
+  font-size: 13px;
+}
+.vx-discover-hero .vx-primary {
+  margin-top: 16px;
+  min-height: 36px;
+}
+.resume-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 265px), 1fr));
+  gap: 10px;
+}
+.vx-design .vx-continue {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  text-align: left;
+  padding: 8px 12px 8px 8px;
+  background: var(--vx-panel);
+  border-radius: 8px;
+}
+.vx-design .vx-continue:hover {
+  background: #26272e;
+}
+.resume-art {
+  height: 52px;
+  display: block;
+  overflow: hidden;
+  border-radius: 4px;
+}
+.resume-art > img {
+  width: 100%;
+  height: 100%;
+}
+.resume-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.resume-copy b {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}
+.resume-copy small {
+  font-size: 11px;
+  color: #b4b4bf;
+}
+.resume-copy progress {
+  display: block;
+  width: 100%;
+  max-width: 160px;
+  height: 3px;
+  margin-top: 3px;
+  appearance: none;
+  border: 0;
+  background: #42434b;
+  color: var(--vx-pink);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.resume-copy progress::-webkit-progress-bar {
+  background: #42434b;
+}
+.resume-copy progress::-webkit-progress-value {
+  background: var(--vx-pink);
+}
+.resume-copy progress::-moz-progress-bar {
+  background: var(--vx-pink);
+}
+@media (max-width: 739px) {
+  .vx-discover-hero {
+    margin-top: 4px;
+  }
+  .vx-discover-hero > div {
+    padding: 18px;
+  }
+}

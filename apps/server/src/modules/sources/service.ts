@@ -170,6 +170,12 @@ export async function acceptLookup(
           sourceNames[key] = [...new Set([...sourceNames[key], ...c[key]])];
       }
     }
+    if (!fields.releaseDate)
+      throw new AppError(
+        400,
+        "DATE_REQUIRED",
+        "请选取来源的完整发行日期，或先在基本资料补齐年月日。",
+      );
     fields.sourceNames = sourceNames;
     await tx.query(
       sql`UPDATE video_x.import_items SET draft=${JSON.stringify(fields)}::jsonb,draft_revision=draft_revision+1,reviewed_revision=null,reviewed_at=null,reviewed_by=null,stage='matched' WHERE id=${id}`,

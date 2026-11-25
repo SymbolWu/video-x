@@ -580,6 +580,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/imports/{id}/publish-edition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["publishImportAsEdition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/playback/plans": {
         parameters: {
             query?: never;
@@ -660,6 +676,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/dictionary/choices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listDictionaryChoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/dictionary": {
         parameters: {
             query?: never;
@@ -716,6 +748,39 @@ export interface components {
             title: string;
             position: number;
         };
+        EditionInfo: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            isDefault: boolean;
+            filename: string;
+            width: number | null;
+            height: number | null;
+            availability: string;
+        };
+        EditionTarget: {
+            /** Format: uuid */
+            mediaId: string;
+            name: string;
+        };
+        DictionaryChoice: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            detail: string | null;
+        };
+        DictionaryChoicePage: {
+            items: components["schemas"]["DictionaryChoice"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        PublishEdition: {
+            /** Format: uuid */
+            mediaId: string;
+            name: string;
+            expectedRevision: number;
+        };
         DictionaryEntry: {
             /** Format: uuid */
             id: string;
@@ -764,11 +829,15 @@ export interface components {
         };
         PlaybackRequest: {
             /** Format: uuid */
+            editionId?: string;
+            /** Format: uuid */
             mediaId: string;
             /** @enum {string} */
             intent: "play" | "resume" | "restart";
         };
         PlaybackOpen: {
+            /** Format: uuid */
+            editionId?: string;
             /** Format: uuid */
             mediaId: string;
             /** @enum {string} */
@@ -878,6 +947,8 @@ export interface components {
             name: string;
         };
         NewDraft: {
+            /** Format: date */
+            releaseDate: string;
             title: string;
             identifier?: string;
         };
@@ -898,6 +969,7 @@ export interface components {
             expectedRevision: number;
         };
         ImportFields: {
+            stillIds?: string[];
             sourceNames?: components["schemas"]["SourceNames"];
             identifier?: string | null;
             /** Format: date */
@@ -979,6 +1051,7 @@ export interface components {
             count: number;
         };
         ImportRow: {
+            editionTarget?: components["schemas"]["EditionTarget"];
             needsTarget?: boolean;
             move?: components["schemas"]["MoveInfo"];
             lookup?: components["schemas"]["SourceLookup"];
@@ -1039,6 +1112,17 @@ export interface components {
                 used: number;
                 available: number;
             }[] | null;
+            mediaRoots?: {
+                name: string;
+                path: string;
+                state: string;
+                space: {
+                    total: number;
+                    used: number;
+                    available: number;
+                } | null;
+                capacityCheckedAt: string | null;
+            }[];
             art: {
                 path: string;
                 bytes: number;
@@ -1190,6 +1274,11 @@ export interface components {
         MediaDetail: {
             tagIds?: string[];
             studioIds?: string[];
+            stillIds?: string[];
+            directors?: components["schemas"]["Person"][];
+            editions?: components["schemas"]["EditionInfo"][];
+            /** Format: uuid */
+            resumeEditionId?: string | null;
             /** Format: date */
             releaseDate?: string | null;
             identifier?: string | null;
@@ -1225,6 +1314,12 @@ export interface components {
             franchises: components["schemas"]["Franchise"][];
         };
         MediaPatch: {
+            episodeOrder?: string[];
+            stillIds?: string[];
+            /** Format: date */
+            releaseDate?: string;
+            identifier?: string | null;
+            directorIds?: string[];
             tagIds?: string[];
             studioIds?: string[];
             /** Format: uuid */
@@ -2530,6 +2625,10 @@ export interface operations {
                 actorId?: string;
                 franchiseId?: string;
                 collectionId?: string;
+                /** @description Resolution tier of the default edition. */
+                resolution?: "2160p" | "1080p" | "720p" | "576p" | "480p" | "below360p" | "unknown";
+                /** @description Catalog's Chinese support flag, as recorded in the film's metadata. */
+                chineseSubtitles?: "supported" | "unsupported" | "unknown";
             };
             header?: never;
             path?: never;
@@ -6098,6 +6197,113 @@ export interface operations {
             };
         };
     };
+    publishImportAsEdition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PublishEdition"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRow"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getPlaybackPlan: {
         parameters: {
             query?: never;
@@ -6354,6 +6560,115 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ArchiveEntry"][];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listDictionaryChoices: {
+        parameters: {
+            query: {
+                q?: string;
+                categoryId?: string;
+                direction?: "asc" | "desc";
+                page?: number;
+                pageSize?: number;
+                kind: "tag" | "studio";
+                ids?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DictionaryChoicePage"];
                 };
             };
             /** @description Default Response */

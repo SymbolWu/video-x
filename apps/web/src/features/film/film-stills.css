@@ -1,0 +1,70 @@
+.detail-content h3 small {
+  margin-inline-start: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--vx-muted);
+}
+.film-stills {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 195px), 1fr));
+  gap: 12px;
+}
+.film-stills button {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  aspect-ratio: 16 / 9;
+  background: var(--vx-panel);
+  cursor: zoom-in;
+}
+.film-stills button > * {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.still-preview {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(1000px, calc(100vw - 32px));
+  max-height: 95dvh;
+  padding: 0;
+  border: 1px solid var(--vx-line);
+  border-radius: 8px;
+  background: var(--vx-bg);
+  color: var(--vx-text);
+}
+.still-preview::backdrop {
+  background: rgb(0 0 0 / 82%);
+}
+.still-preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 4px 16px;
+}
+.still-preview-toolbar strong {
+  margin-right: auto;
+  font-size: 14px;
+}
+.still-preview-toolbar button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+}
+.still-preview-image {
+  width: 100%;
+  height: min(68dvh, 600px);
+  object-fit: contain;
+  background: #0b0c0e;
+}
+@media (max-width: 520px) {
+  .film-stills {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .still-preview-image {
+    height: min(58dvh, 90vw);
+  }
+}

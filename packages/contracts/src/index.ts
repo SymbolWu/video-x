@@ -30,6 +30,17 @@ export const RuntimeStatus = obj("RuntimeStatus", {
   disks: nullable(
     T.Array(T.Object({ name: T.String(), path: T.String(), ...storageSpace })),
   ),
+  mediaRoots: T.Optional(
+    T.Array(
+      T.Object({
+        name: T.String(),
+        path: T.String(),
+        state: T.String(),
+        space: nullable(T.Object(storageSpace)),
+        capacityCheckedAt: nullable(T.String()),
+      }),
+    ),
+  ),
   art: T.Object({ path: T.String(), bytes: T.Number(), state: T.String() }),
   pending: T.Integer(),
   postgres: T.String(),
@@ -126,8 +137,14 @@ const filmographyFacts = {
   lastYear: nullable(T.Integer()),
   cast: T.Array(T.String()),
 };
-export const PersonProfile = obj("PersonProfile", { record: T.Ref(Person), ...filmographyFacts });
-export const FranchiseProfile = obj("FranchiseProfile", { record: T.Ref(Franchise), ...filmographyFacts });
+export const PersonProfile = obj("PersonProfile", {
+  record: T.Ref(Person),
+  ...filmographyFacts,
+});
+export const FranchiseProfile = obj("FranchiseProfile", {
+  record: T.Ref(Franchise),
+  ...filmographyFacts,
+});
 export const FranchiseCreate = obj("FranchiseCreate", {
   coverId: T.Optional(nullable(id())),
   name: T.String({ minLength: 1, maxLength: 300 }),
@@ -175,8 +192,29 @@ const dictLinks = {
   tagIds: T.Optional(T.Array(id(), { uniqueItems: true, maxItems: 200 })),
   studioIds: T.Optional(T.Array(id(), { uniqueItems: true, maxItems: 100 })),
 };
+const stillIds = T.Optional(
+  T.Array(id(), { uniqueItems: true, maxItems: 100 }),
+);
+export const EditionInfo = obj("EditionInfo", {
+  id: id(),
+  name: T.String(),
+  isDefault: T.Boolean(),
+  filename: T.String(),
+  width: nullable(T.Integer()),
+  height: nullable(T.Integer()),
+  availability: T.String(),
+});
+export const EditionTarget = obj("EditionTarget", {
+  mediaId: id(),
+  name: T.String({ minLength: 1, maxLength: 160 }),
+});
+
 export const MediaDetail = obj("MediaDetail", {
   ...dictLinks,
+  stillIds,
+  directors: T.Optional(T.Array(T.Ref(Person))),
+  editions: T.Optional(T.Array(T.Ref(EditionInfo))),
+  resumeEditionId: T.Optional(nullable(id())),
   releaseDate: T.Optional(nullable(T.String({ format: "date" }))),
   identifier: T.Optional(nullable(T.String())),
   episodes: T.Optional(T.Array(T.Ref(Media))),
@@ -187,6 +225,13 @@ export const MediaDetail = obj("MediaDetail", {
   franchises: T.Array(T.Ref(Franchise)),
 });
 export const MediaPatch = obj("MediaPatch", {
+  episodeOrder: T.Optional(
+    T.Array(id(), { uniqueItems: true, minItems: 1, maxItems: 1000 }),
+  ),
+  stillIds,
+  releaseDate: T.Optional(T.String({ format: "date" })),
+  identifier: T.Optional(nullable(T.String({ maxLength: 160 }))),
+  directorIds: T.Optional(T.Array(id(), { uniqueItems: true, maxItems: 200 })),
   ...dictLinks,
   posterId: T.Optional(nullable(id())),
   backdropId: T.Optional(nullable(id())),
@@ -297,6 +342,41 @@ export const MediaListQuery = T.Object(
   },
   { additionalProperties: false },
 );
+export const ManagementMediaListQuery = T.Object(
+  {
+    ...MediaListQuery.properties,
+    resolution: T.Optional(
+      T.Union(
+        [
+          T.Literal("2160p"),
+          T.Literal("1080p"),
+          T.Literal("720p"),
+          T.Literal("576p"),
+          T.Literal("480p"),
+          T.Literal("below360p"),
+          T.Literal("unknown"),
+        ],
+        { description: "Resolution tier of the default edition." },
+      ),
+    ),
+    chineseSubtitles: T.Optional(
+      T.Union(
+        [
+          T.Literal("supported"),
+          T.Literal("unsupported"),
+          T.Literal("unknown"),
+        ],
+        {
+          description:
+            "Catalog's Chinese support flag, as recorded in the film's metadata.",
+        },
+      ),
+    ),
+  },
+  { additionalProperties: false },
+);
+export type ManagementMediaQuery = Static<typeof ManagementMediaListQuery>;
+
 export const RelatedListQuery = T.Object(
   {
     ...commonQuery,
@@ -316,6 +396,27 @@ const page = <S extends TSchema>(name: string, item: S) =>
     page: T.Integer(),
     pageSize: T.Integer(),
   });
+export const DictionaryChoice = obj("DictionaryChoice", {
+  id: id(),
+  name: T.String(),
+  detail: nullable(T.String()),
+});
+export const DictionaryChoicePage = page(
+  "DictionaryChoicePage",
+  DictionaryChoice,
+);
+export const DictionaryChoiceQuery = T.Object(
+  {
+    ...commonQuery,
+    kind: T.Union([T.Literal("tag"), T.Literal("studio")]),
+    ids: T.Optional(T.String({ maxLength: 8000, pattern: "^[0-9a-fA-F,-]+$" })),
+  },
+  { additionalProperties: false },
+);
+export const PublishEdition = obj("PublishEdition", {
+  ...EditionTarget.properties,
+  expectedRevision: T.Integer({ minimum: 1 }),
+});
 export const MediaPage = page("MediaPage", Media),
   ManagementMediaPage = page("ManagementMediaPage", ManagementMedia),
   PersonPage = page("PersonPage", Person),
@@ -386,6 +487,7 @@ export const SourceProvider = obj("SourceProvider", {
   name: T.String(),
 });
 export const NewDraft = obj("NewDraft", {
+  releaseDate: T.String({ format: "date" }),
   title: T.String({ minLength: 1, maxLength: 1000 }),
   identifier: T.Optional(T.String({ maxLength: 160 })),
 });
@@ -415,6 +517,7 @@ export const ApplyLookup = obj("ApplyLookup", {
   ),
 });
 export const ImportFields = obj("ImportFields", {
+  stillIds,
   sourceNames: T.Optional(T.Ref(SourceNames)),
   identifier: T.Optional(nullable(T.String({ maxLength: 160 }))),
   releaseDate: T.Optional(nullable(T.String({ format: "date" }))),
@@ -514,6 +617,7 @@ export const MoveInfo = obj("MoveInfo", {
   error: nullable(T.String()),
 });
 export const ImportRow = obj("ImportRow", {
+  editionTarget: T.Optional(nullable(T.Ref(EditionTarget))),
   needsTarget: T.Optional(T.Boolean()),
   move: T.Optional(nullable(T.Ref(MoveInfo))),
   lookup: T.Optional(nullable(T.Ref(SourceLookup))),
@@ -548,7 +652,13 @@ export const ImportQueue = obj("ImportQueue", {
 export const ImportQuery = T.Object(
   {
     groupId: T.Optional(id()),
-    stage: T.Optional(T.Union([T.Literal("pending"), T.Literal("reviewed"), T.Literal("published")])),
+    stage: T.Optional(
+      T.Union([
+        T.Literal("pending"),
+        T.Literal("reviewed"),
+        T.Literal("published"),
+      ]),
+    ),
     q: commonQuery.q,
     page: commonQuery.page,
     pageSize: commonQuery.pageSize,
@@ -571,6 +681,7 @@ export const ImportQuery = T.Object(
   { additionalProperties: false },
 );
 export const PlaybackRequest = obj("PlaybackRequest", {
+  editionId: T.Optional(id()),
   mediaId: id(),
   intent: T.Union([
     T.Literal("play"),
@@ -621,6 +732,11 @@ export const schemas = [
   GroupMember,
   GroupInput,
   GroupInfo,
+  EditionInfo,
+  EditionTarget,
+  DictionaryChoice,
+  DictionaryChoicePage,
+  PublishEdition,
   DictionaryEntry,
   DictionaryWrite,
   DictionaryEdit,

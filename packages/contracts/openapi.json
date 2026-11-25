@@ -92,6 +92,137 @@
           }
         }
       },
+      "EditionInfo": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "isDefault",
+          "filename",
+          "width",
+          "height",
+          "availability"
+        ],
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "width": {
+            "type": "integer",
+            "nullable": true
+          },
+          "height": {
+            "type": "integer",
+            "nullable": true
+          },
+          "availability": {
+            "type": "string"
+          }
+        }
+      },
+      "EditionTarget": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mediaId",
+          "name"
+        ],
+        "properties": {
+          "mediaId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "maxLength": 160,
+            "type": "string"
+          }
+        }
+      },
+      "DictionaryChoice": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "detail"
+        ],
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "DictionaryChoicePage": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DictionaryChoice"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          }
+        }
+      },
+      "PublishEdition": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mediaId",
+          "name",
+          "expectedRevision"
+        ],
+        "properties": {
+          "mediaId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "maxLength": 160,
+            "type": "string"
+          },
+          "expectedRevision": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
       "DictionaryEntry": {
         "additionalProperties": false,
         "type": "object",
@@ -279,6 +410,10 @@
           "intent"
         ],
         "properties": {
+          "editionId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "mediaId": {
             "format": "uuid",
             "type": "string"
@@ -302,6 +437,10 @@
           "requestId"
         ],
         "properties": {
+          "editionId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "mediaId": {
             "format": "uuid",
             "type": "string"
@@ -783,9 +922,14 @@
         "additionalProperties": false,
         "type": "object",
         "required": [
+          "releaseDate",
           "title"
         ],
         "properties": {
+          "releaseDate": {
+            "format": "date",
+            "type": "string"
+          },
           "title": {
             "minLength": 1,
             "maxLength": 1000,
@@ -899,6 +1043,15 @@
           "franchiseIds"
         ],
         "properties": {
+          "stillIds": {
+            "uniqueItems": true,
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
           "sourceNames": {
             "$ref": "#/components/schemas/SourceNames"
           },
@@ -1266,6 +1419,10 @@
           "videoCodec"
         ],
         "properties": {
+          "editionTarget": {
+            "$ref": "#/components/schemas/EditionTarget",
+            "nullable": true
+          },
           "needsTarget": {
             "type": "boolean"
           },
@@ -1510,6 +1667,54 @@
               }
             },
             "nullable": true
+          },
+          "mediaRoots": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "path",
+                "state",
+                "space",
+                "capacityCheckedAt"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "space": {
+                  "type": "object",
+                  "required": [
+                    "total",
+                    "used",
+                    "available"
+                  ],
+                  "properties": {
+                    "total": {
+                      "type": "number"
+                    },
+                    "used": {
+                      "type": "number"
+                    },
+                    "available": {
+                      "type": "number"
+                    }
+                  },
+                  "nullable": true
+                },
+                "capacityCheckedAt": {
+                  "type": "string",
+                  "nullable": true
+                }
+              }
+            }
           },
           "art": {
             "type": "object",
@@ -2102,6 +2307,32 @@
               "type": "string"
             }
           },
+          "stillIds": {
+            "uniqueItems": true,
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          "directors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Person"
+            }
+          },
+          "editions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EditionInfo"
+            }
+          },
+          "resumeEditionId": {
+            "format": "uuid",
+            "type": "string",
+            "nullable": true
+          },
           "releaseDate": {
             "format": "date",
             "type": "string",
@@ -2219,6 +2450,43 @@
           "expectedRevision"
         ],
         "properties": {
+          "episodeOrder": {
+            "uniqueItems": true,
+            "minItems": 1,
+            "maxItems": 1000,
+            "type": "array",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          "stillIds": {
+            "uniqueItems": true,
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          "releaseDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "identifier": {
+            "maxLength": 160,
+            "type": "string",
+            "nullable": true
+          },
+          "directorIds": {
+            "uniqueItems": true,
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
           "tagIds": {
             "uniqueItems": true,
             "maxItems": 200,
@@ -4403,6 +4671,38 @@
             "in": "query",
             "name": "collectionId",
             "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2160p",
+                "1080p",
+                "720p",
+                "576p",
+                "480p",
+                "below360p",
+                "unknown"
+              ]
+            },
+            "in": "query",
+            "name": "resolution",
+            "required": false,
+            "description": "Resolution tier of the default edition."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "supported",
+                "unsupported",
+                "unknown"
+              ]
+            },
+            "in": "query",
+            "name": "chineseSubtitles",
+            "required": false,
+            "description": "Catalog's Chinese support flag, as recorded in the film's metadata."
           }
         ],
         "security": [
@@ -9001,6 +9301,144 @@
         }
       }
     },
+    "/api/imports/{id}/publish-edition": {
+      "post": {
+        "operationId": "publishImportAsEdition",
+        "tags": [
+          "Imports"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishEdition"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/playback/plans": {
       "post": {
         "operationId": "getPlaybackPlan",
@@ -9346,6 +9784,200 @@
                   "items": {
                     "$ref": "#/components/schemas/ArchiveEntry"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dictionary/choices": {
+      "get": {
+        "operationId": "listDictionaryChoices",
+        "tags": [
+          "Catalog"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "in": "query",
+            "name": "q",
+            "required": false
+          },
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "query",
+            "name": "categoryId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "in": "query",
+            "name": "direction",
+            "required": false
+          },
+          {
+            "schema": {
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1,
+              "type": "integer"
+            },
+            "in": "query",
+            "name": "page",
+            "required": false
+          },
+          {
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 24,
+              "type": "integer"
+            },
+            "in": "query",
+            "name": "pageSize",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "tag",
+                "studio"
+              ]
+            },
+            "in": "query",
+            "name": "kind",
+            "required": true
+          },
+          {
+            "schema": {
+              "maxLength": 8000,
+              "pattern": "^[0-9a-fA-F,-]+$",
+              "type": "string"
+            },
+            "in": "query",
+            "name": "ids",
+            "required": false
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DictionaryChoicePage"
                 }
               }
             }

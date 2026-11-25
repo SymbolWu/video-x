@@ -30,6 +30,7 @@ import com.squareup.moshi.JsonClass
 /**
  * @param mediaId
  * @param intent
+ * @param editionId
  */
 
 
@@ -39,7 +40,10 @@ data class PlaybackRequest (
     val mediaId: java.util.UUID,
 
     @Json(name = "intent")
-    val intent: PlaybackRequest.Intent
+    val intent: PlaybackRequest.Intent,
+
+    @Json(name = "editionId")
+    val editionId: java.util.UUID? = null
 
 ) {
 

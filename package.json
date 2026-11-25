@@ -12,7 +12,7 @@
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "pnpm --filter @video-x/server test",
-    "check": "pnpm typecheck && pnpm test && pnpm build && pnpm contracts:check",
+    "check": "pnpm check:standards && pnpm typecheck && pnpm test && pnpm build && pnpm contracts:check",
     "db:local": "node tooling/local-db.mjs start",
     "db:stop": "node tooling/local-db.mjs stop",
     "db:migrate": "pnpm --filter @video-x/server db:migrate",
@@ -23,7 +23,13 @@
     "android:build": "cd apps/android && ./gradlew :app:assembleDebug",
     "dev:bootstrap": "pnpm --filter @video-x/server dev:bootstrap",
     "dev:worker": "pnpm --filter @video-x/server worker",
-    "android:test": "cd apps/android && ./gradlew :app:testDebugUnitTest"
+    "android:test": "cd apps/android && ./gradlew :app:testDebugUnitTest",
+    "test:ui": "pnpm --filter @video-x/admin --filter @video-x/web build && pnpm test:ui:built",
+    "test:ui:built": "node --test tooling/ui-regression.test.mjs",
+    "format:check": "prettier --check \"apps/{admin,web,server}/src/**/*.{ts,tsx,js,jsx,mts,mjs,css}\" \"apps/{admin,web}/vite.config.ts\" \"apps/server/test/**/*.ts\" \"packages/{contracts,ui}/src/**/*.{ts,tsx,css}\" \"packages/sdk-ts/src/**/*.ts\" \"packages/design-tokens/**/*.css\" \"tooling/**/*.mjs\"",
+    "check:boundaries": "node tooling/check-web-boundaries.mjs",
+    "check:branch": "node tooling/check-branch.mjs",
+    "check:standards": "pnpm format:check && pnpm check:boundaries"
   },
   "devDependencies": {
     "turbo": "2.5.6",
@@ -32,7 +38,8 @@
     "@types/node": "24.10.1",
     "openapi-typescript": "7.13.0",
     "prettier": "3.6.2",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "playwright": "1.59.1"
   },
   "pnpm": {
     "overrides": {

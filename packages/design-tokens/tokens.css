@@ -75,6 +75,10 @@ button {
 button:hover:not(:disabled) {
   background: var(--raised);
 }
+button.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 80%, white);
+  color: #211017;
+}
 button.primary {
   background: var(--accent);
   border-color: var(--accent);

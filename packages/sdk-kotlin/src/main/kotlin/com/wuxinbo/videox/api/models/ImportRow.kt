@@ -23,6 +23,7 @@
 
 package com.wuxinbo.videox.api.models
 
+import com.wuxinbo.videox.api.models.EditionTarget
 import com.wuxinbo.videox.api.models.GroupInfo
 import com.wuxinbo.videox.api.models.ImportFields
 import com.wuxinbo.videox.api.models.MoveInfo
@@ -47,6 +48,7 @@ import com.squareup.moshi.JsonClass
  * @param actors
  * @param series
  * @param videoCodec
+ * @param editionTarget
  * @param needsTarget
  * @param move
  * @param lookup
@@ -101,6 +103,9 @@ data class ImportRow (
 
     @Json(name = "videoCodec")
     val videoCodec: kotlin.String?,
+
+    @Json(name = "editionTarget")
+    val editionTarget: EditionTarget? = null,
 
     @Json(name = "needsTarget")
     val needsTarget: kotlin.Boolean? = null,

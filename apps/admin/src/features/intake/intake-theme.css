@@ -1,0 +1,902 @@
+@import "./queue-controls.css";
+.intake-layout .nav-group {
+  display: contents;
+}
+.studio-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.studio-logout {
+  padding: 3px 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.intake-layout .ig-title {
+  text-align: left;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+.intake-layout .ig-table .select-trigger {
+  display: inline-flex;
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  gap: 6px;
+  border: 1px solid #51434c;
+  background: #2b252a;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #dfcbd5;
+}
+.intake-layout .ig-table .select-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.intake-layout .ig-table .select-chevron {
+  width: 10px;
+}
+.ig-table .ig-row-actions button:hover,
+.ig-title:hover {
+  text-decoration: underline;
+}
+.ig-table input[type="checkbox"] {
+  padding: 0;
+}
+.ig-actions .ig-secondary {
+  color: var(--muted);
+}
+.intake-layout .ig-preview {
+  align-items: start;
+}
+.ig-table .ig-group {
+  border-top: 2px solid #52404d;
+}
+.ig-table .ig-group .ig-identity {
+  min-height: 50px;
+}
+.ig-group-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ig-group-line button {
+  text-align: left;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list) .dialog {
+  width: min(900px, calc(100vw - 40px));
+  max-width: 900px;
+  border-radius: 13px;
+  background: #232126;
+  border: 1px solid #4c434b;
+  padding: 30px;
+  max-height: 90dvh;
+  overflow: auto;
+  display: block;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  h2 {
+  margin: 0;
+  font-size: 23px;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  header
+  button {
+  padding: 4px 9px;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  form {
+  display: block;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  .actions {
+  position: sticky;
+  bottom: -30px;
+  background: #232126;
+  padding: 18px 0;
+  margin-top: 18px;
+  border-top: 1px solid #3c3d49;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .actions
+  .primary {
+  background: #e4a1b5;
+  color: #25151d;
+  border-color: #e4a1b5;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  .ig-group-fields
+  label {
+  margin: 0;
+}
+.ig-dialog-note {
+  font-weight: 400;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list) {
+  background: #06070bc9;
+  backdrop-filter: blur(9px);
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .ig-publish-list {
+  margin: 12px 0;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .ig-episode-order
+  button {
+  margin-inline-start: 5px;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .select-trigger,
+.wb-panel .select-trigger {
+  text-align: left;
+  background: #19181d;
+  border: 1px solid #514850;
+  border-radius: 7px;
+  padding: 9px;
+  color: var(--text);
+  width: 100%;
+}
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+  .dialog
+  .ig-group-fields
+  .select-trigger {
+  height: 38px;
+}
+.wb-top a,
+.wb-top button.wb-back {
+  font-size: 12px;
+  color: #a8aebd;
+  padding: 0;
+}
+.wb-page .wb-layout button:not(.btn):not(.select-trigger):not(.active):hover {
+  background: #27242b;
+}
+.wb-page fieldset {
+  margin-block: 14px;
+}
+.wb-page .intake-chips button,
+.wb-page .artwork button {
+  border: 1px solid var(--line);
+  padding: 5px 9px;
+}
+.wb-page .wb-grid textarea {
+  min-height: 72px;
+}
+.wb-page .wb-panel .art-field img {
+  object-fit: contain;
+  max-height: 180px;
+}
+@media (max-width: 760px) {
+  .dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+    .dialog {
+    padding: 20px;
+  }
+  .dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list)
+    .dialog
+    .actions {
+    bottom: -20px;
+  }
+  .wb-page .wb-footer {
+    flex-wrap: wrap;
+  }
+}
+
+/* Keep portal controls above the fixed navigation, including Radix option lists. */
+.dialog-backdrop:has(.intake-form, .ig-review-list, .ig-publish-list) {
+  z-index: 100;
+}
+body:has(.intake-layout) .select-content {
+  z-index: 120;
+}
+.intake-layout .small,
+.dialog-backdrop .btn.small {
+  line-height: 1.5;
+}
+.dialog-backdrop:has(.intake-form) .dialog .ig-group-fields label {
+  margin: 18px 0;
+}
+.intake-layout .wb-panel .check-list label {
+  flex-direction: row;
+  align-items: center;
+}
+.intake-layout .wb-grid input:disabled {
+  opacity: 0.7;
+}
+
+.dialog-backdrop:has(.intake-scan) .dialog {
+  width: min(480px, calc(100vw - 40px));
+  padding: 26px;
+}
+.intake-scan label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 18px 0;
+}
+.dialog-backdrop:has(.intake-scan) .actions {
+  border: 0;
+  padding-bottom: 0;
+}
+.intake-layout .ig-row-actions .btn {
+  line-height: 1.6;
+}
+.source-form {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+.source-form label {
+  display: grid;
+  gap: 6px;
+}
+.source-form .btn {
+  justify-self: start;
+}
+.source-facts {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.source-facts strong {
+  font-weight: 550;
+  color: #e6c8d3;
+}
+.lookup-panel {
+  display: grid;
+  gap: 12px;
+}
+.lookup-panel > .btn {
+  justify-self: start;
+}
+.lookup-poster {
+  width: 54px;
+  height: 72px;
+  object-fit: contain;
+}
+.lookup-fields {
+  border: 1px solid #42383f;
+  border-radius: 8px;
+  overflow: auto;
+}
+.lookup-fields .lookup-line {
+  display: grid;
+  grid-template-columns: 34px 65px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  padding: 9px;
+  border-bottom: 1px solid #39333a;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.lookup-line:last-child {
+  border: 0;
+}
+.lookup-head {
+  background: #2a252c;
+}
+.lookup-choice {
+  display: block;
+  text-align: left;
+  padding: 8px;
+}
+.source-form input {
+  width: 100%;
+}
+.intake-layout .ig-filters {
+  scrollbar-width: thin;
+}
+.lookup-panel .ig-dialog-note {
+  margin: 4px 0;
+}
+.source-pending {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.source-refs > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 8px 0;
+}
+.source-refs summary {
+  cursor: pointer;
+}
+.source-refs a,
+.lookup-panel a {
+  color: var(--accent, #ee849a);
+}
+.intake-layout .ig-lookup-summary td {
+  padding: 9px 16px 12px 5%;
+  background: #252127;
+}
+.ig-lookup-summary .source-facts {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ig-result-review {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.ig-result-review .source-facts {
+  flex: 1 1 32rem;
+  min-width: 0;
+}
+.ig-result-review > button {
+  flex: none;
+}
+
+/* Layout for the compact workbench and its portaled dialogs. */
+.ig-page .queue-heading,
+.ig-page .queue-toolbar,
+.ig-page .queue-batch,
+.queue-batch > div,
+.queue-toolbar nav,
+.inbox-location,
+.queue-heading .btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ig-page .queue-heading {
+  justify-content: space-between;
+  margin: 0 0 8px;
+  gap: 12px;
+}
+.queue-heading h1 {
+  font-size: 25px;
+  font-weight: 640;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+.queue-heading .btn.primary {
+  min-height: 30px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #dca7b4;
+  color: #241920;
+}
+.queue-heading .btn.primary:hover {
+  color: #20161a;
+  background: #ebbbc6;
+}
+.ig-page .inbox-location {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: #a9a7af;
+}
+.ig-page .queue-toolbar {
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #303135;
+}
+.queue-toolbar nav {
+  gap: 13px;
+}
+.queue-toolbar nav button,
+.queue-batch button,
+.cell-action,
+.file-actions .btn {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 4px 3px;
+  color: #c6c4c9;
+  font-size: 12px;
+}
+.queue-toolbar nav button {
+  font-size: 13px;
+  height: 31px;
+  border-bottom: 2px solid transparent;
+}
+.queue-toolbar nav button[aria-pressed="true"] {
+  border-bottom-color: #da9fae;
+  color: #fff;
+}
+.queue-toolbar small {
+  color: #aaa6ad;
+  font-variant-numeric: tabular-nums;
+}
+.queue-toolbar .select-trigger {
+  width: auto;
+  min-height: 28px;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid #37363b;
+  border-radius: 0;
+  font-size: 12px;
+  padding-left: 12px;
+}
+.queue-toolbar #ig-search {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  width: 252px;
+  max-width: 100%;
+  height: 30px;
+  gap: 6px;
+  padding: 0 8px;
+  border: 1px solid #44444a;
+  border-radius: 4px;
+  background: #191a1d;
+}
+.queue-toolbar #ig-search input {
+  border: none;
+  font-size: 12px;
+  min-width: 0;
+  width: 100%;
+  padding: 0;
+  background: transparent;
+}
+.queue-toolbar #ig-search button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 18px;
+  height: 24px;
+}
+.queue-batch {
+  min-height: 44px;
+  padding-block: 5px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #303135;
+}
+.queue-batch > div {
+  min-height: 20px;
+  gap: 6px;
+}
+.queue-batch > div + div {
+  padding-left: 10px;
+  border-left: 1px solid #3c3c41;
+}
+.queue-batch strong {
+  font-size: 13px;
+}
+.queue-batch button,
+.queue-batch .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 2px 5px;
+  font-size: 12px;
+  border: 0;
+  background: transparent;
+  color: #d5c4cd;
+}
+.queue-batch button:disabled {
+  opacity: 0.42;
+}
+.queue-batch [data-action="ig-publish"] {
+  border: 1px solid #444249;
+  border-radius: 4px;
+}
+.queue-batch button:not(:disabled):hover,
+.cell-action:hover,
+.file-actions .btn:hover {
+  color: #f5d3df;
+  text-decoration: underline;
+}
+.ig-page .ig-table-scroll {
+  border: 0;
+  border-radius: 0;
+}
+.ig-page .ig-table {
+  min-width: 875px;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.ig-page .ig-table th,
+.ig-page .ig-table td {
+  padding: 9px 8px;
+  border-bottom: 1px solid #303135;
+  vertical-align: middle;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.ig-page .ig-table th {
+  background: transparent;
+  font-weight: 500;
+  color: #aaa8b0;
+  font-size: 12px;
+}
+.ig-page .ig-table th:nth-child(1) {
+  width: 27px;
+  padding-left: 4px;
+}
+.ig-page .ig-table th:nth-child(2) {
+  width: 26%;
+}
+.ig-page .ig-table th:nth-child(3) {
+  width: 13%;
+}
+.ig-page .ig-table th:nth-child(4) {
+  width: 31%;
+}
+.ig-page .ig-table th:nth-child(5) {
+  width: 17%;
+}
+.ig-page .ig-table th:nth-child(6) {
+  width: auto;
+}
+.ig-page .ig-table tbody tr {
+  background: transparent;
+}
+.ig-page .ig-table tbody tr:hover {
+  background: #1b1b1e;
+}
+.ig-page .ig-table tbody tr.ig-selected {
+  background: #211e22;
+}
+.ig-page .ig-table .ig-identity {
+  gap: 12px;
+  min-height: 0;
+}
+.ig-page .ig-table .ig-title {
+  font-size: 14px;
+  line-height: 1.45;
+}
+.queue-cover,
+.queue-no-cover {
+  width: 58px;
+  height: 79px;
+  flex: 0 0 58px;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #1c1d20;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.queue-cover {
+  cursor: zoom-in;
+}
+.queue-cover img,
+.ig-review-list article .queue-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.queue-cover small {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 1px 4px;
+  font-size: 10px;
+  background: #111d;
+  color: #fff;
+}
+.queue-no-cover {
+  gap: 5px;
+  border: 1px dashed #45444b;
+  color: #a29ea7;
+}
+.queue-no-cover small {
+  font-size: 10px;
+}
+.queue-coverage > small,
+.draft-glance > small,
+.queue-destination > small {
+  display: block;
+  font-size: 12px;
+  color: #aaa6b0;
+}
+.field-coverage p {
+  display: grid;
+  grid-template-columns: 4.2em 1fr;
+  gap: 5px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.field-coverage b,
+.queue-destination .good {
+  color: #99b7a6;
+  font-weight: 500;
+}
+.field-coverage .missing b,
+.queue-destination .warn {
+  color: #d1b184;
+}
+.field-coverage .candidate b {
+  color: #bbabcb;
+}
+.file-actions .btn,
+.cell-action,
+.ig-page .ig-row-actions .btn {
+  padding: 2px 0;
+  color: #dec4ce;
+  min-height: 23px;
+  font-size: 12px;
+}
+.file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+}
+.ig-page .ig-table .ig-row-actions {
+  display: table-cell;
+}
+.ig-page .ig-table .ig-row-actions button {
+  display: block;
+}
+.ig-table .move-status span {
+  overflow-wrap: anywhere;
+}
+.field-preview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.field-preview small {
+  display: block;
+  color: #afa7b2;
+}
+.field-preview img {
+  max-width: 50px;
+  max-height: 45px;
+  object-fit: contain;
+}
+.cover-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 12px;
+}
+.cover-compare figure {
+  margin: 0;
+}
+.cover-compare figcaption {
+  font-size: 12px;
+  margin: 0 0 6px;
+  color: #bdb6c1;
+}
+.cover-compare img {
+  width: 100%;
+  max-height: 62vh;
+  object-fit: contain;
+  background: #141517;
+}
+.dialog-backdrop:has(
+    .intake-form,
+    .ig-review-list,
+    .storage-picker,
+    .cover-compare
+  )
+  .dialog {
+  max-width: 720px;
+  width: min(720px, calc(100vw - 28px));
+  max-height: 86dvh;
+  padding: 18px 20px;
+  border-radius: 7px;
+  border: 1px solid #47464c;
+  background: #1c1d20;
+}
+.dialog:has(.intake-form, .ig-review-list, .storage-picker, .cover-compare)
+  > header
+  h2 {
+  font-size: 17px;
+}
+.intake-form .ig-group-fields {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr minmax(80px, 0.4fr);
+  gap: 12px;
+  align-items: start;
+}
+.intake-form .ig-group-fields label {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  font-size: 12px;
+}
+.intake-form .ig-group-fields :is(input, .select-trigger) {
+  box-sizing: border-box;
+  width: 100%;
+  height: 34px;
+  min-height: 34px;
+  margin: 0;
+  border-radius: 4px;
+  font-size: 13px;
+}
+@media (max-width: 850px) {
+  .queue-toolbar #ig-search {
+    margin-left: 0;
+  }
+  .queue-batch {
+    gap: 4px;
+  }
+  .intake-form .ig-group-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ig-page .queue-heading {
+  min-height: 33px;
+}
+.ig-page .ig-table .draft-glance .select-trigger {
+  width: auto;
+  max-width: 100%;
+  height: 24px;
+  min-height: 24px;
+  padding: 0 5px;
+  background: transparent;
+  color: #e3dce1;
+  border: 0;
+  border-radius: 3px;
+  font-size: 13px;
+}
+.ig-page .ig-table .draft-glance .select-trigger:not(:disabled):hover {
+  background: #2d292f;
+}
+.ig-page > [role="status"] {
+  color: #ada6af;
+  margin: 7px 0;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* Applies to the shared dialog portal only while the intake queue is open. */
+body:has(.ig-page)
+  .dialog-backdrop
+  .dialog:has(.intake-form, .ig-review-list, .storage-picker, .cover-compare) {
+  display: block;
+  width: min(720px, calc(100vw - 28px));
+  max-width: 720px;
+  max-height: 85dvh;
+  overflow: auto;
+  padding: 0 20px 16px;
+  border: 1px solid #46454a;
+  border-radius: 7px;
+  background: #1c1d20;
+}
+body:has(.ig-page) .dialog-backdrop .dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0 -20px 16px;
+  padding: 13px 20px;
+  background: #1c1d20;
+  border-bottom: 1px solid #353539;
+}
+body:has(.ig-page) .dialog-backdrop .dialog > header h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 620;
+}
+body:has(.ig-page) .dialog .ig-group-fields {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1.2fr 1fr minmax(80px, 0.45fr);
+}
+body:has(.ig-page) .dialog .ig-group-fields label {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  font-weight: 500;
+  font-size: 12px;
+}
+body:has(.ig-page) .dialog .ig-group-fields :is(input, .select-trigger) {
+  width: 100%;
+  min-height: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0 9px;
+  background: #16171a;
+  border-radius: 4px;
+  border: 1px solid #44434a;
+}
+body:has(.ig-page) .dialog .ig-tree {
+  background: transparent;
+  padding: 0;
+  border: 0;
+  margin: 13px 0 0;
+}
+body:has(.ig-page) .dialog .ig-container-preview {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #343438;
+  border-radius: 4px;
+  background: #222226;
+}
+body:has(.ig-page) .dialog .ig-container-preview img {
+  width: 48px;
+  height: 67px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+body:has(.ig-page) .dialog .ig-container-preview :is(h3, p) {
+  margin: 2px 0;
+}
+body:has(.ig-page) .dialog .order-heading {
+  margin: 15px 0 8px;
+  font-size: 13px;
+}
+body:has(.ig-page) .dialog .ig-episode-order {
+  padding: 0;
+  margin: 0;
+  border: 1px solid #353539;
+  border-radius: 4px;
+}
+body:has(.ig-page) .dialog .ig-episode-order li {
+  padding: 7px 10px;
+  border-left: 0;
+}
+body:has(.ig-page) .dialog .group-foot-caption {
+  margin-right: auto;
+  color: #a9a5ac;
+}
+body:has(.ig-page) .dialog .intake-form .actions,
+body:has(.ig-page) .dialog > .actions {
+  position: sticky;
+  bottom: -16px;
+  margin: 16px -20px -16px;
+  min-height: 50px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  background: #191a1d;
+  border-top: 1px solid #353539;
+}
+body:has(.ig-page)
+  .dialog
+  .ig-review-list
+  article:has(.queue-cover, .queue-no-cover) {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 12px 0;
+}
+body:has(.ig-page) .dialog .ig-review-list article > div p {
+  margin: 2px 0;
+}
+@media (max-width: 580px) {
+  body:has(.ig-page) .dialog .ig-group-fields {
+    grid-template-columns: 1fr;
+  }
+}

@@ -23,6 +23,7 @@
 
 package com.wuxinbo.videox.api.models
 
+import com.wuxinbo.videox.api.models.EditionInfo
 import com.wuxinbo.videox.api.models.Franchise
 import com.wuxinbo.videox.api.models.Media
 import com.wuxinbo.videox.api.models.Person
@@ -50,6 +51,10 @@ import com.squareup.moshi.JsonClass
  * @param franchises
  * @param tagIds
  * @param studioIds
+ * @param stillIds
+ * @param directors
+ * @param editions
+ * @param resumeEditionId
  * @param releaseDate
  * @param identifier
  * @param episodes
@@ -120,6 +125,18 @@ data class MediaDetail (
 
     @Json(name = "studioIds")
     val studioIds: kotlin.collections.Set<java.util.UUID>? = null,
+
+    @Json(name = "stillIds")
+    val stillIds: kotlin.collections.Set<java.util.UUID>? = null,
+
+    @Json(name = "directors")
+    val directors: kotlin.collections.List<Person>? = null,
+
+    @Json(name = "editions")
+    val editions: kotlin.collections.List<EditionInfo>? = null,
+
+    @Json(name = "resumeEditionId")
+    val resumeEditionId: java.util.UUID? = null,
 
     @Json(name = "releaseDate")
     val releaseDate: java.time.LocalDate? = null,

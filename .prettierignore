@@ -1,0 +1,14 @@
+node_modules/
+**/dist/
+**/build/
+**/.gradle/
+**/.turbo/
+.tools/
+.runtime/
+.artifacts/
+design/
+docs/implementation/evidence/
+packages/contracts/openapi.json
+packages/sdk-ts/src/generated.ts
+packages/sdk-kotlin/
+pnpm-lock.yaml

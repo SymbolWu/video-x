@@ -220,15 +220,24 @@ test("actor and series have their own category, query and stable sort", async ()
   );
   assert.equal(series.json().total, 1);
   assert.equal(series.json().items[0].workCount, 3);
-  for (const [route, id] of [["people", ids.actor], ["franchises", ids.franchise]]) {
+  for (const [route, id] of [
+    ["people", ids.actor],
+    ["franchises", ids.franchise],
+  ]) {
     const profile = await request("GET", "/api/" + route + "/" + id);
     assert.equal(profile.statusCode, 200, profile.body);
     const facts = profile.json();
     assert.equal(facts.record.id, id);
     assert.equal(facts.firstYear, 2024);
     assert.equal(facts.lastYear, 2025);
-    assert.deepEqual(facts.cast, route === "people" ? [] : [people.json().items[0].fullName]);
-    assert.equal((await request("GET", "/api/" + route + "/" + randomUUID())).statusCode, 404);
+    assert.deepEqual(
+      facts.cast,
+      route === "people" ? [] : [people.json().items[0].fullName],
+    );
+    assert.equal(
+      (await request("GET", "/api/" + route + "/" + randomUUID())).statusCode,
+      404,
+    );
   }
 });
 test("personal favorite, rating and watched state are independent and cancelable", async () => {
@@ -260,13 +269,21 @@ test("personal favorite, rating and watched state are independent and cancelable
   assert.ok(r.json().watchedAt);
 });
 test("metadata save supports explicit clearing and does not alter personal state or actor/series categories", async () => {
-  const before = await detail(),
-    r = await request("PATCH", "/api/media/" + ids.media, {
-      expectedRevision: before.revision,
-      title: "资料编辑后的片名",
-      summary: null,
-      categoryId: ids.cinema,
-    });
+  const before = await detail();
+  const incomplete = await request("PATCH", "/api/media/" + ids.media, {
+    expectedRevision: before.revision,
+    title: "日期不完整",
+  });
+  assert.equal(incomplete.statusCode, 400);
+  assert.equal(incomplete.json().code, "DATE_REQUIRED");
+  assert.equal((await detail()).revision, before.revision);
+  const r = await request("PATCH", "/api/media/" + ids.media, {
+    expectedRevision: before.revision,
+    releaseDate: "2024-02-29",
+    title: "资料编辑后的片名",
+    summary: null,
+    categoryId: ids.cinema,
+  });
   assert.equal(r.statusCode, 200, r.body);
   const after = r.json();
   assert.equal(after.summary, null);
@@ -275,6 +292,33 @@ test("metadata save supports explicit clearing and does not alter personal state
   assert.equal(after.actors[0].categoryId, ids.independent);
   assert.equal(after.franchises[0].categoryId, ids.independent);
   assert.equal(after.revision, before.revision + 1);
+});
+test("editing the still gallery preserves the cover and directors independently of cast", async () => {
+  const [one, two] =
+    await db.query(sql`INSERT INTO video_x.assets(storage_key,sha256,mime_type,size_bytes,width,height,state) VALUES
+    ('fixture/one',decode(repeat('01',32),'hex'),'image/png',10,1,1,'ready'),
+    ('fixture/two',decode(repeat('02',32),'hex'),'image/png',10,1,1,'ready') RETURNING id`);
+  const save = async (changes: object) => {
+    const prior = await detail();
+    const response = await request("PATCH", "/api/media/" + ids.media, {
+      expectedRevision: prior.revision,
+      ...changes,
+    });
+    assert.equal(response.statusCode, 200, response.body);
+    return response.json();
+  };
+  const updated = await save({
+    posterId: one!.id,
+    stillIds: [one!.id, two!.id],
+    directorIds: [ids.actor],
+  });
+  assert.deepEqual(updated.stillIds, [one!.id, two!.id]);
+  assert.equal(updated.directors[0].id, ids.actor);
+  const replaced = await save({ stillIds: [two!.id], directorIds: [] });
+  assert.deepEqual(replaced.stillIds, [two!.id]);
+  assert.equal(replaced.posterId, one!.id);
+  assert.equal(replaced.actors[0].id, ids.actor);
+  assert.deepEqual(replaced.directors, []);
 });
 test("concurrent saves with the same revision accept one and reject one", async () => {
   const m = await detail();
@@ -496,10 +540,24 @@ test("real MP4/MKV scans are repeatable, isolate bad inputs and require current 
       rows.items.some((r: { format: string }) => r.format === "matroska"),
     );
     assert.equal((await publish(item.id, item.revision)).statusCode, 409);
-    const reviewed = await review(item.id, item.revision);
+    async function completeDate(row: typeof item) {
+      const response = await call("PUT", "/api/imports/" + row.id, {
+        expectedRevision: row.revision,
+        fields: { ...row.fields, releaseYear: 2024, releaseDate: "2024-02-29" },
+      });
+      assert.equal(response.statusCode, 200, response.body);
+      return response.json();
+    }
+    const invalid = await call("PUT", "/api/imports/" + item.id, {
+      expectedRevision: item.revision,
+      fields: { ...item.fields, releaseYear: 2024 },
+    });
+    assert.equal(invalid.statusCode, 400);
+    const dated = await completeDate(item);
+    const reviewed = await review(item.id, dated.revision);
     assert.equal(reviewed.statusCode, 200, reviewed.body);
     const fields = {
-      ...item.fields,
+      ...dated.fields,
       title: "M2 已核对样片",
       summary: "人工填写",
       actorIds: [ids.actor],
@@ -715,7 +773,9 @@ test("real MP4/MKV scans are repeatable, isolate bad inputs and require current 
     const second = rows.items.find(
       (r: { format: string }) => r.format === "matroska",
     );
-    const secondReview = (await review(second.id, second.revision)).json();
+    const secondReview = (
+      await review(second.id, (await completeDate(second)).revision)
+    ).json();
     await appendFile(mkv, "changed");
     assert.equal(
       (await publish(second.id, secondReview.revision)).statusCode,
@@ -792,7 +852,17 @@ test("manual file intake and episode containers keep review, order and publicati
         (await ok("POST", "/api/imports/manual", { relativePath })).id,
         id,
       );
-      drafts.push(await ok("GET", "/api/imports/" + id));
+      const draft = await ok("GET", "/api/imports/" + id);
+      drafts.push(
+        await ok("PUT", "/api/imports/" + id, {
+          expectedRevision: draft.revision,
+          fields: {
+            ...draft.fields,
+            releaseYear: 2024,
+            releaseDate: "2024-02-29",
+          },
+        }),
+      );
     }
     const source = drafts[1];
     const fields = {
@@ -873,6 +943,25 @@ test("manual file intake and episode containers keep review, order and publicati
         [4, "上集"],
       ],
     );
+    const order = item.episodes.map((ep: { id: string }) => ep.id).reverse();
+    const reorder = (episodeOrder: string[]) =>
+      local.inject({
+        method: "PATCH",
+        url: "/api/media/" + group.id,
+        headers: headers(),
+        payload: {
+          expectedRevision: item.revision,
+          releaseDate: "2024-02-29",
+          episodeOrder,
+        },
+      });
+    assert.notEqual((await reorder([order[0], order[0]])).statusCode, 200);
+    const reversed = await reorder(order);
+    assert.equal(reversed.statusCode, 200, reversed.body);
+    assert.deepEqual(
+      reversed.json().episodes.map((ep: { id: string }) => ep.id),
+      order,
+    );
     const roots = await ok("GET", "/api/media?pageSize=100");
     assert.ok(roots.items.some((m: { id: string }) => m.id === group.id));
     assert.ok(
@@ -897,7 +986,10 @@ test("manual file intake and episode containers keep review, order and publicati
       precision: "day",
       director: true,
     });
-    const maintenance = await ok("GET", "/api/manage/media?includeEpisodes=true&q=vc-021");
+    const maintenance = await ok(
+      "GET",
+      "/api/manage/media?includeEpisodes=true&q=vc-021",
+    );
     assert.equal(maintenance.total, 1);
     const [summary] = maintenance.items;
     assert.equal(summary.id, numbered[0].id);
@@ -905,7 +997,10 @@ test("manual file intake and episode containers keep review, order and publicati
     assert.equal(summary.editionCount, 1);
     assert.equal(summary.fileCount, 1);
     const episodeDetail = await ok("GET", "/api/media/" + summary.id);
-    assert.deepEqual(summary.actorNames, episodeDetail.actors.map((a: {fullName: string}) => a.fullName));
+    assert.deepEqual(
+      summary.actorNames,
+      episodeDetail.actors.map((a: { fullName: string }) => a.fullName),
+    );
     assert.equal(item.linkedFileCount, 0);
     for (const e of item.episodes)
       assert.equal((await ok("GET", "/api/media/" + e.id)).linkedFileCount, 1);
@@ -928,6 +1023,25 @@ test("dictionary edits preserve revision and manual work links", async () => {
   });
   assert.equal(tag.statusCode, 200, tag.body);
   assert.equal(org.statusCode, 200, org.body);
+  const tagQuery = new URLSearchParams({
+    kind: "tag",
+    q: "太空",
+    categoryId: ids.cinema,
+    pageSize: "1",
+  });
+  const matches = await request("GET", "/api/dictionary/choices?" + tagQuery);
+  assert.equal(matches.statusCode, 200, matches.body);
+  assert.equal(matches.json().items[0].id, tag.json().id);
+  tagQuery.set("categoryId", ids.independent);
+  assert.equal(
+    (await request("GET", "/api/dictionary/choices?" + tagQuery)).json().total,
+    0,
+  );
+  const byId = await request(
+    "GET",
+    "/api/dictionary/choices?kind=studio&ids=" + org.json().id,
+  );
+  assert.equal(byId.json().items[0].name, "测试片商");
   const { revision } = await detail();
   const opt = {
     expectedRevision: revision,
@@ -1021,8 +1135,14 @@ test("fileless drafts, source proposals, late binding and manual publication sha
     new Map([["javdb", { code: "javdb", name: "JavDB", lookup }]]);
   try {
     assert.equal((await ok("GET", "/api/sources"))[0].code, "javdb");
+    assert.equal(
+      (await call("POST", "/api/imports/drafts", { title: "缺日期" }))
+        .statusCode,
+      400,
+    );
     const draft = await ok("POST", "/api/imports/drafts", {
       title: "手工片名",
+      releaseDate: "2000-01-15",
       identifier: "QA-112",
     });
     const url = "/api/imports/" + draft.id;
@@ -1078,7 +1198,7 @@ test("fileless drafts, source proposals, late binding and manual publication sha
     assert.equal(row.lookup.candidate.summary, null);
     assert.equal(row.lookup.candidate.actors.length, 1);
     assert.equal(row.fields.title, "手工片名");
-    assert.equal(row.fields.releaseYear, null);
+    assert.equal(row.fields.releaseDate, "2000-01-15");
     assert.equal(row.publishedMediaId, null);
     const use = {
       lookupId: choice.id,
@@ -1170,6 +1290,7 @@ test("fileless drafts, source proposals, late binding and manual publication sha
     );
     const other = await ok("POST", "/api/imports/drafts", {
       title: "冲突草稿",
+      releaseDate: "2020-02-29",
     });
     assert.equal(
       (
@@ -1267,6 +1388,92 @@ test("storage and worker observations require a session and report an unmounted 
     await rm(root, { recursive: true, force: true });
   }
 });
+test("Docker storage status uses only a fresh, identity-matched host capacity", async () => {
+  const home = await mkdtemp(join(tmpdir(), "vx-capacity-"));
+  const working = join(home, "workspace");
+  const observed = join(home, "media");
+  const unmounted = join(home, "offline");
+  const snapshot = join(home, "storage.json");
+  const matched = randomUUID();
+  const keys = [
+    "VIDEO_X_STORAGE_LAYOUT",
+    "VIDEO_X_DEPLOYMENT",
+    "VIDEO_X_HOST_STORAGE_SNAPSHOT",
+  ] as const;
+  const previous = keys.map((key) => process.env[key]);
+  const roots = [working, observed, unmounted];
+  try {
+    await mkdir(observed);
+    await writeFile(join(observed, ".video-x-root"), matched);
+    for (const [index, path] of roots.entries()) {
+      await db.query(sql`INSERT INTO video_x.storage_roots(library_id,name,mount_path,expected_marker)
+        VALUES(${ids.library},${"样本 " + index},${path},${index === 1 ? matched : randomUUID()})`);
+    }
+    process.env.VIDEO_X_DEPLOYMENT = "compose";
+    process.env.VIDEO_X_HOST_STORAGE_SNAPSHOT = snapshot;
+    process.env.VIDEO_X_STORAGE_LAYOUT = JSON.stringify({
+      targets: [{ key: "library", label: "资料库", dir: "Library" }],
+      readRoots: [observed, unmounted],
+    });
+    const space = {
+      total: 8000000000000,
+      used: 7000000000000,
+      available: 1000000000000,
+    };
+    async function inspect(age: number) {
+      await writeFile(
+        snapshot,
+        JSON.stringify({
+          checkedAt: new Date(Date.now() - age).toISOString(),
+          volumes: [{ marker: matched, space }],
+        }),
+      );
+      const local = await createApp(db, false, working);
+      try {
+        const result = await local.inject({
+          method: "GET",
+          url: "/api/system/status",
+          headers: headers(),
+        });
+        assert.equal(result.statusCode, 200, result.body);
+        return result.json();
+      } finally {
+        await local.close();
+      }
+    }
+    const current = await inspect(100);
+    assert.equal(current.media.space, null);
+    assert.deepEqual(
+      current.mediaRoots.map(
+        (item: { state: string; space: object | null }) => [
+          item.state,
+          item.space,
+        ],
+      ),
+      [
+        ["online", space],
+        ["offline", null],
+      ],
+    );
+    assert.deepEqual(
+      (await inspect(180001)).mediaRoots.map(
+        (item: { space: object | null }) => item.space,
+      ),
+      [null, null],
+    );
+  } finally {
+    for (const [index, key] of keys.entries()) {
+      const value = previous[index];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    for (const path of roots)
+      await db.query(
+        sql`DELETE FROM video_x.storage_roots WHERE mount_path=${path}`,
+      );
+    await rm(home, { recursive: true, force: true });
+  }
+});
 test("Download selection, target planning, manual publication and recoverable moves", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "vx-move-"));
   const archive =
@@ -1298,12 +1505,27 @@ test("Download selection, target planning, manual publication and recoverable mo
     target,
     dir: "",
   });
-  const selectFile = async (name: string) =>
-    (
-      await ok("POST", "/api/imports/manual", {
-        relativePath: "Download/" + name,
-      })
-    ).id as string;
+  const selectFile = async (name: string) => {
+    const { id } = await ok("POST", "/api/imports/manual", {
+      relativePath: "Download/" + name,
+    });
+    const draft = await row(id);
+    const res = await local.inject({
+      method: "PUT",
+      url: "/api/imports/" + id,
+      headers: headers(),
+      payload: {
+        expectedRevision: draft.revision,
+        fields: {
+          ...draft.fields,
+          releaseYear: 2024,
+          releaseDate: "2024-02-29",
+        },
+      },
+    });
+    assert.equal(res.statusCode, 200, res.body);
+    return id as string;
+  };
   const runId = async (id: string) =>
     (
       await db.query(
@@ -1349,12 +1571,30 @@ test("Download selection, target planning, manual publication and recoverable mo
       ],
     });
     await mkdir(join(root, "Library", "archive"));
-    await writeFile(join(root, "Library", "archive", "existing.mkv"), "fixture");
+    await writeFile(
+      join(root, "Library", "archive", "existing.mkv"),
+      "fixture",
+    );
     await writeFile(join(root, "Library", "archive", "notes.txt"), "fixture");
-    const listing = await ok("GET", "/api/storage/browse?area=target&target=local");
-    assert.equal(listing.entries.find((e: { name: string }) => e.name === "archive")?.videoCount, 1);
+    const listing = await ok(
+      "GET",
+      "/api/storage/browse?area=target&target=local",
+    );
+    assert.equal(
+      listing.entries.find((e: { name: string }) => e.name === "archive")
+        ?.videoCount,
+      1,
+    );
     assert.equal(listing.used, 0);
-    assert.equal((await ok("GET", "/api/storage/browse?area=target&target=local&summaryOnly=true")).totalVideoCount, 1);
+    assert.equal(
+      (
+        await ok(
+          "GET",
+          "/api/storage/browse?area=target&target=local&summaryOnly=true",
+        )
+      ).totalVideoCount,
+      1,
+    );
     const source = join(root, "Download", "A.mp4");
     execFileSync("ffmpeg", [
       "-loglevel",
@@ -1407,9 +1647,12 @@ test("Download selection, target planning, manual publication and recoverable mo
       409,
     );
     await act(a, "review");
-    const reviewed = await ok("GET", "/api/imports?stage=reviewed&status=missing");
-    assert.ok(reviewed.items.some((item: {id: string}) => item.id === a));
-    assert.ok(!reviewed.items.some((item: {id: string}) => item.id === b));
+    const reviewed = await ok(
+      "GET",
+      "/api/imports?stage=reviewed&status=missing",
+    );
+    assert.ok(reviewed.items.some((item: { id: string }) => item.id === a));
+    assert.ok(!reviewed.items.some((item: { id: string }) => item.id === b));
     const staleReviewed = await act(b, "review");
     await ok("POST", "/api/imports/targets", await plan([b], "local"));
     assert.equal((await row(b)).reviewed, false);
@@ -1473,6 +1716,60 @@ test("Download selection, target planning, manual publication and recoverable mo
     await t.test(
       "playback session serves and decodes the published MP4 from its new path",
       () => play(a, original),
+    );
+    await t.test(
+      "append a reviewed file as a separate playable edition, preserving the original work",
+      async () => {
+        const mediaId = (await row(a)).publishedMediaId;
+        const before = await ok("GET", "/api/media/" + mediaId);
+        const extra = Buffer.from([0, 0, 0, 8, 102, 114, 101, 101]);
+        const bytes = Buffer.concat([original, extra]);
+        await writeFile(join(root, "Download", "alternate.mp4"), bytes);
+        const alt = await selectFile("alternate.mp4");
+        await ok("POST", "/api/imports/targets", await plan([alt], "local"));
+        const draft = await act(alt, "review");
+        const append = () =>
+          ok("POST", "/api/imports/" + alt + "/publish-edition", {
+            expectedRevision: draft.revision,
+            mediaId,
+            name: "修复版",
+          });
+        await append();
+        await runMove(db, root, await runId(alt));
+        assert.equal((await append()).publishedMediaId, mediaId);
+        const after = await ok("GET", "/api/media/" + mediaId);
+        assert.equal(after.title, before.title);
+        assert.equal(after.editions.length, 2);
+        const version = after.editions.find(
+          (v: { name: string }) => v.name === "修复版",
+        );
+        assert.ok(version);
+        assert.equal(version.isDefault, false);
+        const input = { mediaId, editionId: version.id, intent: "play" };
+        const session = await ok("POST", "/api/playback/sessions", {
+          ...input,
+          requestId: randomUUID(),
+        });
+        assert.equal(session.editionId, version.id);
+        assert.deepEqual(
+          (await call("GET", session.streamUrl)).rawPayload,
+          bytes,
+        );
+        assert.equal(
+          (await ok("POST", "/api/playback/plans", { mediaId, intent: "play" }))
+            .editionId,
+          before.editions[0].id,
+        );
+        assert.notEqual(
+          (
+            await call("POST", "/api/playback/plans", {
+              ...input,
+              mediaId: ids.media,
+            })
+          ).statusCode,
+          200,
+        );
+      },
     );
     await t.test(
       "cross-volume worker killed during copy resumes the partial and publishes once",
@@ -1643,6 +1940,89 @@ test("download directory is persisted on the marked volume and protects selected
     else process.env.VIDEO_X_STORAGE_LAYOUT = prior;
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("management filters use the default edition and apply before pagination", async () => {
+  const [root] = await db.query<{ id: string }>(
+    sql`INSERT INTO video_x.storage_roots(library_id,name,mount_path,expected_marker)
+        VALUES(${ids.library},'筛选测试盘','/filter-fixtures',gen_random_uuid()) RETURNING id`,
+  );
+  async function addFilm(name: string, year: number, supports: boolean | null) {
+    const [row] = await db.query<{ id: string }>(
+      sql`INSERT INTO video_x.media_items(library_id,kind,title,release_year,release_precision,primary_category_id,published_at,supports_chinese)
+          VALUES(${ids.library},'movie',${"筛选验收 " + name},${year},'year',${ids.independent},now(),${supports}) RETURNING id`,
+    );
+    return row!.id;
+  }
+  async function addEdition(
+    mediaId: string,
+    isDefault: boolean,
+    heights: (number | null)[],
+  ) {
+    const [edition] = await db.query<{ id: string }>(
+      sql`INSERT INTO video_x.editions(media_id,media_kind,name,is_default)
+          VALUES(${mediaId},'movie',${isDefault ? "默认版" : "备用版"},${isDefault}) RETURNING id`,
+    );
+    for (const [index, height] of heights.entries()) {
+      const [file] = await db.query<{ id: string }>(
+        sql`INSERT INTO video_x.media_files(root_id,relative_path,file_kind,size_bytes,mtime_ns,probe_status,probed_content_revision)
+            VALUES(${root!.id},${randomUUID() + ".mp4"},'video',100,1,'succeeded',1) RETURNING id`,
+      );
+      await db.query(
+        sql`INSERT INTO video_x.edition_parts(edition_id,part_no,file_id,bound_content_revision)
+            VALUES(${edition!.id},${index + 1},${file!.id},1)`,
+      );
+      if (height !== null)
+        await db.query(
+          sql`INSERT INTO video_x.media_streams(file_id,stream_index,kind,height)
+              VALUES(${file!.id},0,'video',${height})`,
+        );
+    }
+  }
+  const mixed = await addFilm("多段", 2021, true);
+  const second = await addFilm("单段", 2022, true);
+  const noChinese = await addFilm("明确不支持", 2023, false);
+  const incomplete = await addFilm("未知", 2024, null);
+  await addEdition(mixed, true, [2160, 1080]);
+  await addEdition(mixed, false, [2160]);
+  await addEdition(second, true, [1080]);
+  await addEdition(noChinese, true, [2160]);
+  await addEdition(incomplete, true, [1080, null]);
+
+  async function find(filters: string) {
+    const response = await request(
+      "GET",
+      "/api/manage/media?q=" +
+        encodeURIComponent("筛选验收") +
+        "&categoryId=" +
+        ids.cinema +
+        filters,
+    );
+    assert.equal(response.statusCode, 200, response.body);
+    const result = response.json();
+    return [result.total, result.items.map((film: { id: string }) => film.id)];
+  }
+  const paging =
+    "&resolution=1080p&chineseSubtitles=supported&sort=year&direction=asc&pageSize=1";
+  assert.deepEqual(await find(paging + "&page=1"), [2, [mixed]]);
+  assert.deepEqual(await find(paging + "&page=2"), [2, [second]]);
+  assert.deepEqual(await find("&resolution=2160p"), [1, [noChinese]]);
+  assert.deepEqual(await find("&chineseSubtitles=unsupported"), [
+    1,
+    [noChinese],
+  ]);
+  assert.deepEqual(await find("&resolution=unknown&chineseSubtitles=unknown"), [
+    1,
+    [incomplete],
+  ]);
+  assert.deepEqual(
+    await find("&resolution=1080p&chineseSubtitles=unsupported"),
+    [0, []],
+  );
+  assert.equal(
+    (await request("GET", "/api/manage/media?resolution=999p")).statusCode,
+    400,
+  );
 });
 
 test("logout revokes the server session immediately", async () => {

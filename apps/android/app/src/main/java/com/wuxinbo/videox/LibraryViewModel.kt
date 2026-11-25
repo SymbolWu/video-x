@@ -1,5 +1,7 @@
 package com.wuxinbo.videox
 
+import com.wuxinbo.videox.ui.library.FilmConditions
+import com.wuxinbo.videox.ui.library.librarySortOptions
 import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -143,16 +145,30 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     private val outbox = PlaybackOutbox(application)
     private val sequence = mutableMapOf<UUID, Int>()
     private fun scopeFor(id: UUID) = "${store.server}/${profile?.id}/$id"
+    var chosenEdition by mutableStateOf<UUID?>(null); private set
+    fun chooseEdition(edition: UUID, startPlayback: Boolean = false) {
+        val id = detail?.id ?: return
+        if (busy || playback != null) return
+        runRequest {
+            chosenEdition = edition
+            playPlan = null
+            playMessage = null
+            loadPlan(id)
+            if (startPlayback && detail?.id == id) openSession(id, restart = false)
+        }
+    }
     private suspend fun loadPlan(id: UUID) {
+        val edition = chosenEdition
         val scope = scopeFor(id)
         outbox.flush(scope, client.playback, null)
-        val result = client.playback.getPlaybackPlan(PlaybackRequest(id, PlaybackRequest.Intent.PLAY)).value()
-        if (detail?.id == id) playPlan = result
+        val result = client.playback.getPlaybackPlan(PlaybackRequest(id, PlaybackRequest.Intent.PLAY, edition)).value()
+        if (detail?.id == id && chosenEdition == edition) playPlan = result
     }
     fun open(id: UUID) = runRequest {
         playPlan = null; playMessage = null
         collections = client.personal.listCollections().value()
         detail = client.catalog.getMedia(id).value()
+        chosenEdition = detail?.editions?.firstOrNull{it.id==detail?.resumeEditionId}?.id ?: detail?.editions?.firstOrNull{it.isDefault}?.id
         if ((detail?.linkedFileCount ?: 0) > 0) try { loadPlan(id) } catch(e: Exception) {
             if(e is CancellationException) throw e
             playMessage = "文件或断点暂不可用，请检查媒体目录。"
@@ -161,15 +177,26 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     fun startPlayer(restart: Boolean = false) {
         val id = detail?.id ?: return
         if (busy || playback != null) return
-        runRequest {
-            outbox.flush(scopeFor(id), client.playback, null)
-            val intent = if (restart) PlaybackOpen.Intent.RESTART else if(playPlan?.mode == "resume") PlaybackOpen.Intent.RESUME else PlaybackOpen.Intent.PLAY
-            val session = client.playback.openPlayback(PlaybackOpen(id, intent, UUID.randomUUID())).value()
-            if (detail?.id != id) { client.playback.closePlayback(session.sessionId); return@runRequest }
-            sequence[session.sessionId] = 0
-            playMessage = null
-            playback = session
+        runRequest { openSession(id, restart) }
+    }
+
+    private suspend fun openSession(id: UUID, restart: Boolean) {
+        outbox.flush(scopeFor(id), client.playback, null)
+        val intent = when {
+            restart -> PlaybackOpen.Intent.RESTART
+            playPlan?.mode == "resume" -> PlaybackOpen.Intent.RESUME
+            else -> PlaybackOpen.Intent.PLAY
         }
+        val session = client.playback.openPlayback(
+            PlaybackOpen(id, intent, UUID.randomUUID(), chosenEdition)
+        ).value()
+        if (detail?.id != id) {
+            client.playback.closePlayback(session.sessionId)
+            return
+        }
+        sequence[session.sessionId] = 0
+        playMessage = null
+        playback = session
     }
     @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     fun mediaSource(session: PlaybackSession): androidx.media3.exoplayer.source.MediaSource {

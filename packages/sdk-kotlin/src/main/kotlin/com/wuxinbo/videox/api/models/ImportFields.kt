@@ -37,6 +37,7 @@ import com.squareup.moshi.JsonClass
  * @param supportsChinese
  * @param actorIds
  * @param franchiseIds
+ * @param stillIds
  * @param sourceNames
  * @param identifier
  * @param releaseDate
@@ -73,6 +74,9 @@ data class ImportFields (
 
     @Json(name = "franchiseIds")
     val franchiseIds: kotlin.collections.Set<java.util.UUID>,
+
+    @Json(name = "stillIds")
+    val stillIds: kotlin.collections.Set<java.util.UUID>? = null,
 
     @Json(name = "sourceNames")
     val sourceNames: SourceNames? = null,

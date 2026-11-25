@@ -1,5 +1,8 @@
 package com.wuxinbo.videox.core
 
+import com.squareup.moshi.FromJson
+import com.squareup.moshi.ToJson
+import java.time.LocalDate
 import com.squareup.moshi.Json
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -37,6 +40,11 @@ fun <T> Response<T>.value(): T {
         else -> "请求失败（${code()}），请稍后重试"
     })
 }
+internal class LocalDateAdapter {
+    @FromJson fun fromJson(value: String): LocalDate = LocalDate.parse(value)
+    @ToJson fun toJson(value: LocalDate): String = value.toString()
+}
+
 class VideoXClient(private val baseUrl: String, token: () -> String?) {
     private val http = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS).readTimeout(20, TimeUnit.SECONDS)
@@ -62,7 +70,7 @@ class VideoXClient(private val baseUrl: String, token: () -> String?) {
             android.graphics.BitmapFactory.decodeByteArray(bytes,0,bytes.size,android.graphics.BitmapFactory.Options().apply {inSampleSize=scale})?.also {images.put(id,it)}
         }
     }
-    private val moshi = Moshi.Builder().add(UUIDAdapter()).addLast(KotlinJsonAdapterFactory()).build()
+    private val moshi = Moshi.Builder().add(UUIDAdapter()).add(LocalDateAdapter()).addLast(KotlinJsonAdapterFactory()).build()
     private val retrofit = Retrofit.Builder().baseUrl(baseUrl).client(http)
         .addConverterFactory(EnumQueryConverter())
         // Personal-state writes send a complete versioned snapshot. Explicit rating=null clears it.

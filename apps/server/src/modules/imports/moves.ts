@@ -43,7 +43,7 @@ export async function queueMove(
   if (!current || current.published_media_id) return false;
   if (current.revision !== expected) throw conflict();
   const rows = await tx.query(
-    sql`SELECT s.mount_path source_mount,b.requires_move,i.id,i.reviewed_revision,i.draft_revision,p.target_path,r.mount_path,f.relative_path FROM video_x.import_items i LEFT JOIN video_x.import_move_plans p ON p.item_id=i.id LEFT JOIN video_x.import_item_files b ON b.item_id=i.id LEFT JOIN video_x.media_files f ON f.id=b.file_id LEFT JOIN video_x.storage_roots s ON s.id=f.root_id LEFT JOIN video_x.storage_roots r ON r.id=p.target_root WHERE ${current.grp ? sql`i.draft->'group'->>'id'=${current.grp}` : sql`i.id=${id}`} ORDER BY i.id FOR UPDATE OF i`,
+    sql`SELECT s.mount_path source_mount,b.requires_move,i.id,i.reviewed_revision,i.draft_revision,i.draft->>'releaseDate' release_date,p.target_path,r.mount_path,f.relative_path FROM video_x.import_items i LEFT JOIN video_x.import_move_plans p ON p.item_id=i.id LEFT JOIN video_x.import_item_files b ON b.item_id=i.id LEFT JOIN video_x.media_files f ON f.id=b.file_id LEFT JOIN video_x.storage_roots s ON s.id=f.root_id LEFT JOIN video_x.storage_roots r ON r.id=p.target_root WHERE ${current.grp ? sql`i.draft->'group'->>'id'=${current.grp}` : sql`i.id=${id}`} ORDER BY i.id FOR UPDATE OF i`,
   );
   for (const row of rows) {
     if (
@@ -58,6 +58,7 @@ export async function queueMove(
   for (const row of rows) {
     if (!row.reviewed_revision || row.reviewed_revision !== row.draft_revision)
       throw problem("请先人工核对全部待发布草稿。");
+    if (!row.release_date) throw problem("请先补齐全部草稿的发行日期。");
     if (
       row.target_path &&
       (await maybeStat(path.join(row.mount_path, row.target_path)))

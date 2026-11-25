@@ -1,0 +1,68 @@
+.version-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #c4c4ce;
+}
+.version-picker select,
+.screening-controls select {
+  width: auto;
+  max-width: 100%;
+  padding: 6px 9px;
+  font-size: 14px;
+}
+.screening-room {
+  box-sizing: border-box;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: #090a0c;
+  color: #eee;
+}
+.screening-room[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+.screening-room::backdrop {
+  background: #090a0c;
+}
+.screening-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px clamp(12px, 3vw, 32px);
+}
+.screening-controls .version-picker {
+  margin: 0;
+}
+.screening-controls strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.screening-room video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
+  background: black;
+}
+.screening-room small {
+  padding: 8px 12px;
+}
+
+@media (max-width: 600px) {
+  .screening-controls {
+    flex-wrap: wrap;
+  }
+}

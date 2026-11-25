@@ -18,6 +18,7 @@ import com.wuxinbo.videox.api.models.ImportRow
 import com.wuxinbo.videox.api.models.ManualFile
 import com.wuxinbo.videox.api.models.NewDraft
 import com.wuxinbo.videox.api.models.PlanCount
+import com.wuxinbo.videox.api.models.PublishEdition
 import com.wuxinbo.videox.api.models.RevisionInput
 import com.wuxinbo.videox.api.models.RunLookup
 import com.wuxinbo.videox.api.models.ScanResult
@@ -360,6 +361,29 @@ interface ImportsApi {
      */
     @POST("api/imports/{id}/publish")
     suspend fun publishImport(@Path("id") id: java.util.UUID, @Body revisionInput: RevisionInput? = null): Response<ImportRow>
+
+    /**
+     * POST api/imports/{id}/publish-edition
+     * 
+     * 
+     * Responses:
+     *  - 200: Default Response
+     *  - 400: Default Response
+     *  - 401: Default Response
+     *  - 403: Default Response
+     *  - 404: Default Response
+     *  - 409: Default Response
+     *  - 413: Default Response
+     *  - 415: Default Response
+     *  - 429: Default Response
+     *  - 500: Default Response
+     *
+     * @param id 
+     * @param publishEdition  (optional)
+     * @return [ImportRow]
+     */
+    @POST("api/imports/{id}/publish-edition")
+    suspend fun publishImportAsEdition(@Path("id") id: java.util.UUID, @Body publishEdition: PublishEdition? = null): Response<ImportRow>
 
     /**
      * POST api/imports/{id}/review

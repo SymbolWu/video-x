@@ -26,6 +26,7 @@ package com.wuxinbo.videox.api.models
 import com.wuxinbo.videox.api.models.RuntimeStatusArt
 import com.wuxinbo.videox.api.models.RuntimeStatusDisksInner
 import com.wuxinbo.videox.api.models.RuntimeStatusMedia
+import com.wuxinbo.videox.api.models.RuntimeStatusMediaRootsInner
 import com.wuxinbo.videox.api.models.RuntimeStatusWorker
 
 import com.squareup.moshi.Json
@@ -46,6 +47,7 @@ import com.squareup.moshi.JsonClass
  * @param listenHost
  * @param origins
  * @param sources
+ * @param mediaRoots
  */
 
 
@@ -91,7 +93,10 @@ data class RuntimeStatus (
     val origins: kotlin.collections.List<kotlin.String>,
 
     @Json(name = "sources")
-    val sources: kotlin.collections.List<kotlin.String>
+    val sources: kotlin.collections.List<kotlin.String>,
+
+    @Json(name = "mediaRoots")
+    val mediaRoots: kotlin.collections.List<RuntimeStatusMediaRootsInner>? = null
 
 ) {
 

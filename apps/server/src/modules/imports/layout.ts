@@ -27,9 +27,7 @@ export function relative(value: string, allowEmpty = false) {
     throw problem("目录或文件路径无效。");
   return value;
 }
-export function layout(
-  root: string,
-): {
+export function layout(root: string): {
   inbox: string | null;
   targets: Target[];
   readRoots: string[];
@@ -205,8 +203,10 @@ export async function browse(
   const folder = t ? checkTarget(root, t, sub) : path.join(inbox!, sub);
   const all = await listDirectory(mount, folder);
   if (t && q.summaryOnly) {
-    const directories = all.filter(e => e.folder).map(e => path.join(folder, e.name));
-    const used = all.filter(e => !e.folder).length;
+    const directories = all
+      .filter((e) => e.folder)
+      .map((e) => path.join(folder, e.name));
+    const used = all.filter((e) => !e.folder).length;
     let totalVideoCount = used;
     while (directories.length) {
       const parent = directories.pop()!;
@@ -215,15 +215,29 @@ export async function browse(
         else totalVideoCount++;
       }
     }
-    return { volume: path.basename(mount), inbox, targets, entries: [], used, totalVideoCount, limit: t.limit };
+    return {
+      volume: path.basename(mount),
+      inbox,
+      targets,
+      entries: [],
+      used,
+      totalVideoCount,
+      limit: t.limit,
+    };
   }
   const folders = all.filter((entry) => entry.folder);
   const countedFolders = [];
   if (t) {
     for (const entry of folders) {
       try {
-        const children = await listDirectory(mount, path.join(folder, entry.name));
-        countedFolders.push({ ...entry, videoCount: children.filter((child) => !child.folder).length });
+        const children = await listDirectory(
+          mount,
+          path.join(folder, entry.name),
+        );
+        countedFolders.push({
+          ...entry,
+          videoCount: children.filter((child) => !child.folder).length,
+        });
       } catch {
         // One unavailable child must not hide its readable siblings.
         countedFolders.push(entry);

@@ -1,0 +1,325 @@
+.film-detail {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--vx-bg);
+  color: var(--vx-text);
+  scrollbar-gutter: stable;
+  outline: 0;
+}
+.detail-page {
+  width: min(100%, 1600px);
+  margin-inline: auto;
+  padding: 0 clamp(22px, 4vw, 72px) 48px;
+}
+.detail-breadcrumb,
+.detail-breadcrumb button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.detail-breadcrumb {
+  min-height: 58px;
+  gap: 12px;
+  color: var(--vx-muted);
+  font-size: 13px;
+}
+.detail-breadcrumb button {
+  min-height: 36px;
+  color: var(--vx-text);
+}
+.detail-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: clamp(22px, 3vw, 48px);
+  padding: 28px 0;
+}
+.detail-hero.has-backdrop {
+  background: #191a20;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: clamp(24px, 3vw, 48px);
+  min-height: clamp(270px, 25vw, 390px);
+}
+.detail-scenery {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.detail-scenery > img {
+  width: 76%;
+  height: 100%;
+  margin-left: auto;
+  object-position: 50% 34%;
+}
+.detail-scenery::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      #191a20 12%,
+      #191a20f5 35%,
+      #191a20cf 54%,
+      #191a2030 86%
+    ),
+    linear-gradient(0deg, #17181d80, transparent 60%);
+}
+.detail-poster {
+  flex: 0 0 clamp(126px, 12vw, 185px);
+  aspect-ratio: 2/3;
+  overflow: hidden;
+  border-radius: 5px;
+  box-shadow: 0 4px 24px #0004;
+}
+.detail-poster img {
+  width: 100%;
+  height: 100%;
+}
+.detail-intro {
+  min-width: 0;
+  max-width: 65ch;
+}
+.has-backdrop .detail-intro {
+  max-width: min(52%, 66ch);
+}
+.detail-intro h1 {
+  font-size: clamp(24px, 2.8vw, 42px);
+  line-height: 1.16;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.detail-intro .detail-meta {
+  margin-top: 10px;
+  color: #c6c5cc;
+  font-size: 13px;
+}
+.detail-synopsis p {
+  max-width: 70ch;
+  white-space: pre-line;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #d2d1d6;
+  overflow-wrap: anywhere;
+}
+.detail-playback {
+  margin-top: 20px;
+}
+.detail-playback .actions,
+.version-picker,
+.screening-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.detail-playback .actions button,
+.screening-controls button,
+.detail-links button,
+.detail-tools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #24252b;
+}
+.detail-playback .actions .primary {
+  background: #f0c3d0;
+  color: #241921;
+  font-weight: 650;
+}
+.detail-playback .actions .primary:hover {
+  background: #f8d8e1;
+  color: #241921;
+}
+.detail-availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #cebdab;
+  font-size: 13px;
+}
+.detail-availability::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.detail-personal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #34343b;
+}
+.detail-tools,
+.detail-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.detail-tools button {
+  font-size: 13px;
+}
+.detail-tools button[aria-pressed="true"] {
+  color: var(--vx-pink);
+}
+.detail-rating {
+  gap: 1px;
+  font-size: 12px;
+  color: #b9b9c1;
+}
+.detail-rating > span {
+  margin-right: 5px;
+}
+.detail-rating button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: #aba8ae;
+}
+.detail-rating button.rated {
+  color: #ecc387;
+}
+.detail-rating button.rated svg {
+  fill: currentColor;
+}
+.detail-content {
+  display: grid;
+  gap: 26px;
+  margin-top: 24px;
+}
+.detail-content h3 {
+  font-size: 17px;
+  margin-bottom: 12px;
+}
+.detail-people,
+.detail-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.detail-people > :is(button, div) {
+  width: clamp(150px, 16vw, 210px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.detail-person-art {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  overflow: hidden;
+  border-radius: 50%;
+}
+.detail-person-art img {
+  width: 100%;
+  height: 100%;
+  object-position: center 30%;
+}
+.detail-links small {
+  color: var(--vx-muted);
+}
+@media (max-width: 739px) {
+  .detail-page {
+    padding: 0 16px 28px;
+  }
+  .detail-breadcrumb {
+    min-height: 46px;
+  }
+  .detail-hero,
+  .detail-hero.has-backdrop {
+    display: block;
+    padding: 12px 0;
+    min-height: 0;
+    border-radius: 0;
+    background: none;
+  }
+  .detail-scenery {
+    position: relative;
+    inset: auto;
+    aspect-ratio: 2.25;
+    z-index: 0;
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+  .detail-scenery > img {
+    width: 100%;
+  }
+  .detail-scenery::after {
+    display: none;
+  }
+  .detail-poster {
+    float: left;
+    width: 68px;
+    margin: 0 12px 6px 0;
+  }
+  .has-backdrop .detail-poster {
+    display: none;
+  }
+  .detail-hero::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+  .has-backdrop .detail-intro {
+    max-width: none;
+  }
+  .detail-tools button,
+  .detail-rating button {
+    min-height: 44px;
+  }
+  .detail-rating button {
+    width: 40px;
+  }
+  .detail-personal-bar {
+    justify-content: start;
+  }
+  .detail-people {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .detail-people > :is(button, div) {
+    width: 100%;
+  }
+}
+
+@media (hover: hover) {
+  .detail-tools button:hover,
+  .detail-people button:hover,
+  .detail-links button:hover {
+    background: var(--vx-panel);
+    color: var(--vx-text);
+  }
+  .detail-rating button:hover {
+    color: #ecc387;
+    background: var(--vx-panel);
+  }
+}
+@media (min-width: 740px) {
+  .detail-personal-bar {
+    gap: 22px;
+  }
+  .detail-rating {
+    border-left: 1px solid var(--vx-line);
+    padding-left: 22px;
+  }
+}
