@@ -2,6 +2,10 @@ const paths = {
   activity: "M2 12h5l3-9 4 18 3-9h5",
   arrow: "M5 12h14m-5-5 5 5-5 5",
   bookmark: "M6 3h12v18l-6-4-6 4V3Z",
+  calendar:
+    "M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm-1 5h16M8 3v4m8-4v4",
+  chevronLeft: "m14 6-6 6 6 6",
+  chevronRight: "m10 6 6 6-6 6",
   edit: "m15 4 5 5M4 20l4-1L21 6l-5-5L3 14l1 6Z",
   film: "M4 3h16v18H4zM4 8h16M4 16h16M8 3v18M16 3v18",
   folder: "M3 5h6l2 3h10v12H3V5Z",

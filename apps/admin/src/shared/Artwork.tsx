@@ -1,4 +1,16 @@
 import { useState } from "react";
+export async function uploadArtwork(file: File): Promise<string> {
+  if (file.size > 6 * 1024 * 1024) throw Error("图片最多 6 MiB");
+  const r = await fetch("/api/art", {
+    method: "POST",
+    body: file,
+    headers: { "Content-Type": file.type },
+    credentials: "same-origin",
+  });
+  const data = await r.json();
+  if (!r.ok) throw Error(data.message || "上传失败");
+  return data.id;
+}
 export function Artwork({
   label,
   value,
@@ -26,16 +38,7 @@ export function Artwork({
             setBusy(true);
             setError("");
             try {
-              if (file.size > 6 * 1024 * 1024) throw Error("图片最多 6 MiB");
-              const r = await fetch("/api/art", {
-                method: "POST",
-                body: file,
-                headers: { "Content-Type": file.type },
-                credentials: "same-origin",
-              });
-              const data = await r.json();
-              if (!r.ok) throw Error(data.message || "上传失败");
-              onChange(data.id);
+              onChange(await uploadArtwork(file));
             } catch (err) {
               setError((err as Error).message);
             } finally {

@@ -1,19 +1,33 @@
-import { AppendEdition } from "./AppendEdition";
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useRef, useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, unwrap, type Schemas } from "@video-x/sdk-ts";
 import { ErrorNotice } from "@video-x/ui";
+import { AppendEdition } from "./AppendEdition";
+import { CommonFields } from "./CommonFields";
+import { EpisodeList, type EpisodeOrigin } from "./EpisodeList";
 import {
+  checkFields,
   commonTabs,
   Frame,
-  CommonFields,
   useLeaveGuard,
-  validReleaseDate,
-  type Tab,
+  type FieldIssue,
   type Fields,
+  type SaveStatus,
+  type Tab,
 } from "./FilmWorkspace";
+import { PublishedFiles } from "./PublishedFiles";
+import { validReleaseDate } from "./releaseDate";
+import { useEditionPublication } from "./useEditionPublication";
+
 type Media = Schemas["MediaDetail"];
-type Category = Schemas["Category"];
+type EditorNavigation = {
+  restoredEpisode?: EpisodeOrigin;
+  restoreVersions: boolean;
+  inEpisode: boolean;
+  openEpisode: (id: string) => void;
+  openIntake: () => void;
+};
+
 function fields(m: Media): Fields {
   return {
     title: m.title,
@@ -34,121 +48,161 @@ function fields(m: Media): Fields {
     studioIds: m.studioIds ?? [],
   };
 }
+
 export function PublishedWorkspace({
   id,
   categories,
   back,
+  navigation,
 }: {
   id: string;
-  categories: Category[];
+  categories: Schemas["Category"][];
   back: () => void;
+  navigation: EditorNavigation;
 }) {
   const result = useQuery({
     queryKey: ["editor", id],
     queryFn: () =>
       unwrap(api.GET("/api/media/{id}", { params: { path: { id } } })),
   });
-  if (!result.data)
+  if (!result.data) {
     return (
       <>
-        <button onClick={back}>← 返回</button>
+        <button onClick={back}>
+          ← {navigation.inEpisode ? "返回分集列表" : "返回资料列表"}
+        </button>
         {result.isPending ? (
-          <p>正在读取作品…</p>
+          <p role="status">正在读取作品…</p>
         ) : (
-          <ErrorNotice error={result.error} />
+          <>
+            <ErrorNotice error={result.error} />
+            <button
+              type="button"
+              disabled={result.isFetching}
+              onClick={() => void result.refetch()}
+            >
+              重新读取影片
+            </button>
+          </>
         )}
       </>
     );
+  }
   return (
-    <Editor key={id} m={result.data} categories={categories} back={back} />
+    <Editor
+      key={id}
+      m={result.data}
+      categories={categories}
+      back={back}
+      navigation={navigation}
+    />
   );
 }
+
 function Editor({
   m,
   categories,
   back,
+  navigation,
 }: {
   m: Media;
-  categories: Category[];
+  categories: Schemas["Category"][];
   back: () => void;
+  navigation: EditorNavigation;
 }) {
-  const cache = useQueryClient(),
-    [base, setBase] = useState(m),
-    [d, set] = useState(() => fields(m)),
-    [section, tab] = useState<Tab>("基本资料"),
-    [busy, working] = useState(false),
-    [error, fail] = useState(""),
-    [message, notify] = useState(""),
-    [append, setAppend] = useState(false);
+  const cache = useQueryClient();
+  const [base, setBase] = useState(m);
+  const [d, set] = useState(() => fields(m));
+  const [section, tab] = useState<Tab>(
+    navigation.restoredEpisode && m.kind === "group"
+      ? "分集"
+      : navigation.restoreVersions && m.kind !== "group"
+        ? "版本与文件"
+        : "基本资料",
+  );
+  const [saving, busy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, fail] = useState("");
+  const [issue, setIssue] = useState<FieldIssue | null>(null);
+  const [saved, didSave] = useState(false);
+  const [append, setAppend] = useState(false);
   const [episodeIds, reorder] = useState((m.episodes ?? []).map((e) => e.id));
-  const group = m.kind === "group",
-    tabs: Tab[] = [...commonTabs, group ? "分集" : "版本与文件"];
+  const group = m.kind === "group";
+  const tabs: Tab[] = [...commonTabs, group ? "分集" : "版本与文件"];
   const episodeChanges =
     episodeIds.join(",") !== (base.episodes ?? []).map((e) => e.id).join(",");
   const original = fields(base);
   const dirty =
     JSON.stringify(d) !== JSON.stringify(original) || episodeChanges;
-  const canLeave = useLeaveGuard(dirty);
-  const [pendingFile, trackFile] = useState<string>();
-  const progress = useQuery({
-    queryKey: ["edition-publish", pendingFile],
-    enabled: !!pendingFile,
-    queryFn: () =>
-      unwrap(
-        api.GET("/api/imports/{id}", {
-          params: { path: { id: pendingFile! } },
-        }),
-      ),
-    refetchInterval: 2000,
-  });
-  useEffect(() => {
-    if (!pendingFile || !progress.data) return;
-    const row = progress.data;
+  const locked = saving || uploading;
+  const canLeave = useLeaveGuard(dirty || locked, locked);
+  const { publication, progress, track } = useEditionPublication(m.id);
+  const initialRestore = useRef(navigation.restoredEpisode);
+  const restored = useRef(false);
+
+  useLayoutEffect(() => {
     if (
-      row.publishedMediaId ||
-      row.move?.state === "failed" ||
-      row.move?.state === "cancelled"
+      navigation.restoreVersions &&
+      !restored.current &&
+      section === "版本与文件"
     ) {
-      if (row.publishedMediaId) {
-        notify("新版本已发布");
-        void cache.invalidateQueries();
-      } else fail(row.move?.error ?? "整理任务已停止，请到后台任务查看。");
-      trackFile(undefined);
+      document
+        .querySelector<HTMLButtonElement>(
+          ".editor-versions .editor-section-heading button:enabled",
+        )
+        ?.focus({ preventScroll: true });
+      restored.current = true;
     }
-  }, [pendingFile, progress.data, cache]);
-  useEffect(() => {
-    if (!dirty && m.revision !== base.revision) {
-      setBase(m);
-      set(fields(m));
-      reorder((m.episodes ?? []).map((e) => e.id));
-    }
-  }, [m, base.revision, dirty]);
-  const idsToNames = Object.fromEntries(
-    [...base.actors, ...(base.directors ?? [])]
-      .map((p) => [p.id, p.fullName])
-      .concat(base.franchises.map((f) => [f.id, f.name])),
-  );
-  function patch(p: Partial<Fields>) {
-    set((old) => ({ ...old, ...p }));
-    notify("");
-    fail("");
+  }, [navigation.restoreVersions, section]);
+
+  function adopt(next: Media) {
+    setBase(next);
+    set(fields(next));
+    reorder((next.episodes ?? []).map((e) => e.id));
   }
-  function leave() {
-    if (!busy && canLeave()) back();
+
+  useEffect(() => {
+    if (!dirty && !locked && m.revision !== base.revision) adopt(m);
+  }, [m, base.revision, dirty, locked]);
+
+  const initialItems = Object.fromEntries(
+    [
+      ...[...base.actors, ...(base.directors ?? [])].map((p) => ({
+        id: p.id,
+        name: p.fullName,
+        art: p.portraitId,
+      })),
+      ...base.franchises.map((f) => ({
+        id: f.id,
+        name: f.name,
+        art: f.coverId,
+      })),
+    ].map((item) => [item.id, item]),
+  );
+  function patch(change: Partial<Fields>) {
+    set((old) => ({ ...old, ...change }));
+    didSave(false);
+    fail("");
+    setIssue((previous) =>
+      previous && previous.field in change ? null : previous,
+    );
+  }
+  function goToDate() {
+    tab("基本资料");
+    setIssue({ field: "releaseDate", message: "请填写完整有效的发行日期。" });
   }
   async function save() {
-    if (!validReleaseDate(d.releaseDate) || !d.title.trim()) {
+    if (locked || !dirty) return;
+    const invalid = checkFields(d);
+    if (invalid) {
       tab("基本资料");
-      fail(
-        !d.title.trim()
-          ? "请填写作品标题"
-          : "请填写完整的发行日期（年、月、日）。",
-      );
+      setIssue(invalid);
       return;
     }
-    working(true);
+    busy(true);
     fail("");
-    notify("");
+    setIssue(null);
+    didSave(false);
     try {
       const params = { path: { id: m.id } };
       const payload: Schemas["MediaPatch"] = {
@@ -170,47 +224,66 @@ function Editor({
         "franchiseIds",
         "tagIds",
         "studioIds",
-      ] as const)
+      ] as const) {
         if (JSON.stringify(d[key]) !== JSON.stringify(original[key]))
           Object.assign(payload, { [key]: d[key] });
+      }
       if (episodeChanges) payload.episodeOrder = episodeIds;
       const saved = await unwrap(
         api.PATCH("/api/media/{id}", { params, body: payload }),
       );
-      setBase(saved);
-      set(fields(saved));
-      reorder((saved.episodes ?? []).map((e) => e.id));
+      adopt(saved);
       cache.setQueryData(["editor", m.id], saved);
-      await cache.invalidateQueries();
-      notify("已保存");
+      void cache.invalidateQueries();
+      didSave(true);
     } catch (e) {
       fail((e as Error).message);
     } finally {
-      working(false);
+      busy(false);
     }
   }
+
+  const status: SaveStatus = saving
+    ? { text: "正在保存资料…" }
+    : uploading
+      ? { text: "正在上传图片…" }
+      : error
+        ? { text: "保存失败，修改已保留", tone: "attention" }
+        : issue
+          ? { text: "请补齐必填项", tone: "attention" }
+          : dirty
+            ? { text: "有未保存修改", tone: "attention" }
+            : saved
+              ? { text: "已保存", tone: "positive" }
+              : { text: "暂无未保存修改" };
   return (
     <Frame
       tab={section}
       tabs={tabs}
-      select={tab}
+      select={(next) => {
+        initialRestore.current = undefined;
+        tab(next);
+      }}
       title={d.title || m.title}
-      backLabel="返回资料列表"
-      back={leave}
-      meta={[
-        group ? "分集容器" : m.kind === "episode" ? "分集作品" : "已发布影片",
-        dirty ? "有未保存修改" : message,
-      ]
-        .filter(Boolean)
-        .join(" · ")}
+      identifier={d.identifier}
+      poster={d.posterId || d.backdropId}
+      backLabel={navigation.inEpisode ? "返回分集列表" : "返回资料列表"}
+      back={() => {
+        if (canLeave()) back();
+      }}
+      meta={group ? "分集容器" : m.kind === "episode" ? "单集" : "已发布影片"}
+      status={status}
       error={error}
+      issue={issue}
+      locked={locked}
       actions={
         <button
-          className="btn primary small"
-          disabled={busy || !dirty}
+          className="editor-primary"
+          type="button"
+          disabled={locked || !dirty}
           onClick={() => void save()}
         >
-          {busy ? "保存中…" : "保存变更"}
+          {saving ? "保存中…" : "保存资料"}
         </button>
       }
     >
@@ -219,110 +292,72 @@ function Editor({
         d={d}
         patch={patch}
         categories={categories}
-        initialNames={idsToNames}
+        initialItems={initialItems}
         legacyYear={base.releaseDate ? null : base.releaseYear}
+        issue={issue}
+        onUploading={setUploading}
       />
       {section === "分集" && (
-        <div className="relation-list">
-          <header>
-            <h3>
-              容器内作品 <small>{episodeIds.length}</small>
-            </h3>
-          </header>
-          <ul>
-            {episodeIds.map((id, i) => {
-              const ep = base.episodes!.find((e) => e.id === id)!;
-              function move(to: number) {
-                const next = [...episodeIds];
-                next.splice(i, 1);
-                next.splice(to, 0, id);
-                reorder(next);
-              }
-              return (
-                <li key={id}>
-                  <span>第 {base.episodes![i]!.episodeNumber} 集</span>
-                  <a href={"#media/" + id}>{ep.title}</a>
-                  <button disabled={!i} onClick={() => move(i - 1)}>
-                    上移
-                  </button>
-                  <button
-                    disabled={i === episodeIds.length - 1}
-                    onClick={() => move(i + 1)}
-                  >
-                    下移
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          {!episodeIds.length && <p>暂无分集</p>}
-        </div>
+        <EpisodeList
+          episodes={base.episodes ?? []}
+          ids={episodeIds}
+          restored={initialRestore.current}
+          onOpen={(id) => {
+            if (canLeave()) navigation.openEpisode(id);
+          }}
+          onReorder={(ids) => {
+            fail("");
+            didSave(false);
+            reorder(ids);
+          }}
+        />
       )}
       {section === "版本与文件" && (
-        <div className="relation-list">
-          <header>
-            <h3>
-              播放版本 <small>{m.editions?.length ?? 0}</small>
-            </h3>
-            <button
-              disabled={dirty || !base.releaseDate || !!pendingFile}
-              title={
-                dirty
-                  ? "请先保存资料修改"
-                  : !base.releaseDate
-                    ? "请先补齐完整发行日期"
-                    : undefined
-              }
-              onClick={() => setAppend(true)}
-            >
-              ＋ 追加版本
-            </button>
-          </header>
-          {!base.releaseDate && (
-            <p>
-              追加版本需要完整的发行日期。{" "}
-              <button type="button" onClick={() => tab("基本资料")}>
-                补全发行日期
+        <>
+          {publication?.state === "running" && (
+            <div className="editor-notice" role="status">
+              正在整理并发布新版本… <a href="#jobs">查看后台任务</a>
+            </div>
+          )}
+          {progress.isError && publication?.state === "running" && (
+            <div className="editor-notice" data-tone="attention">
+              读取整理进度失败。{" "}
+              <button type="button" onClick={() => void progress.refetch()}>
+                重试
               </button>
-            </p>
+            </div>
           )}
-          {pendingFile && (
-            <p role="status">
-              正在整理版本文件 · <a href="#jobs">查看后台任务</a>
-            </p>
+          {publication?.state === "done" && (
+            <div className="editor-notice" data-tone="positive" role="status">
+              新版本已发布
+            </div>
           )}
-          {(m.editions ?? []).map((e) => (
-            <article className="edition-row" key={e.id}>
-              <strong>{e.name}</strong>
-              <small>
-                {[
-                  e.isDefault ? "默认版本" : null,
-                  e.width && e.height ? e.width + " × " + e.height : null,
-                  e.availability === "present" ? "文件在线" : "待检查",
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </small>
-              <code>{e.filename}</code>
-            </article>
-          ))}
-          {!m.editions?.length && <p>尚未绑定播放文件</p>}
+          {publication?.state === "failed" && (
+            <div className="editor-notice" role="alert" data-tone="attention">
+              <span>{publication.error}</span>
+              <a href="#jobs">查看后台任务</a>
+            </div>
+          )}
+          <PublishedFiles
+            media={m}
+            dirty={dirty}
+            dateRequired={!validReleaseDate(d.releaseDate)}
+            publishing={publication?.state === "running"}
+            fixDate={goToDate}
+            append={() => setAppend(true)}
+          />
           {append && (
             <AppendEdition
               media={m}
               close={() => setAppend(false)}
-              done={async (row) => {
+              openIntake={navigation.openIntake}
+              done={(row) => {
                 setAppend(false);
-                if (row.publishedMediaId) notify("新版本已发布");
-                else {
-                  notify("已提交整理任务");
-                  trackFile(row.id);
-                }
-                await cache.invalidateQueries();
+                track(row);
               }}
             />
           )}
-        </div>
+        </>
       )}
     </Frame>
   );

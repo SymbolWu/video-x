@@ -697,3 +697,184 @@ test("系统状态分开显示录入工作区、图片仓库与已登记的影�
   assert.ok(await disks.getByText("离线或缺少标识").isVisible());
   assert.equal(await page.getByText(/126 TB/).count(), 0);
 });
+
+test("发行日期可键盘选闰日，拒绝无效日期并保留跨分区修改", async (t) => {
+  const fixtures = new Map(responses);
+  let current = { ...film, releaseDate: "2024-10-18", revision: 4 };
+  const writes = [];
+  fixtures.set("/api/media/" + film.id, (route) => {
+    if (route.request().method() !== "PATCH")
+      return route.fulfill({ json: current });
+    const patch = route.request().postDataJSON();
+    writes.push(patch);
+    if (writes.length === 1)
+      return route.fulfill({
+        status: 503,
+        json: { message: "测试保存失败，请重试" },
+      });
+    current = { ...current, ...patch, revision: 5 };
+    return route.fulfill({ json: current });
+  });
+  const page = await openPage(t, "/manage/#media/" + film.id, { fixtures });
+  const date = page.getByLabel("发行日期（必填）");
+  const trigger = page.getByRole("button", { name: "选择发行日期" });
+  const identifier = await page.getByLabel("主编号 / 番号").boundingBox();
+  const dateField = await date.boundingBox();
+  assert.ok(
+    identifier && dateField && Math.abs(identifier.y - dateField.y) <= 1,
+  );
+  await trigger.click();
+  const calendar = page.getByRole("dialog", { name: "选择发行日期" });
+  assert.ok(
+    await calendar
+      .getByRole("button", { name: "2024-10-18" })
+      .evaluate((node) => document.activeElement === node),
+  );
+  await calendar.getByRole("spinbutton", { name: "年份" }).fill("1984");
+  await page.keyboard.press("Enter");
+  await calendar.getByLabel("月份").selectOption("1");
+  await calendar.getByRole("button", { name: "1984-02-28" }).focus();
+  await page.keyboard.press("ArrowRight");
+  const leapDay = calendar.getByRole("button", { name: "1984-02-29" });
+  assert.ok(await leapDay.evaluate((node) => document.activeElement === node));
+  await page.keyboard.press("Enter");
+  assert.equal(await date.inputValue(), "1984-02-29");
+  assert.ok(await trigger.evaluate((node) => document.activeElement === node));
+  await trigger.click();
+  await page.keyboard.press("Escape");
+  await calendar.waitFor({ state: "hidden" });
+  assert.ok(await trigger.evaluate((node) => document.activeElement === node));
+  await page.setViewportSize({ width: 844, height: 410 });
+  await trigger.click();
+  const bounds = await calendar.boundingBox();
+  assert.ok(bounds && bounds.y >= 0 && bounds.y + bounds.height <= 410);
+  const selectedBounds = await calendar
+    .getByRole("button", { name: "1984-02-29" })
+    .boundingBox();
+  assert.ok(
+    selectedBounds &&
+      selectedBounds.y >= bounds.y &&
+      selectedBounds.y + selectedBounds.height <= bounds.y + bounds.height,
+  );
+  await page.keyboard.press("Escape");
+  await page.setViewportSize({ width: 1280, height: 760 });
+  await date.fill("1900-02-29");
+  await page.getByRole("button", { name: "封面", exact: true }).click();
+  const save = page.getByRole("button", { name: "保存资料", exact: true });
+  await save.click();
+  await page.getByText("请填写完整有效的发行日期。").waitFor();
+  assert.ok(await date.evaluate((node) => document.activeElement === node));
+  assert.equal(writes.length, 0);
+  await date.fill("1984/2/29");
+  await page.getByLabel("我的资料备注").fill("跨分区保存");
+  assert.equal(await date.inputValue(), "1984-02-29");
+  await page.getByRole("button", { name: "剧照", exact: true }).click();
+  await save.click();
+  await page.getByText("测试保存失败，请重试").waitFor();
+  await save.click();
+  await page.getByText("已保存", { exact: true }).waitFor();
+  assert.deepEqual(writes, [
+    { expectedRevision: 4, releaseDate: "1984-02-29", notes: "跨分区保存" },
+    { expectedRevision: 4, releaseDate: "1984-02-29", notes: "跨分区保存" },
+  ]);
+});
+
+test("影片剧照可直接重排，演员选择跨页保留，分集和录入可返回原分区", async (t) => {
+  const groupId = "22222222-2222-4222-8222-222222222222";
+  const fixtures = new Map(responses);
+  const stills = ["photo-1", "photo-2", "photo-3"];
+  for (const id of stills) {
+    fixtures.set("/api/art/" + id, (route) =>
+      route.fulfill({
+        contentType: "image/svg+xml",
+        body: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40"><rect width="60" height="40" fill="#638da1"/></svg>',
+      }),
+    );
+  }
+  let current = {
+    ...film,
+    releaseDate: "2024-10-18",
+    revision: 4,
+    stillIds: stills,
+  };
+  fixtures.set("/api/media/" + film.id, (route) => {
+    if (route.request().method() === "PATCH") {
+      current = { ...current, ...route.request().postDataJSON(), revision: 5 };
+    }
+    return route.fulfill({ json: current });
+  });
+  fixtures.set("/api/media/" + groupId, {
+    ...film,
+    id: groupId,
+    title: "北岸分集",
+    kind: "group",
+    episodes: [{ ...film, title: film.title, episodeNumber: 1 }],
+  });
+  fixtures.set("/api/people", (route) => {
+    const page = Number(
+      new URL(route.request().url()).searchParams.get("page") || 1,
+    );
+    return route.fulfill({
+      json: {
+        items: [
+          { id: "actor-" + page, fullName: page === 1 ? "徐一" : "陈二" },
+        ],
+        page,
+        pageSize: 16,
+        total: 17,
+      },
+    });
+  });
+  const p = await openPage(t, "/manage/#media/" + groupId, { fixtures });
+  await p.getByRole("button", { name: "分集", exact: true }).click();
+  const episode = p.getByRole("link", { name: film.title });
+  await episode.click();
+  await p.getByRole("button", { name: "← 返回分集列表" }).click();
+  await episode.waitFor();
+  await p.waitForFunction(
+    () => document.activeElement?.textContent === "双版本测试片",
+  );
+  await episode.click();
+  await p.getByRole("button", { name: "剧照", exact: true }).click();
+  await p.getByRole("button", { name: "调整顺序" }).click();
+  await p.getByRole("button", { name: "调整第 3 张剧照的位置" }).click();
+  await p.getByRole("spinbutton", { name: /移动到第几位/ }).fill("1");
+  await p.getByRole("button", { name: "移动", exact: true }).click();
+  assert.match(
+    await p
+      .getByRole("button", { name: "预览第 1 张剧照" })
+      .locator("img")
+      .getAttribute("src"),
+    /photo-3$/,
+  );
+  await p.getByRole("button", { name: "演职员", exact: true }).click();
+  const add = p.getByRole("button", { name: "添加演员" });
+  await add.click();
+  const picker = p.getByRole("dialog", { name: "添加演员" });
+  await picker.getByRole("checkbox", { name: /徐一/ }).check();
+  await picker.getByRole("button", { name: "下一页" }).click();
+  await picker.getByRole("checkbox", { name: /陈二/ }).check();
+  assert.ok(
+    await picker.getByRole("button", { name: "取消选择 徐一" }).isVisible(),
+  );
+  await picker.getByRole("button", { name: "添加所选" }).click();
+  await p.waitForFunction(
+    () => document.activeElement?.textContent === "添加演员",
+  );
+  const save = p.getByRole("button", { name: "保存资料", exact: true });
+  await save.click();
+  await p.getByText("已保存", { exact: true }).waitFor();
+  assert.deepEqual(current.actorIds, ["actor-1", "actor-2"]);
+  assert.deepEqual(current.stillIds, ["photo-3", "photo-1", "photo-2"]);
+  await p.getByRole("button", { name: "版本与文件", exact: true }).click();
+  await p.getByRole("button", { name: "追加版本" }).click();
+  await p.getByText("没有已核对的文件。").waitFor();
+  await p
+    .getByRole("dialog")
+    .getByRole("button", { name: "录入工作台" })
+    .click();
+  await p.getByRole("button", { name: "← 返回版本与文件" }).click();
+  const append = p.getByRole("button", { name: "追加版本" });
+  await append.waitFor();
+  assert.ok(await append.evaluate((node) => document.activeElement === node));
+});

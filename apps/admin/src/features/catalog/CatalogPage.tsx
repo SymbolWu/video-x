@@ -273,7 +273,7 @@ export function CatalogPage({
           actors={kind === "people"}
           id={detailId}
           edit={setDetailEditor}
-          editFilm={openFilm}
+          editFilm={editListedFilm}
         />
       ) : (
         <div className={isRecordList ? "record-index" : undefined}>

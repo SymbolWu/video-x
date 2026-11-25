@@ -1,0 +1,105 @@
+.editor-cover-layout {
+  display: grid;
+  grid-template-columns: minmax(140px, 208px) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(20px, 5vw, 72px);
+  max-width: 790px;
+}
+.editor-cover > p {
+  margin: 4px 0 11px;
+  color: var(--editor-muted);
+  font-size: 12px;
+}
+.editor-cover-image,
+.film-editor .editor-still-preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--editor-surface);
+  border: 1px solid var(--editor-line);
+  border-radius: 7px;
+}
+.editor-cover-image[data-portrait] {
+  aspect-ratio: 2 / 3;
+}
+.editor-cover-image img,
+.editor-still-preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.editor-cover > .editor-inline-actions {
+  justify-content: start;
+  margin-top: 8px;
+}
+.editor-image-empty {
+  display: grid;
+  gap: 9px;
+  place-content: center;
+  place-items: center;
+  padding: 12px;
+  min-height: 128px;
+  text-align: center;
+  color: var(--editor-muted);
+  font-size: 13px;
+}
+.editor-still-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(164px, 100%), 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.editor-still-grid > li {
+  min-width: 0;
+}
+.film-editor .editor-still-preview:hover {
+  border-color: var(--editor-accent);
+}
+.editor-still-order {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-top: 6px;
+}
+.editor-still-order button {
+  min-height: 28px;
+  padding: 5px 7px;
+}
+.dialog:has(.film-image-preview) {
+  width: min(860px, 100%);
+}
+.film-image-preview img {
+  display: block;
+  max-height: min(62vh, 780px);
+  max-width: 100%;
+  margin-inline: auto;
+  border-radius: 5px;
+}
+.film-image-preview[data-portrait] img {
+  max-height: min(60vh, 600px);
+}
+.editor-preview-actions {
+  justify-content: flex-end;
+}
+@media (max-width: 600px) {
+  .editor-cover-layout {
+    grid-template-columns: 1fr;
+  }
+  .editor-cover:has([data-portrait]) {
+    width: min(208px, 100%);
+  }
+  .editor-still-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

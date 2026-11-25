@@ -4,7 +4,13 @@ import { api, unwrap, type Schemas } from "@video-x/sdk-ts";
 import { ErrorNotice } from "@video-x/ui";
 import { PublishedWorkspace } from "../features/film-editor/PublishedWorkspace";
 import { AdminShell } from "./AdminShell";
-import { openFilm, returnFromFilm, useAdminRoute } from "./AdminRoute";
+import {
+  openEpisode,
+  openFilm,
+  openIntakeForEdition,
+  returnFromFilm,
+  useAdminRoute,
+} from "./AdminRoute";
 import { CatalogPage } from "../features/catalog/CatalogPage";
 import { EntityEditor } from "../features/catalog/EntityEditor";
 import { DictionaryPage } from "../features/dictionaries/Dictionary";
@@ -43,7 +49,15 @@ export function Admin({ logout }: { logout: () => Promise<void> }) {
       case "intake":
         return (
           <Suspense fallback={<p role="status">读取录入工作台…</p>}>
-            <Intake categories={options} toMedia={openFilm} />
+            <Intake
+              categories={options}
+              toMedia={openFilm}
+              returnToEdition={
+                !draft && history.state?.returnToEdition
+                  ? () => history.back()
+                  : undefined
+              }
+            />
           </Suspense>
         );
       case "media":
@@ -53,6 +67,13 @@ export function Admin({ logout }: { logout: () => Promise<void> }) {
             id={filmId}
             categories={options}
             back={returnFromFilm}
+            navigation={{
+              restoredEpisode: history.state?.episodeOrigin,
+              restoreVersions: !!history.state?.restoreVersions,
+              inEpisode: !!history.state?.returnToEpisode,
+              openEpisode,
+              openIntake: openIntakeForEdition,
+            }}
           />
         ) : (
           <CatalogPage

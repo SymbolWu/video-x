@@ -22,15 +22,38 @@ function filmId() {
   return location.hash.match(/^#media\/([0-9a-f-]{36})$/i)?.[1] ?? "";
 }
 
-export function openFilm(id: string) {
-  if (location.hash === "#media/" + id) return;
-  history.pushState(
-    { ...history.state, returnToFilmList: location.href },
-    "",
-    "#media/" + id,
-  );
+function navigate(hash: string, state: object) {
+  history.pushState(state, "", hash);
   window.dispatchEvent(new Event("hashchange"));
 }
+
+export function openFilm(id: string) {
+  if (location.hash === "#media/" + id) return;
+  navigate("#media/" + id, { returnToFilmList: true });
+}
+
+export function openEpisode(id: string) {
+  history.replaceState(
+    { ...history.state, episodeOrigin: { id, scroll: window.scrollY } },
+    "",
+  );
+  navigate("#media/" + id, { returnToFilmList: true, returnToEpisode: true });
+}
+
+export function openIntakeForEdition() {
+  history.replaceState({ ...history.state, restoreVersions: true }, "");
+  navigate("#ingest", { returnToEdition: true });
+}
+
+export function openDraft(id: string) {
+  navigate("#draft/" + id, { returnToQueue: location.hash === "#ingest" });
+}
+
+export function returnFromDraft() {
+  if (history.state?.returnToQueue) history.back();
+  else location.hash = "ingest";
+}
+
 export function returnFromFilm() {
   if (history.state?.returnToFilmList) history.back();
   else location.hash = "media";

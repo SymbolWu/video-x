@@ -2,8 +2,15 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, unwrap, type Schemas } from "@video-x/sdk-ts";
 import { Modal, Select, ErrorNotice, Pager } from "@video-x/ui";
+import { StudioIcon } from "../../shared/StudioIcon";
+import "./relation-picker.css";
 
-type Kind = "actors" | "directors" | "series" | "tags" | "studios";
+export type RelationKind =
+  | "actors"
+  | "directors"
+  | "series"
+  | "tags"
+  | "studios";
 export const relationLabels = {
   actors: "演员",
   directors: "导演",
@@ -11,7 +18,7 @@ export const relationLabels = {
   tags: "标签",
   studios: "片商",
 };
-type Item = {
+export type RelationItem = {
   id: string;
   name: string;
   detail?: string | null;
@@ -20,7 +27,7 @@ type Item = {
 const pageSize = 16;
 
 async function choices(
-  kind: Kind,
+  kind: RelationKind,
   q: string,
   categoryId: string,
   page: number,
@@ -77,142 +84,32 @@ async function choices(
   );
 }
 
-export function RelationList({
-  kind,
-  ids,
-  names,
-  categories,
-  change,
-  remember,
-  children,
-}: {
-  kind: Kind;
-  ids: string[];
-  names: Record<string, string>;
-  categories: Schemas["Category"][];
-  change: (ids: string[]) => void;
-  remember: (items: Item[]) => void;
-  children?: React.ReactNode;
-}) {
-  const [picking, setPicking] = useState(false);
-  const label = relationLabels[kind];
-  const dictionary = kind === "tags" || kind === "studios";
-  const unresolved = ids.filter((id) => !names[id]).sort();
-  const resolved = useQuery({
-    queryKey: ["relation-labels", kind, unresolved],
-    enabled: dictionary && unresolved.length > 0,
-    queryFn: async () => {
-      const parts = [];
-      for (let i = 0; i < unresolved.length; i += 100) {
-        const res = await unwrap(
-          api.GET("/api/dictionary/choices", {
-            params: {
-              query: {
-                kind: kind === "tags" ? "tag" : "studio",
-                ids: unresolved.slice(i, i + 100).join(","),
-                pageSize: 100,
-              },
-            },
-          }),
-        );
-        parts.push(...res.items);
-      }
-      return Object.fromEntries(parts.map((p) => [p.id, p.name]));
-    },
-  });
-  const name = (id: string) =>
-    names[id] ||
-    resolved.data?.[id] ||
-    (resolved.isFetching ? "读取中…" : "未命名资料");
-  return (
-    <section className="relation-list">
-      <header>
-        <h3>
-          {label}
-          <small>{ids.length}</small>
-        </h3>
-        <button type="button" onClick={() => setPicking(true)}>
-          ＋ 添加{label}
-        </button>
-      </header>
-      {children}
-      <ErrorNotice error={resolved.error} />
-      {ids.length ? (
-        <ul>
-          {ids.map((id, i) => (
-            <li key={id}>
-              <span className="role-position">{i + 1}</span>
-              <strong>{name(id)}</strong>
-              {(kind === "actors" || kind === "directors") &&
-                ids.length > 1 && (
-                  <button
-                    type="button"
-                    disabled={i === 0}
-                    aria-label={"前移" + name(id)}
-                    onClick={() => {
-                      const next = [...ids];
-                      next.splice(i, 1);
-                      next.splice(i - 1, 0, id);
-                      change(next);
-                    }}
-                  >
-                    前移
-                  </button>
-                )}
-              <button
-                type="button"
-                aria-label={"移除" + name(id)}
-                onClick={() => change(ids.filter((x) => x !== id))}
-              >
-                移除
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="relation-empty">尚未关联{label}</p>
-      )}
-      {picking && (
-        <Picker
-          kind={kind}
-          categories={categories}
-          ids={ids}
-          dismiss={() => setPicking(false)}
-          add={(items) => {
-            remember(items);
-            change([...new Set([...ids, ...items.map((x) => x.id)])]);
-            setPicking(false);
-          }}
-        />
-      )}
-    </section>
-  );
-}
-function Picker({
+export function RelationPicker({
   kind,
   categories,
   ids,
   dismiss,
   add,
 }: {
-  kind: Kind;
+  kind: RelationKind;
   categories: Schemas["Category"][];
   ids: string[];
   dismiss: () => void;
-  add: (items: Item[]) => void;
+  add: (items: RelationItem[]) => void;
 }) {
   const [q, setQ] = useState(""),
     [term, search] = useState(""),
     [category, setCategory] = useState(""),
     [page, setPage] = useState(1),
-    [selected, pick] = useState<Map<string, Item>>(new Map());
+    [selected, pick] = useState<Map<string, RelationItem>>(new Map());
   useEffect(() => {
+    if (term === q.trim()) return;
     const timer = setTimeout(() => {
       search(q.trim());
       setPage(1);
     }, 200);
     return () => clearTimeout(timer);
-  }, [q]);
+  }, [q, term]);
   const result = useQuery({
     queryKey: ["film-editor-choices", kind, term, category, page],
     queryFn: () => choices(kind, term, category, page),
@@ -248,11 +145,29 @@ function Picker({
         <ErrorNotice error={result.error} />
         <div className="picker-results" aria-busy={result.isFetching}>
           {result.isPending ? (
-            <p>正在读取…</p>
-          ) : !result.error && !result.data?.items.length ? (
-            <p>没有匹配的{label}</p>
+            <p role="status">正在读取…</p>
+          ) : result.isError ? (
+            <button type="button" onClick={() => void result.refetch()}>
+              重试
+            </button>
+          ) : !result.data?.items.length ? (
+            <div className="picker-empty">
+              <p>没有匹配的{label}</p>
+              {(q || category) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQ("");
+                    setCategory("");
+                    setPage(1);
+                  }}
+                >
+                  清除条件
+                </button>
+              )}
+            </div>
           ) : null}
-          {result.data?.items.map((item: Item) => {
+          {result.data?.items.map((item: RelationItem) => {
             const linked = ids.includes(item.id);
             return (
               <label key={item.id}>
@@ -267,8 +182,22 @@ function Picker({
                     pick(next);
                   }}
                 />
-                {item.art && (
-                  <img src={"/api/art/" + item.art} alt="" loading="lazy" />
+                {(kind === "actors" ||
+                  kind === "directors" ||
+                  kind === "series") && (
+                  <span className="picker-avatar" aria-hidden="true">
+                    <StudioIcon name={kind === "series" ? "film" : "user"} />
+                    {item.art && (
+                      <img
+                        src={"/api/art/" + item.art}
+                        alt=""
+                        loading="lazy"
+                        onError={(event) => {
+                          event.currentTarget.hidden = true;
+                        }}
+                      />
+                    )}
+                  </span>
                 )}
                 <span>
                   <strong>{item.name}</strong>
@@ -279,9 +208,33 @@ function Picker({
             );
           })}
         </div>
-        {result.data && <Pager {...result.data} onChange={setPage} />}
+        {result.data && result.data.total > result.data.pageSize && (
+          <Pager {...result.data} onChange={setPage} />
+        )}
+        <div className="picker-selection">
+          <span role="status">已选 {selected.size} 项</span>
+          {!!selected.size && (
+            <ul className="editor-chips">
+              {[...selected.values()].map((item) => (
+                <li key={item.id}>
+                  <span>{item.name}</span>
+                  <button
+                    type="button"
+                    aria-label={"取消选择 " + item.name}
+                    onClick={() => {
+                      const next = new Map(selected);
+                      next.delete(item.id);
+                      pick(next);
+                    }}
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <footer>
-          <span>已选 {selected.size} 项</span>
           <button type="button" onClick={dismiss}>
             取消
           </button>

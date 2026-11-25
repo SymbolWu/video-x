@@ -1,0 +1,135 @@
+.release-date-control {
+  position: relative;
+}
+.release-date-control > input {
+  padding-inline-end: 37px;
+  font-variant-numeric: tabular-nums;
+}
+.film-editor .release-date-trigger {
+  position: absolute;
+  inset: 1px 1px 1px auto;
+  min-height: auto;
+  width: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--editor-muted);
+}
+.film-editor .release-date-trigger:hover,
+.film-editor .release-date-trigger[aria-expanded="true"] {
+  color: var(--editor-accent);
+  background: var(--editor-raised);
+}
+.release-calendar {
+  position: absolute;
+  z-index: 9;
+  inset: calc(100% + 7px) auto auto 0;
+  width: min(302px, calc(100vw - 44px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 11px;
+  color: var(--text);
+  border: 1px solid var(--editor-control-line);
+  border-radius: 9px;
+  background: var(--editor-surface);
+  box-shadow: 0 14px 36px #0008;
+}
+.release-calendar[data-align-end] {
+  left: auto;
+  right: 0;
+}
+.release-calendar[data-up] {
+  top: auto;
+  bottom: calc(100% + 7px);
+}
+.release-calendar-header {
+  display: grid;
+  grid-template-columns: 32px minmax(55px, 1fr) minmax(60px, 1fr) 32px;
+  gap: 6px;
+  align-items: center;
+}
+.release-calendar-header input[type="number"] {
+  appearance: textfield;
+}
+.release-calendar-header input::-webkit-inner-spin-button,
+.release-calendar-header input::-webkit-outer-spin-button {
+  appearance: none;
+}
+.release-calendar-header :is(input, select) {
+  height: 32px;
+  min-height: 32px;
+  padding: 3px 7px;
+  font-size: 13px;
+}
+.film-editor .release-calendar button {
+  padding: 0;
+}
+.film-editor .release-calendar-header button {
+  min-height: 32px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--editor-muted);
+}
+.film-editor .release-calendar-header button:hover:not(:disabled) {
+  background: var(--editor-raised);
+  color: var(--text);
+}
+.release-calendar-grid {
+  margin-top: 9px;
+}
+.release-calendar-grid [role="row"] {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+.release-calendar-weekdays {
+  padding-block: 5px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--editor-muted);
+}
+.film-editor .release-calendar-grid button {
+  width: 100%;
+  min-height: 32px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+}
+.film-editor .release-calendar-grid button[data-adjacent] {
+  color: var(--editor-muted);
+  opacity: 0.78;
+}
+.film-editor .release-calendar-grid button[aria-current="date"] {
+  border-color: var(--editor-control-line);
+}
+.film-editor .release-calendar-grid button:hover:not(:disabled) {
+  background: var(--editor-raised);
+}
+.film-editor .release-calendar-grid [aria-selected="true"] button {
+  opacity: 1;
+  color: #271921;
+  background: var(--editor-accent);
+}
+.film-editor .release-calendar-grid [aria-selected="true"] button:hover {
+  background: #f3b4c5;
+}
+.release-calendar footer {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--editor-line);
+  margin-top: 8px;
+  padding-top: 5px;
+}
+.film-editor .release-calendar footer button {
+  padding: 3px 8px;
+  min-height: 30px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--editor-muted);
+}
+.film-editor .release-calendar footer button:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--editor-raised);
+}

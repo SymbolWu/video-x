@@ -4,6 +4,7 @@ import {
   moveActive,
   useStorage,
 } from "../storage/StoragePicker";
+import { openDraft, returnFromDraft } from "../../app/AdminRoute";
 import { DraftWorkspace } from "../film-editor/DraftWorkspace";
 import { StudioIcon } from "../../shared/StudioIcon";
 import { ReviewCard } from "./ReviewCard";
@@ -21,9 +22,11 @@ import { Select, Modal, ErrorNotice, Pager } from "@video-x/ui";
 export function Intake({
   categories,
   toMedia,
+  returnToEdition,
 }: {
   categories: Schemas["Category"][];
   toMedia: (id: string) => void;
+  returnToEdition?: () => void;
 }) {
   const cache = useQueryClient(),
     [status, filter] = useState<keyof typeof tabs>("all"),
@@ -80,7 +83,7 @@ export function Intake({
     setError("");
     setNotice("");
     if (kind === "edit") {
-      location.hash = "draft/" + row.id;
+      openDraft(row.id);
       setDialog(null);
     } else if (kind === "publish") {
       void preparePublish([row]);
@@ -198,9 +201,9 @@ export function Intake({
       return (
         <>
           <ErrorNotice error={editor.error} />
-          <a className="btn ghost" href="#ingest">
+          <button type="button" className="btn ghost" onClick={returnFromDraft}>
             返回录入队列
-          </a>
+          </button>
         </>
       );
     return editor.data ? (
@@ -208,9 +211,7 @@ export function Intake({
         key={editorId}
         row={editor.data}
         categories={categories}
-        back={() => {
-          location.hash = "ingest";
-        }}
+        back={returnFromDraft}
       />
     ) : (
       <p role="status">正在读取草稿…</p>
@@ -218,6 +219,15 @@ export function Intake({
   }
   return (
     <section className="ig-page">
+      {returnToEdition && (
+        <button
+          type="button"
+          className="btn ghost small"
+          onClick={returnToEdition}
+        >
+          ← 返回版本与文件
+        </button>
+      )}
       <header className="queue-heading">
         <h1>录入工作台</h1>
         {storage.data?.inbox ? (

@@ -5,13 +5,15 @@ import { Modal } from "@video-x/ui";
 import { BindForm, SourceReview, fetching } from "../intake/SourceReview";
 import {
   Frame,
-  CommonFields,
   commonTabs,
   useLeaveGuard,
-  validReleaseDate,
+  checkFields,
+  type FieldIssue,
+  type SaveStatus,
   type Tab,
   type Fields,
 } from "./FilmWorkspace";
+import { CommonFields } from "./CommonFields";
 type Row = Schemas["ImportRow"];
 const tabs: Tab[] = [...commonTabs, "版本与文件", "来源核对"];
 export function DraftWorkspace({
@@ -28,70 +30,72 @@ export function DraftWorkspace({
     [d, set] = useState<Fields>(row.fields),
     [section, tab] = useState<Tab>("基本资料"),
     [busy, working] = useState(false),
+    [uploading, setUploading] = useState(false),
+    [saved, didSave] = useState(false),
+    [issue, setIssue] = useState<FieldIssue | null>(null),
     [error, fail] = useState(""),
     [review, askReview] = useState(false);
   const dirty = JSON.stringify(d) !== JSON.stringify(baseline.fields);
-  const canLeave = useLeaveGuard(dirty);
+  const locked = busy || uploading;
+  const canLeave = useLeaveGuard(dirty || locked, locked);
   function adopt(r: Row) {
     setBaseline(r);
     set(r.fields);
     cache.setQueryData(["intake", "draft", r.id], r);
   }
   useEffect(() => {
-    if (!dirty && row.revision > baseline.revision) {
+    if (!dirty && !locked && row.revision > baseline.revision) {
       setBaseline(row);
       set(row.fields);
     }
-  }, [row, baseline.revision, dirty]);
-  const names = Object.fromEntries(
+  }, [row, baseline.revision, dirty, locked]);
+  const items = Object.fromEntries(
     [
       [baseline.fields.actorIds, baseline.actors],
       [baseline.fields.directorIds ?? [], baseline.directors ?? []],
       [baseline.fields.franchiseIds, baseline.series],
     ].flatMap(([ids, labels]) =>
-      (ids ?? []).map((id, i) => [id, labels?.[i] ?? ""]),
+      (ids ?? []).map((id, i) => [id, { id, name: labels?.[i] ?? "" }]),
     ),
   );
+  function validate() {
+    const invalid = checkFields(d);
+    if (invalid) {
+      tab("基本资料");
+      setIssue(invalid);
+      return false;
+    }
+    setIssue(null);
+    return true;
+  }
   async function save(confirmReview = false) {
-    if (busy) return;
-    if (!validReleaseDate(d.releaseDate)) {
-      tab("基本资料");
-      fail("请填写完整的发行日期（年、月、日）。");
-      return;
-    }
-    if (!d.title.trim()) {
-      tab("基本资料");
-      fail("请填写作品标题");
-      return;
-    }
+    if (locked || !validate()) return;
     working(true);
     fail("");
     try {
       const params = { path: { id: row.id } };
       let current = baseline;
       if (dirty) {
-        await unwrap(
+        current = await unwrap(
           api.PUT("/api/imports/{id}", {
             params,
             body: { fields: d, expectedRevision: baseline.revision },
           }),
         );
-        current = await unwrap(api.GET("/api/imports/{id}", { params }));
-        setBaseline(current);
-        set(current.fields);
+        adopt(current);
       }
       if (confirmReview) {
-        await unwrap(
+        current = await unwrap(
           api.POST("/api/imports/{id}/review", {
             params,
             body: { expectedRevision: current.revision },
           }),
         );
-        current = await unwrap(api.GET("/api/imports/{id}", { params }));
-        setBaseline(current);
+        adopt(current);
         askReview(false);
       }
-      await cache.invalidateQueries({ queryKey: ["intake"] });
+      didSave(true);
+      void cache.invalidateQueries({ queryKey: ["intake"] });
     } catch (e) {
       fail((e as Error).message);
       askReview(false);
@@ -100,18 +104,34 @@ export function DraftWorkspace({
     }
   }
   function leave() {
-    if (!busy && canLeave()) back();
+    if (canLeave()) back();
   }
   const saveButton = (
     <button
-      disabled={busy || !!baseline.publishedMediaId}
-      className="btn ghost small"
+      disabled={locked || !!baseline.publishedMediaId}
+      className="editor-quiet"
       data-action="wb-save"
       onClick={() => void save()}
     >
-      保存草稿
+      {busy ? "保存中…" : "保存草稿"}
     </button>
   );
+  const status: SaveStatus = busy
+    ? { text: "正在保存草稿…" }
+    : uploading
+      ? { text: "正在上传图片…" }
+      : error
+        ? { text: "操作未完成，修改已保留", tone: "attention" }
+        : issue
+          ? { text: "请补齐必填项", tone: "attention" }
+          : dirty
+            ? { text: "有未保存修改", tone: "attention" }
+            : baseline.reviewed
+              ? { text: "已人工确认", tone: "positive" }
+              : {
+                  text: saved ? "已保存草稿" : "暂无未保存修改",
+                  tone: saved ? "positive" : undefined,
+                };
   return (
     <Frame
       tabs={tabs}
@@ -120,29 +140,29 @@ export function DraftWorkspace({
       title={d.title || "未命名草稿"}
       backLabel="返回录入队列"
       back={leave}
-      meta={
-        "入库草稿 · " +
-        (dirty
-          ? "有未保存修改"
-          : baseline.reviewed
-            ? "已人工确认"
-            : "已保存草稿")
-      }
+      identifier={d.identifier}
+      poster={d.posterId || d.backdropId}
+      meta="入库草稿"
+      status={status}
+      issue={issue}
+      locked={locked}
       error={error}
       actions={
         <>
           {saveButton}
           <button
-            className="btn primary small"
+            className="editor-primary"
             disabled={
-              busy ||
+              locked ||
               !!row.publishedMediaId ||
               (!dirty && baseline.reviewed) ||
               fetching(row.lookup) ||
               row.probeStatus !== "succeeded" ||
               row.availability !== "present"
             }
-            onClick={() => askReview(true)}
+            onClick={() => {
+              if (validate()) askReview(true);
+            }}
           >
             核对并确认
           </button>
@@ -154,17 +174,22 @@ export function DraftWorkspace({
         d={d}
         patch={(p) => {
           fail("");
+          didSave(false);
+          setIssue((previous) =>
+            previous && previous.field in p ? null : previous,
+          );
           set((old) => ({ ...old, ...p }));
         }}
         categories={categories}
-        initialNames={names}
+        initialItems={items}
+        issue={issue}
+        onUploading={setUploading}
         legacyYear={
           !baseline.fields.releaseDate ? baseline.fields.releaseYear : null
         }
       />
       {section === "版本与文件" && (
         <>
-          {" "}
           {row.availability === "unbound" ? (
             <>
               <p className="wb-help">
