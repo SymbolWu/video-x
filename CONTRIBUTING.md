@@ -17,6 +17,8 @@
 
 ## 交付前怎么验
 
+日常开发和浏览器验收使用 `video-x-test`。开发分支的可运行改动先发布到 test，再从实际入口走完受影响的流程。管理端和观看端使用 `http://localhost:8280`，安卓模拟器连接 `http://10.0.2.2:8280/`。交付记录注明 test 所运行的提交和实际验收结果。需要写入媒体的验收使用 test 自有目录中的样片。生产环境按单独的发布指令更新。容器操作见 [双环境运行说明](docs/implementation/home-media-migration.md)。
+
 | 改动 | 验收方式 |
 | --- | --- |
 | 手写代码、依赖或工程结构 | `pnpm check:standards`，再运行 `pnpm typecheck`。前者检查格式和两个 Web 应用的源码边界。 |
