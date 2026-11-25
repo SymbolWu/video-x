@@ -1924,6 +1924,186 @@ test("Download selection, target planning, manual publication and recoverable mo
       },
     );
     await t.test(
+      "select a media disk and replace directly from its Download directory",
+      async () => {
+        const sourceDisk = await mkdtemp(
+          join(other || tmpdir(), "vx-replacement-source-"),
+        );
+        const cfg = process.env.VIDEO_X_STORAGE_LAYOUT;
+        try {
+          await mkdir(join(sourceDisk, "Download"));
+          const marker = randomUUID();
+          await writeFile(join(sourceDisk, ".video-x-root"), marker);
+          const [disk] = await db.query(sql`
+          INSERT INTO video_x.storage_roots(library_id,name,mount_path,expected_marker,status)
+          VALUES('10000000-0000-4000-8000-000000000001','第二块测试媒体盘',${sourceDisk},${marker},'online') RETURNING id`);
+          process.env.VIDEO_X_STORAGE_LAYOUT = JSON.stringify({
+            ...JSON.parse(cfg!),
+            readRoots: [root, sourceDisk],
+          });
+          const storage = await ok("GET", "/api/storage/browse");
+          assert.equal(storage.inbox, null);
+          assert.equal(storage.inboxVolumes.length, 2);
+          const firstDisk = storage.inboxVolumes.find(
+            (v: { id: string }) => v.id !== disk!.id,
+          );
+          const choose = (
+            volumeId: string,
+            expected: string | null,
+            expectedVolumeId?: string,
+          ) =>
+            local.inject({
+              method: "PUT",
+              url: "/api/storage/inbox",
+              headers: headers(),
+              payload: {
+                volumeId,
+                dir: "Download",
+                expected,
+                expectedVolumeId,
+              },
+            });
+          assert.equal((await choose(randomUUID(), null)).statusCode, 409);
+          assert.equal((await choose(firstDisk.id, null)).statusCode, 200);
+          assert.equal(
+            (await choose(disk!.id, "Download", firstDisk.id)).statusCode,
+            200,
+          );
+          assert.equal(
+            (await choose(firstDisk.id, "Download", firstDisk.id)).statusCode,
+            409,
+          );
+          const listing = await ok(
+            "GET",
+            "/api/storage/browse?area=volume&volumeId=" + disk!.id,
+          );
+          assert.deepEqual(
+            listing.entries.map((e: { name: string }) => e.name),
+            ["Download"],
+          );
+
+          const candidateName = "new_download(2).mp4";
+          const candidatePath = join(sourceDisk, "Download", candidateName);
+          const bytes = Buffer.concat([
+            original,
+            Buffer.from([0, 0, 0, 8, 102, 114, 101, 101]),
+          ]);
+          await writeFile(candidatePath, bytes);
+          const mediaId = (await row(a)).publishedMediaId;
+          const mediaURL = "/api/media/" + mediaId;
+          const before = await ok("GET", mediaURL);
+          const old = before.editions.find(
+            (e: { isDefault: boolean }) => e.isDefault,
+          );
+          const endpoint = mediaURL + "/editions/" + old.id + "/replacement";
+          const input = {
+            volumeId: disk!.id,
+            expectedRevision: old.revision,
+            relativePath: "Download/" + candidateName,
+          };
+          assert.equal(
+            (
+              await call("POST", endpoint + "/inspect", {
+                ...input,
+                volumeId: firstDisk.id,
+              })
+            ).statusCode,
+            409,
+          );
+          assert.equal(
+            (
+              await call("POST", endpoint + "/inspect", {
+                ...input,
+                relativePath: "Library/A.mp4",
+              })
+            ).statusCode,
+            409,
+          );
+          const inspection = await ok("POST", endpoint + "/inspect", input);
+          assert.equal(inspection.extension, ".mp4");
+          assert.equal(inspection.height, 90);
+          assert.match(inspection.targetDirectory, /Library$/);
+          const preview = await call(
+            "GET",
+            "/api/storage/replacement-preview?" +
+              new URLSearchParams({
+                volumeId: input.volumeId,
+                relativePath: input.relativePath,
+                format: inspection.format,
+                fileVersion: inspection.fileVersion,
+              }),
+          );
+          assert.equal(preview.statusCode, 200);
+          assert.deepEqual(preview.rawPayload, bytes);
+          const request = {
+            ...input,
+            fileVersion: inspection.fileVersion,
+            requestId: randomUUID(),
+          };
+          const validation = { ...input, fileVersion: request.fileVersion };
+          assert.match(
+            (
+              await ok("POST", endpoint + "/name", {
+                ...validation,
+                stem: "../bad",
+              })
+            ).error,
+            /保留字符/,
+          );
+          assert.match(
+            (await ok("POST", endpoint + "/name", { ...validation, stem: "A" }))
+              .error,
+            /已存在/,
+          );
+          assert.match(
+            (
+              await ok("POST", endpoint + "/name", {
+                ...validation,
+                stem: "测".repeat(100),
+              })
+            ).error,
+            /过长/,
+          );
+          assert.equal(
+            (await call("POST", endpoint, { ...request, stem: "A" }))
+              .statusCode,
+            409,
+          );
+
+          const stem = "直接替换－新版本";
+          assert.equal(
+            (await ok("POST", endpoint + "/name", { ...validation, stem }))
+              .path,
+            "Library/" + stem + ".mp4",
+          );
+          const queued = await ok("POST", endpoint, { ...request, stem });
+          assert.equal(
+            (await ok("POST", endpoint, { ...request, stem })).id,
+            queued.id,
+          );
+          assert.equal((await ok("GET", mediaURL)).editions[0].id, old.id);
+          const replacementFile = join(root, "Library", stem + ".mp4");
+          assert.ok(!(await stat(replacementFile).catch(() => null)));
+          await runMove(db, root, await runId(queued.id));
+          const finished = await row(queued.id);
+          assert.equal(finished.move.state, "done", finished.move.error);
+          const after = await ok("GET", mediaURL);
+          assert.equal(after.title, before.title);
+          assert.equal(after.editions[0].filename, "Library/" + stem + ".mp4");
+          assert.equal(
+            (await ok("POST", endpoint, { ...request, stem })).id,
+            queued.id,
+          );
+          assert.deepEqual(await readFile(replacementFile), bytes);
+          assert.deepEqual(await readFile(join(root, old.filename)), original);
+          assert.deepEqual(await readFile(candidatePath), bytes);
+        } finally {
+          process.env.VIDEO_X_STORAGE_LAYOUT = cfg;
+          await rm(sourceDisk, { recursive: true, force: true });
+        }
+      },
+    );
+    await t.test(
       "cross-volume worker killed during copy resumes the partial and publishes once",
       {
         skip: other

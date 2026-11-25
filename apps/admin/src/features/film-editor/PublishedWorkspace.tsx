@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, unwrap, type Schemas } from "@video-x/sdk-ts";
 import { ErrorNotice } from "@video-x/ui";
+import { ReplaceEdition } from "./ReplaceEdition";
 import { AppendEdition } from "./AppendEdition";
 import { CommonFields } from "./CommonFields";
 import { EpisodeList, type EpisodeOrigin } from "./EpisodeList";
@@ -363,12 +364,23 @@ function Editor({
             append={() => setFilePicker(true)}
             replace={setFilePicker}
           />
-          {filePicker && (
+          {filePicker === true && (
             <AppendEdition
               media={m}
-              previous={filePicker === true ? undefined : filePicker}
               close={() => setFilePicker(undefined)}
               openIntake={navigation.openIntake}
+              done={(row) => {
+                setFilePicker(undefined);
+                track(row);
+              }}
+            />
+          )}
+          {filePicker && filePicker !== true && (
+            <ReplaceEdition
+              key={filePicker.id}
+              mediaId={m.id}
+              previous={filePicker}
+              close={() => setFilePicker(undefined)}
               done={(row) => {
                 setFilePicker(undefined);
                 track(row);

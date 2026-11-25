@@ -24,6 +24,7 @@
 package com.wuxinbo.videox.api.models
 
 import com.wuxinbo.videox.api.models.DirectoryViewEntriesInner
+import com.wuxinbo.videox.api.models.DirectoryViewInboxVolumesInner
 import com.wuxinbo.videox.api.models.DirectoryViewTargetsInner
 
 import com.squareup.moshi.Json
@@ -35,6 +36,8 @@ import com.squareup.moshi.JsonClass
  * @param propertyEntries
  * @param used
  * @param limit
+ * @param inboxVolumeId
+ * @param inboxVolumes
  * @param volume
  * @param totalVideoCount
  * @param pending
@@ -58,6 +61,12 @@ data class DirectoryView (
 
     @Json(name = "limit")
     val limit: kotlin.Int,
+
+    @Json(name = "inboxVolumeId")
+    val inboxVolumeId: java.util.UUID? = null,
+
+    @Json(name = "inboxVolumes")
+    val inboxVolumes: kotlin.collections.List<DirectoryViewInboxVolumesInner>? = null,
 
     @Json(name = "volume")
     val volume: kotlin.String? = null,

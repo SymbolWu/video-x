@@ -8,6 +8,7 @@ import com.squareup.moshi.Json
 
 import com.wuxinbo.videox.api.models.ApplyLookup
 import com.wuxinbo.videox.api.models.BindFile
+import com.wuxinbo.videox.api.models.CheckReplacementName
 import com.wuxinbo.videox.api.models.DirectoryView
 import com.wuxinbo.videox.api.models.DownloadDirectory
 import com.wuxinbo.videox.api.models.ErrorResponse
@@ -15,14 +16,18 @@ import com.wuxinbo.videox.api.models.GroupInput
 import com.wuxinbo.videox.api.models.ImportEdit
 import com.wuxinbo.videox.api.models.ImportQueue
 import com.wuxinbo.videox.api.models.ImportRow
+import com.wuxinbo.videox.api.models.InspectReplacement
 import com.wuxinbo.videox.api.models.ManualFile
 import com.wuxinbo.videox.api.models.NewDraft
 import com.wuxinbo.videox.api.models.PlanCount
 import com.wuxinbo.videox.api.models.PublishEdition
+import com.wuxinbo.videox.api.models.ReplacementFileInfo
+import com.wuxinbo.videox.api.models.ReplacementNameCheck
 import com.wuxinbo.videox.api.models.RevisionInput
 import com.wuxinbo.videox.api.models.RunLookup
 import com.wuxinbo.videox.api.models.ScanResult
 import com.wuxinbo.videox.api.models.SourceProvider
+import com.wuxinbo.videox.api.models.SubmitReplacement
 import com.wuxinbo.videox.api.models.TargetPlan
 
 interface ImportsApi {
@@ -99,13 +104,38 @@ interface ImportsApi {
      *  - 500: Default Response
      *
      * @param summaryOnly  (optional)
+     * @param volumeId  (optional)
      * @param area  (optional)
      * @param target  (optional)
      * @param dir  (optional)
      * @return [DirectoryView]
      */
     @GET("api/storage/browse")
-    suspend fun browseStorageDirectory(@Query("summaryOnly") summaryOnly: kotlin.Boolean? = null, @Query("area") area: AreaBrowseStorageDirectory? = null, @Query("target") target: kotlin.String? = null, @Query("dir") dir: kotlin.String? = null): Response<DirectoryView>
+    suspend fun browseStorageDirectory(@Query("summaryOnly") summaryOnly: kotlin.Boolean? = null, @Query("volumeId") volumeId: java.util.UUID? = null, @Query("area") area: AreaBrowseStorageDirectory? = null, @Query("target") target: kotlin.String? = null, @Query("dir") dir: kotlin.String? = null): Response<DirectoryView>
+
+    /**
+     * POST api/media/{id}/editions/{editionId}/replacement/name
+     * 检查替换文件名
+     * 检查替换文件名
+     * Responses:
+     *  - 200: Default Response
+     *  - 400: Default Response
+     *  - 401: Default Response
+     *  - 403: Default Response
+     *  - 404: Default Response
+     *  - 409: Default Response
+     *  - 413: Default Response
+     *  - 415: Default Response
+     *  - 429: Default Response
+     *  - 500: Default Response
+     *
+     * @param id 作品 ID
+     * @param editionId 播放版本 ID
+     * @param checkReplacementName  (optional)
+     * @return [ReplacementNameCheck]
+     */
+    @POST("api/media/{id}/editions/{editionId}/replacement/name")
+    suspend fun checkReplacementName(@Path("id") id: java.util.UUID, @Path("editionId") editionId: java.util.UUID, @Body checkReplacementName: CheckReplacementName? = null): Response<ReplacementNameCheck>
 
     /**
      * POST api/imports/drafts
@@ -195,6 +225,30 @@ interface ImportsApi {
      */
     @POST("api/imports/groups")
     suspend fun groupDrafts(@Body groupInput: GroupInput? = null): Response<ScanResult>
+
+    /**
+     * POST api/media/{id}/editions/{editionId}/replacement/inspect
+     * 检测下载文件
+     * 检测下载文件
+     * Responses:
+     *  - 200: Default Response
+     *  - 400: Default Response
+     *  - 401: Default Response
+     *  - 403: Default Response
+     *  - 404: Default Response
+     *  - 409: Default Response
+     *  - 413: Default Response
+     *  - 415: Default Response
+     *  - 429: Default Response
+     *  - 500: Default Response
+     *
+     * @param id 作品 ID
+     * @param editionId 播放版本 ID
+     * @param inspectReplacement  (optional)
+     * @return [ReplacementFileInfo]
+     */
+    @POST("api/media/{id}/editions/{editionId}/replacement/inspect")
+    suspend fun inspectReplacement(@Path("id") id: java.util.UUID, @Path("editionId") editionId: java.util.UUID, @Body inspectReplacement: InspectReplacement? = null): Response<ReplacementFileInfo>
 
 
     /**
@@ -450,6 +504,30 @@ interface ImportsApi {
      */
     @PUT("api/storage/inbox")
     suspend fun setDownloadDirectory(@Body downloadDirectory: DownloadDirectory? = null): Response<DirectoryView>
+
+    /**
+     * POST api/media/{id}/editions/{editionId}/replacement
+     * 在原目录替换播放文件
+     * 在原目录替换播放文件
+     * Responses:
+     *  - 200: Default Response
+     *  - 400: Default Response
+     *  - 401: Default Response
+     *  - 403: Default Response
+     *  - 404: Default Response
+     *  - 409: Default Response
+     *  - 413: Default Response
+     *  - 415: Default Response
+     *  - 429: Default Response
+     *  - 500: Default Response
+     *
+     * @param id 作品 ID
+     * @param editionId 播放版本 ID
+     * @param submitReplacement  (optional)
+     * @return [ImportRow]
+     */
+    @POST("api/media/{id}/editions/{editionId}/replacement")
+    suspend fun submitReplacement(@Path("id") id: java.util.UUID, @Path("editionId") editionId: java.util.UUID, @Body submitReplacement: SubmitReplacement? = null): Response<ImportRow>
 
     /**
      * DELETE api/imports/groups/{id}

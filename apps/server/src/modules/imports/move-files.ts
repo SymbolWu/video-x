@@ -12,6 +12,7 @@ import {
 import { createHash } from "node:crypto";
 import { openVideo, rootMarker } from "./files.js";
 import {
+  allowedRoot,
   checkTarget,
   directory,
   maybeStat,
@@ -181,11 +182,12 @@ export async function stageFile(
   step?: Step,
 ) {
   if (
-    p.source_mount !== primary ||
-    (await rootMarker(primary)) !== p.source_marker
+    !allowedRoot(primary, p.source_mount) ||
+    (await rootMarker(p.source_mount)) !== p.source_marker
   )
     throw problem("源盘离线或标识不符。");
-  const src = await openVideo(primary, p.source_path).catch((error) => {
+  const keepSource = p.source_mount !== primary;
+  const src = await openVideo(p.source_mount, p.source_path).catch((error) => {
     if (error.code === "ENOENT")
       throw problem("找不到待整理的源文件。请检查录入时登记的位置，再重试。");
     throw error;
@@ -197,7 +199,7 @@ export async function stageFile(
       dest = path.join(dir, path.basename(p.target_path));
     const original = await src.file.stat({ bigint: true }),
       here = await maybeStat(dir);
-    const srcPath = path.join(await realpath(primary), p.source_path);
+    const srcPath = path.join(await realpath(p.source_mount), p.source_path);
     await distinctLocation(srcPath, dir);
     const existing = await maybeStat(dest);
     const sameSource =
@@ -211,7 +213,7 @@ export async function stageFile(
     if (existing && !sameSource && !owned)
       throw problem("目标已有同名文件：" + path.basename(dest));
     let linked = sameSource;
-    if (!existing && here?.dev === original.dev) {
+    if (!existing && !keepSource && here?.dev === original.dev) {
       try {
         await link(srcPath, dest);
         linked = true;
@@ -291,10 +293,10 @@ export async function stageFile(
 export async function cleanSource(db: Database, primary: string, p: MoveFile) {
   if (p.cleaned) return;
   const dir = await targetDirectory(primary, p);
+  const keepSource = p.source_mount !== primary;
   if (
     !p.verified ||
-    p.source_mount !== primary ||
-    (await rootMarker(primary)) !== p.source_marker
+    (!keepSource && (await rootMarker(primary)) !== p.source_marker)
   )
     throw problem("源文件清理等待对应磁盘。");
   const v = p.verified as NonNullable<typeof p.verified> & {
@@ -308,8 +310,10 @@ export async function cleanSource(db: Database, primary: string, p: MoveFile) {
       (await digest(dst.file)) !== v.digest
     )
       throw problem("目标身份或内容改变，保留源文件。");
-    const srcPath = path.join(await realpath(primary), p.source_path);
-    if (await maybeStat(srcPath)) {
+    const srcPath = keepSource
+      ? ""
+      : path.join(await realpath(primary), p.source_path);
+    if (!keepSource && (await maybeStat(srcPath))) {
       await distinctLocation(srcPath, dir);
       const src = await openVideo(primary, p.source_path);
       try {

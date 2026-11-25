@@ -30,6 +30,8 @@ import com.squareup.moshi.JsonClass
 /**
  * @param dir
  * @param expected
+ * @param volumeId
+ * @param expectedVolumeId
  */
 
 
@@ -39,7 +41,13 @@ data class DownloadDirectory (
     val dir: kotlin.String,
 
     @Json(name = "expected")
-    val expected: kotlin.String?
+    val expected: kotlin.String?,
+
+    @Json(name = "volumeId")
+    val volumeId: java.util.UUID? = null,
+
+    @Json(name = "expectedVolumeId")
+    val expectedVolumeId: java.util.UUID? = null
 
 ) {
 

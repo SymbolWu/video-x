@@ -5,7 +5,7 @@ import { api, unwrap, type Schemas } from "@video-x/sdk-ts";
 import { Modal, ErrorNotice } from "@video-x/ui";
 import { StudioIcon } from "../../shared/StudioIcon";
 import "./storage.css";
-const DirectoryTree = lazy(() =>
+export const DirectoryTree = lazy(() =>
   import("./DirectoryTree").then(({ DirectoryTree }) => ({
     default: DirectoryTree,
   })),
@@ -60,8 +60,12 @@ export function StoragePicker({
   const config = useStorage(),
     cache = useQueryClient(),
     inbox = config.data?.inbox ?? null,
-    targets = config.data?.targets ?? [];
+    targets = config.data?.targets ?? [],
+    volumes = config.data?.inboxVolumes ?? [],
+    inboxVolumeId = config.data?.inboxVolumeId ?? undefined;
   const [initial] = useState(inbox),
+    [initialVolume] = useState(inboxVolumeId ?? null),
+    [chosenVolume, setChosenVolume] = useState(inboxVolumeId),
     [chosen, setChosen] = useState(""),
     target = chosen || targets[0]?.key;
   const [dir, setDir] = useState(configure ? (inbox ?? "") : ""),
@@ -72,8 +76,10 @@ export function StoragePicker({
     [error, fail] = useState("");
   const area = configure ? "volume" : rows ? "target" : "inbox",
     volume = config.data?.volume ?? "",
+    volumeId = configure ? chosenVolume : inboxVolumeId,
+    selectedDisk = volumes.find((disk) => disk.id === chosenVolume),
     title = configure
-      ? volume
+      ? (selectedDisk?.name ?? volume)
       : rows
         ? (targets.find((t) => t.key === target)?.label ?? "整理位置")
         : (inbox?.split("/").at(-1) ?? "下载目录");
@@ -125,7 +131,7 @@ export function StoragePicker({
     );
   }
   const ready = configure
-    ? !!dir
+    ? !!dir && (volumes.length === 0 || !!chosenVolume)
     : rows
       ? !!(
           target &&
@@ -142,7 +148,14 @@ export function StoragePicker({
     try {
       if (configure) {
         const saved = await unwrap(
-          api.PUT("/api/storage/inbox", { body: { dir, expected: initial } }),
+          api.PUT("/api/storage/inbox", {
+            body: {
+              dir,
+              expected: initial,
+              volumeId,
+              expectedVolumeId: initialVolume,
+            },
+          }),
         );
         cache.setQueryData(["storage", "layout"], saved);
         await cache.invalidateQueries({ queryKey: ["storage", "tree"] });
@@ -170,6 +183,7 @@ export function StoragePicker({
             body: {
               expectedRevision: bind.revision,
               expectedInbox: inbox!,
+              inboxVolumeId,
               relativePath: [inbox, selected[0]].join("/"),
             },
           }),
@@ -184,6 +198,7 @@ export function StoragePicker({
               body: {
                 relativePath: [inbox, file].join("/"),
                 expectedInbox: inbox!,
+                inboxVolumeId,
               },
             }),
           );
@@ -219,7 +234,7 @@ export function StoragePicker({
       }}
     >
       <fieldset className="storage-picker" disabled={busy}>
-        {!rows && (
+        {!rows && !configure && (
           <div className="vx-device">
             <StudioIcon name="folder" />
             <div>
@@ -234,31 +249,67 @@ export function StoragePicker({
             </div>
           </div>
         )}
-        {config.data && !rows && (
-          <Suspense
-            fallback={
-              <div className="vx-directory vx-directory-loading" role="status">
-                读取目录树…
-              </div>
-            }
-          >
-            <DirectoryTree
-              key={[area, target, initial].join("|")}
-              area={area}
-              title={title}
-              inbox={inbox}
-              dir={dir}
-              onDir={(p) => {
-                setDir(p);
-                setFolder("");
-              }}
-              files={selected}
-              onFile={pick}
-              close={close}
-              single={!!bind}
-            />
-          </Suspense>
+        {configure && !!volumes.length && (
+          <section className="storage-volume-selection" aria-label="选择媒体盘">
+            {volumes.map((disk) => (
+              <button
+                type="button"
+                key={disk.id}
+                aria-pressed={chosenVolume === disk.id}
+                onClick={() => {
+                  setChosenVolume(disk.id);
+                  navigate(disk.id === initialVolume ? (initial ?? "") : "");
+                  fail("");
+                }}
+              >
+                <StudioIcon name="folder" />
+                <span>{disk.name}</span>
+                <small>
+                  {disk.status === "offline" ||
+                  disk.status === "identity_mismatch"
+                    ? "检查连接"
+                    : "浏览目录"}
+                </small>
+              </button>
+            ))}
+          </section>
         )}
+        {configure && !chosenVolume && !!volumes.length && (
+          <p className="vx-storage-hint">
+            先选媒体盘，再选择该盘上的下载子目录。
+          </p>
+        )}
+        {config.data &&
+          !rows &&
+          (configure ? !!chosenVolume || !!volume : !!inbox) && (
+            <Suspense
+              fallback={
+                <div
+                  className="vx-directory vx-directory-loading"
+                  role="status"
+                >
+                  读取目录树…
+                </div>
+              }
+            >
+              <DirectoryTree
+                key={[area, target, volumeId, initial].join("|")}
+                area={area}
+                title={title}
+                volumeId={volumeId}
+                inbox={inbox}
+                dir={dir}
+                onDir={(p) => {
+                  setDir(p);
+                  setFolder("");
+                }}
+                files={selected}
+                onFile={pick}
+                close={close}
+                single={!!bind}
+              />
+            </Suspense>
+          )}
         {rows && (
           <>
             <div className="target-columns">

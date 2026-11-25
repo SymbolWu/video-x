@@ -38,7 +38,7 @@ export async function queueMove(
     return true;
   }
   const [current] = await tx.query(
-    sql`SELECT draft->'group'->>'id' grp,published_media_id,revision::int FROM video_x.import_items WHERE id=${id}`,
+    sql`SELECT draft->'group'->>'id' grp,draft->'editionTarget' ? 'replacement' replacement,published_media_id,revision::int FROM video_x.import_items WHERE id=${id}`,
   );
   if (!current || current.published_media_id) return false;
   if (current.revision !== expected) throw conflict();
@@ -58,7 +58,8 @@ export async function queueMove(
   for (const row of rows) {
     if (!row.reviewed_revision || row.reviewed_revision !== row.draft_revision)
       throw problem("请先人工核对全部待发布草稿。");
-    if (!row.release_date) throw problem("请先补齐全部草稿的发行日期。");
+    if (!current.replacement && !row.release_date)
+      throw problem("请先补齐全部草稿的发行日期。");
     if (
       row.target_path &&
       (await maybeStat(path.join(row.mount_path, row.target_path)))
@@ -110,7 +111,8 @@ export async function runMove(
   try {
     await lock.query("SELECT pg_advisory_lock(hashtextextended($1,17))", [id]);
     const [run] = await db.query(
-      sql`SELECT * FROM video_x.import_move_runs WHERE id=${id}`,
+      sql`SELECT run.*,i.draft->'editionTarget'->'replacement'->>'editionId' AS replacement_id
+      FROM video_x.import_move_runs run JOIN video_x.import_items i ON i.id=run.item_id WHERE run.id=${id}`,
     );
     if (!run || !["queued", "running", "cleanup"].includes(run.state)) return;
     try {
@@ -118,7 +120,18 @@ export async function runMove(
         await db.query(
           sql`UPDATE video_x.import_move_runs SET state='running',error=null WHERE id=${id}`,
         );
-        await checkCapacity(db, root, id);
+        if (!run.replacement_id) await checkCapacity(db, root, id);
+        else {
+          const [valid] = await db.query(sql`
+            SELECT 1 FROM video_x.editions old
+            JOIN video_x.edition_parts part ON part.edition_id=old.id AND part.part_no=1
+            JOIN video_x.media_files file ON file.id=part.file_id
+            JOIN video_x.import_move_plans plan ON plan.item_id=${run.item_id}
+            WHERE old.id=${run.replacement_id} AND old.archived_at IS NULL
+              AND file.root_id=plan.target_root
+              AND regexp_replace(file.relative_path,'[^/]+$','')=regexp_replace(plan.target_path,'[^/]+$','')`);
+          if (!valid) throw problem("原版本的文件位置已变更，请重新选择。");
+        }
         for (const p of await filePlans(db, id))
           await stageFile(db, root, p, step);
         await db.transaction(async (tx) => {

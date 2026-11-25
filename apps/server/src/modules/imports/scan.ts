@@ -34,6 +34,7 @@ export async function manualFile(
   relative: string,
   target?: { id: string; revision: number },
   expectedInbox?: string,
+  inboxVolumeId?: string,
 ) {
   if (
     !relative ||
@@ -46,14 +47,16 @@ export async function manualFile(
   if (
     (expectedInbox !== undefined || layout(root)?.pickerOnly) &&
     (!inbox ||
-      (expectedInbox !== undefined && inbox !== expectedInbox) ||
-      !relative.startsWith(inbox + "/"))
+      (expectedInbox !== undefined && inbox.dir !== expectedInbox) ||
+      (inboxVolumeId !== undefined && inbox.id !== inboxVolumeId) ||
+      !relative.startsWith(inbox.dir + "/"))
   )
     throw problem("下载目录已改变或文件位于目录之外，请重新选择。");
-  const requiresMove = !!inbox && relative.startsWith(inbox + "/");
-  const marker = await rootMarker(root);
+  const requiresMove = !!inbox && relative.startsWith(inbox.dir + "/");
+  const mount = requiresMove ? inbox.mount : root;
+  const marker = await rootMarker(mount);
   try {
-    const { file } = await openVideo(root, relative);
+    const { file } = await openVideo(mount, relative);
     await file.close();
   } catch {
     throw new AppError(
@@ -64,10 +67,10 @@ export async function manualFile(
   }
   const batch = await db.transaction(async (tx) => {
     await tx.query(
-      sql`INSERT INTO video_x.storage_roots(library_id,name,mount_path,expected_marker) VALUES(${library},'本地媒体目录',${root},${marker}) ON CONFLICT(library_id,mount_path) DO NOTHING`,
+      sql`INSERT INTO video_x.storage_roots(library_id,name,mount_path,expected_marker) VALUES(${library},'本地媒体目录',${mount},${marker}) ON CONFLICT(library_id,mount_path) DO NOTHING`,
     );
     const [r] = await tx.query(
-      sql`SELECT id,expected_marker FROM video_x.storage_roots WHERE library_id=${library} AND mount_path=${root}`,
+      sql`SELECT id,expected_marker FROM video_x.storage_roots WHERE library_id=${library} AND mount_path=${mount}`,
     );
     if (r?.expected_marker !== marker)
       throw new AppError(409, "WRONG_ROOT", "媒体盘标识已改变。");
@@ -78,7 +81,7 @@ export async function manualFile(
   });
   await catalogFile(
     db,
-    root,
+    mount,
     batch.root,
     batch.id,
     relative,
@@ -97,6 +100,30 @@ export async function manualFile(
     );
   return { id: i.id as string };
 }
+export async function storeProbe(
+  tx: Pick<Database, "query">,
+  rootId: string,
+  relative: string,
+  size: string,
+  mtime: string,
+  facts?: Awaited<ReturnType<typeof probeVideo>>,
+) {
+  const state = facts ? "succeeded" : "failed";
+  const [f] =
+    await tx.query(sql`INSERT INTO video_x.media_files AS f(root_id,relative_path,file_kind,size_bytes,mtime_ns,probe_status,probed_content_revision,probed_at,probe_error_code,container_format,duration_ms)
+  VALUES(${rootId},${relative},'video',${size},${mtime},${state},1,now(),${facts ? null : "INVALID_MEDIA"},${facts?.format ?? null},${facts?.duration ?? null})
+  ON CONFLICT(root_id,relative_path) DO UPDATE SET
+  content_revision=f.content_revision+((f.size_bytes,f.mtime_ns) IS DISTINCT FROM (excluded.size_bytes,excluded.mtime_ns))::int,
+  probed_content_revision=f.content_revision+((f.size_bytes,f.mtime_ns) IS DISTINCT FROM (excluded.size_bytes,excluded.mtime_ns))::int,
+  size_bytes=excluded.size_bytes,mtime_ns=excluded.mtime_ns,availability='present',missing_since=null,last_seen_at=now(),probe_status=excluded.probe_status,probed_at=now(),probe_error_code=excluded.probe_error_code,container_format=excluded.container_format,duration_ms=excluded.duration_ms RETURNING id`);
+  await tx.query(sql`DELETE FROM video_x.media_streams WHERE file_id=${f!.id}`);
+  for (const t of facts?.tracks ?? [])
+    await tx.query(
+      sql`INSERT INTO video_x.media_streams(file_id,stream_index,kind,codec,language,width,height,channels) VALUES(${f!.id},${t.index},${t.codec_type},${t.codec_name ?? null},${t.tags?.language ?? null},${t.width || null},${t.height || null},${t.channels || null})`,
+    );
+  return f!;
+}
+
 async function catalogFile(
   db: Database,
   root: string,
@@ -153,21 +180,7 @@ async function catalogFile(
         if (target) throw new AppError(409, "FILE_MOVING", "文件正在整理。");
         return;
       }
-      const state = facts ? "succeeded" : "failed";
-      const [f] =
-        await tx.query(sql`INSERT INTO video_x.media_files AS f(root_id,relative_path,file_kind,size_bytes,mtime_ns,probe_status,probed_content_revision,probed_at,probe_error_code,container_format,duration_ms)
-      VALUES(${rootId},${relative},'video',${size},${mtime},${state},1,now(),${facts ? null : "INVALID_MEDIA"},${facts?.format ?? null},${facts?.duration ?? null})
-      ON CONFLICT(root_id,relative_path) DO UPDATE SET
-      content_revision=f.content_revision+((f.size_bytes,f.mtime_ns) IS DISTINCT FROM (excluded.size_bytes,excluded.mtime_ns))::int,
-      probed_content_revision=f.content_revision+((f.size_bytes,f.mtime_ns) IS DISTINCT FROM (excluded.size_bytes,excluded.mtime_ns))::int,
-      size_bytes=excluded.size_bytes,mtime_ns=excluded.mtime_ns,availability='present',missing_since=null,last_seen_at=now(),probe_status=excluded.probe_status,probed_at=now(),probe_error_code=excluded.probe_error_code,container_format=excluded.container_format,duration_ms=excluded.duration_ms RETURNING id`);
-      await tx.query(
-        sql`DELETE FROM video_x.media_streams WHERE file_id=${f!.id}`,
-      );
-      for (const t of facts?.tracks ?? [])
-        await tx.query(
-          sql`INSERT INTO video_x.media_streams(file_id,stream_index,kind,codec,language,width,height,channels) VALUES(${f!.id},${t.index},${t.codec_type},${t.codec_name ?? null},${t.tags?.language ?? null},${t.width || null},${t.height || null},${t.channels || null})`,
-        );
+      const f = await storeProbe(tx, rootId, relative, size, mtime, facts);
       const [item] = await tx.query(
         sql`SELECT i.id,i.stage,i.reviewed_revision,i.draft_revision,iab.mode FROM video_x.import_items i JOIN video_x.import_batches iab ON iab.id=i.batch_id JOIN video_x.import_item_files b ON b.item_id=i.id WHERE b.file_id=${f!.id} FOR UPDATE OF i`,
       );

@@ -14,6 +14,7 @@ src/main/kotlin/com/wuxinbo/videox/api/models/BrowseFacts.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/Category.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/CategoryCreate.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/CategoryVisibility.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/CheckReplacementName.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/Collection.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/CollectionCreate.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/CollectionItems.kt
@@ -25,6 +26,7 @@ src/main/kotlin/com/wuxinbo/videox/api/models/DictionaryEntry.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DictionaryWrite.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DirectoryView.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DirectoryViewEntriesInner.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/DirectoryViewInboxVolumesInner.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DirectoryViewTargetsInner.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DownloadDirectory.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/EditionCheck.kt
@@ -45,6 +47,7 @@ src/main/kotlin/com/wuxinbo/videox/api/models/ImportEdit.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/ImportFields.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/ImportQueue.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/ImportRow.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/InspectReplacement.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/Login.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/LoginResult.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/LookupChoice.kt
@@ -73,6 +76,8 @@ src/main/kotlin/com/wuxinbo/videox/api/models/PlaybackSession.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/Profile.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PublishEdition.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/ReplacedEdition.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/ReplacementFileInfo.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/ReplacementNameCheck.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/ReplacementTarget.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RevisionInput.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RunLookup.kt
@@ -89,5 +94,6 @@ src/main/kotlin/com/wuxinbo/videox/api/models/SourceCandidateReferencesInner.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/SourceLookup.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/SourceNames.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/SourceProvider.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/SubmitReplacement.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/TargetPlan.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/TargetPlanMembersInner.kt

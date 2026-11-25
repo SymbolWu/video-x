@@ -1032,3 +1032,182 @@ test("影片系列和标签带入未保存主分类，分组筛选时保留所�
     ),
   );
 });
+
+test("替换直接从下载盘选文件，入库位置固定且文件名出错可更正", async (t) => {
+  const fixtures = new Map(responses);
+  const old = {
+    id: "one",
+    name: "原版",
+    filename: "资料/原版.mp4",
+    height: 1080,
+    width: 1920,
+    isDefault: true,
+    availability: "present",
+    revision: 4,
+    partCount: 1,
+  };
+  fixtures.set("/api/media/" + film.id, { ...film, editions: [old] });
+  const volumeId = "test-disk-a";
+  const storage = {
+    volume: "媒体盘 A",
+    inbox: "Download",
+    inboxVolumeId: volumeId,
+    targets: [],
+    entries: [],
+  };
+  fixtures.set("/api/storage/browse", (route) => {
+    const { searchParams } = new URL(route.request().url());
+    if (searchParams.get("area") === "inbox") {
+      assert.equal(searchParams.get("volumeId"), volumeId);
+      return route.fulfill({
+        json: {
+          ...storage,
+          entries: [{ name: "random(2).mp4", folder: false }],
+        },
+      });
+    }
+    return route.fulfill({ json: storage });
+  });
+  const apiPath = "/api/media/" + film.id + "/editions/one/replacement";
+  const requests = [];
+  fixtures.set(apiPath + "/inspect", (route) => {
+    const body = route.request().postDataJSON();
+    assert.equal(body.relativePath, "Download/random(2).mp4");
+    assert.equal(body.volumeId, volumeId);
+    assert.equal(body.expectedRevision, 4);
+    return route.fulfill({
+      json: {
+        relativePath: body.relativePath,
+        volume: "媒体盘 A",
+        requestId: "test-request",
+        fileVersion: "111:222",
+        format: "mp4",
+        width: 3840,
+        height: 2160,
+        videoCodec: "h264",
+        durationMs: 29900,
+        extension: ".mp4",
+        suggestedStem: film.title,
+        targetDirectory: "媒体盘 B / 资料",
+      },
+    });
+  });
+  fixtures.set(apiPath + "/name", (route) => {
+    const { stem } = route.request().postDataJSON();
+    return route.fulfill({
+      json:
+        stem === "原版"
+          ? { path: null, error: "已有同名文件" }
+          : { path: "资料/" + stem + ".mp4", error: null },
+    });
+  });
+  fixtures.set(apiPath, (route) => {
+    requests.push(route.request().postDataJSON());
+    return route.fulfill({
+      json: {
+        id: "done",
+        publishedMediaId: film.id,
+        editionTarget: { replacement: { editionId: "one" } },
+      },
+    });
+  });
+  const page = await openPage(t, "/manage/#media/" + film.id, {
+    fixtures,
+    viewport: { width: 390, height: 844 },
+  });
+  await page.getByRole("button", { name: "版本与文件", exact: true }).click();
+  await page.getByRole("button", { name: "原版文件详情" }).click();
+  await page.getByRole("button", { name: "替换文件", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "替换播放文件" });
+  await dialog.getByRole("button", { name: "选择文件", exact: true }).click();
+  await dialog.getByText("random(2).mp4", { exact: true }).click();
+  await dialog.getByRole("button", { name: "选用文件" }).click();
+  const filename = dialog.getByLabel(/入库文件名/);
+  assert.equal(await filename.inputValue(), film.title);
+  await dialog.getByText("媒体盘 B / 资料", { exact: true }).waitFor();
+  assert.ok(
+    await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+  );
+  await filename.fill("原版");
+  await dialog.getByText("已有同名文件").waitFor();
+  assert.ok(
+    await dialog.getByRole("button", { name: "确认替换" }).isDisabled(),
+  );
+  await filename.fill("资料 4K");
+  await dialog.getByText("入库为 资料 4K.mp4").waitFor();
+  await dialog.getByRole("button", { name: "确认替换" }).click();
+  await page.getByText("播放文件已替换", { exact: true }).waitFor();
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].stem, "资料 4K");
+  assert.equal(requests[0].volumeId, volumeId);
+  assert.equal(requests[0].targetDirectory, undefined);
+});
+
+test("下载目录设置在切换媒体盘后重新浏览，并提交盘身份", async (t) => {
+  const fixtures = new Map(responses);
+  fixtures.set("/api/system/status", {
+    checkedAt: new Date().toISOString(),
+    media: { path: "/media/library", state: "online" },
+    mediaRoots: [],
+    art: { path: "/art", bytes: 0, state: "writable" },
+    pending: 0,
+    worker: null,
+    version: "test",
+    origins: [],
+    sources: [],
+  });
+  const volumes = [
+    { id: "disk-a", name: "媒体盘 A", status: "online" },
+    { id: "disk-b", name: "媒体盘 B", status: "online" },
+  ];
+  const layout = {
+    inbox: null,
+    inboxVolumes: volumes,
+    targets: [],
+    entries: [],
+  };
+  fixtures.set("/api/storage/browse", (route) => {
+    const q = new URL(route.request().url()).searchParams;
+    const id = q.get("volumeId");
+    if (!id) return route.fulfill({ json: layout });
+    const name = id === "disk-a" ? "下载 A" : "下载 B";
+    return route.fulfill({
+      json: {
+        ...layout,
+        entries: q.get("dir") ? [] : [{ name, folder: true }],
+      },
+    });
+  });
+  const writes = [];
+  fixtures.set("/api/storage/inbox", (route) => {
+    writes.push(route.request().postDataJSON());
+    return route.fulfill({
+      json: {
+        ...layout,
+        inbox: "下载 B",
+        volume: "媒体盘 B",
+        inboxVolumeId: "disk-b",
+      },
+    });
+  });
+  const page = await openPage(t, "/manage/#settings", { fixtures });
+  await page.getByRole("button", { name: "选择下载目录" }).click();
+  const dialog = page.getByRole("dialog", { name: "选择下载目录" });
+  const save = dialog.getByRole("button", { name: "保存下载目录" });
+  assert.ok(await save.isDisabled());
+  await dialog.getByRole("button", { name: /媒体盘 A/ }).click();
+  await dialog.getByText("下载 A", { exact: true }).click();
+  await dialog.getByRole("button", { name: /媒体盘 B/ }).click();
+  assert.ok(await save.isDisabled());
+  await dialog.getByText("下载 B", { exact: true }).click();
+  await save.click();
+  await page.getByText("下载目录已保存。").waitFor();
+  assert.deepEqual(writes, [
+    {
+      volumeId: "disk-b",
+      dir: "下载 B",
+      expected: null,
+      expectedVolumeId: null,
+    },
+  ]);
+});

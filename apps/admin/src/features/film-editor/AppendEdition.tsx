@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, unwrap, type Schemas } from "@video-x/sdk-ts";
-import { EditionComparison } from "./EditionComparison";
 import { Modal, Pager, ErrorNotice } from "@video-x/ui";
 type Media = Schemas["MediaDetail"];
 type Row = Schemas["ImportRow"];
@@ -18,12 +17,10 @@ function unavailable(row: Row) {
 export function AppendEdition({
   media,
   close,
-  previous,
   openIntake,
   done,
 }: {
   media: Media;
-  previous?: Schemas["EditionInfo"];
   close: () => void;
   openIntake: () => void;
   done: (row: Row) => void;
@@ -31,7 +28,7 @@ export function AppendEdition({
   const [q, search] = useState(""),
     [page, setPage] = useState(1),
     [selected, select] = useState<Schemas["ImportRow"]>(),
-    [name, rename] = useState(previous?.name ?? ""),
+    [name, rename] = useState(""),
     [busy, working] = useState(false),
     [error, fail] = useState("");
   const list = useQuery({
@@ -63,14 +60,6 @@ export function AppendEdition({
             expectedRevision: selected.revision,
             mediaId: media.id,
             name: name.trim(),
-            ...(previous?.revision
-              ? {
-                  replacement: {
-                    editionId: previous.id,
-                    expectedRevision: previous.revision,
-                  },
-                }
-              : {}),
           },
         }),
       );
@@ -85,17 +74,8 @@ export function AppendEdition({
     list.data?.items.filter((row) => !row.publishedMediaId) ?? [];
   const empty = !list.isPending && !list.isError && candidates.length === 0;
   return (
-    <Modal
-      title={previous ? "替换播放文件" : "追加播放版本"}
-      close={() => !busy && close()}
-    >
-      <div
-        className={
-          previous
-            ? "relation-picker edition-replacement-picker"
-            : "relation-picker"
-        }
-      >
+    <Modal title="追加播放版本" close={() => !busy && close()}>
+      <div className="relation-picker">
         <input
           type="search"
           autoFocus
@@ -178,10 +158,7 @@ export function AppendEdition({
             onChange={(event) => rename(event.target.value)}
           />
         </label>
-        {previous && selected && (
-          <EditionComparison previous={previous} candidate={selected} />
-        )}
-        {selected && !previous && (
+        {selected && (
           <dl className="edition-destination">
             <dt>目标作品</dt>
             <dd>{media.title}</dd>
@@ -209,7 +186,7 @@ export function AppendEdition({
             disabled={busy || !selected || !name.trim()}
             onClick={() => void publish()}
           >
-            {busy ? "正在提交…" : previous ? "确认替换" : "确认追加并发布"}
+            {busy ? "正在提交…" : "确认追加并发布"}
           </button>
         </footer>
       </div>

@@ -13,6 +13,7 @@ import { Dictionary } from "./modules/catalog/dictionary.js";
 import { EditionFiles } from "./modules/catalog/edition-files.js";
 import { sendVideo } from "./modules/playback/video-response.js";
 import { Catalog } from "./modules/catalog/service.js";
+import { Replacements } from "./modules/imports/replacements.js";
 import { Imports } from "./modules/imports/service.js";
 import { providers } from "./modules/sources/providers.js";
 import { acceptLookup, enqueueLookup } from "./modules/sources/service.js";
@@ -333,6 +334,7 @@ export async function createApp(
         req.body.relativePath,
         undefined,
         req.body.expectedInbox,
+        req.body.inboxVolumeId,
       ),
   );
   app.post<{ Body: Static<typeof C.CategoryCreate> }>(
@@ -608,7 +610,7 @@ export async function createApp(
         response: response(C.DirectoryView),
       },
     },
-    (r) => selectInbox(db, mediaRoot, r.body.dir, r.body.expected),
+    (r) => selectInbox(db, mediaRoot, r.body),
   );
   app.post<{ Body: Static<typeof C.TargetPlan> }>(
     "/api/imports/targets",
@@ -664,6 +666,7 @@ export async function createApp(
           revision: r.body.expectedRevision,
         },
         r.body.expectedInbox,
+        r.body.inboxVolumeId,
       );
       return imports.get(r.params.id);
     },
@@ -900,6 +903,84 @@ export async function createApp(
     handler: async (req, reply) => {
       reply.header("Cache-Control", "private, no-store");
       return sendVideo(req, reply, await imports.preview(req.params.id));
+    },
+  });
+  const replacements = new Replacements(db, mediaRoot);
+  const replacementPath = "/api/media/:id/editions/:editionId/replacement";
+  const replacementOperation = (
+    operationId: string,
+    summary: string,
+    input: Parameters<typeof C.T.Ref>[0],
+    output: Parameters<typeof C.T.Ref>[0],
+  ) => ({
+    ...operation(operationId),
+    summary,
+    description: summary,
+    params: editionParams,
+    body: C.T.Ref(input),
+    response: response(output),
+  });
+  app.post<{
+    Params: { id: string; editionId: string };
+    Body: Static<typeof C.InspectReplacement>;
+  }>(
+    replacementPath + "/inspect",
+    {
+      schema: replacementOperation(
+        "inspectReplacement",
+        "检测下载文件",
+        C.InspectReplacement,
+        C.ReplacementFileInfo,
+      ),
+    },
+    (r) => replacements.inspect(r.params.id, r.params.editionId, r.body),
+  );
+  app.post<{
+    Params: { id: string; editionId: string };
+    Body: Static<typeof C.CheckReplacementName>;
+  }>(
+    replacementPath + "/name",
+    {
+      schema: replacementOperation(
+        "checkReplacementName",
+        "检查替换文件名",
+        C.CheckReplacementName,
+        C.ReplacementNameCheck,
+      ),
+    },
+    (r) => replacements.check(r.params.id, r.params.editionId, r.body),
+  );
+  app.post<{
+    Params: { id: string; editionId: string };
+    Body: Static<typeof C.SubmitReplacement>;
+  }>(
+    replacementPath,
+    {
+      schema: replacementOperation(
+        "submitReplacement",
+        "在原目录替换播放文件",
+        C.SubmitReplacement,
+        C.ImportRow,
+      ),
+    },
+    (r) =>
+      replacements.submit(r.params.id, r.params.editionId, r.viewer.id, r.body),
+  );
+  app.route<{ Querystring: Static<typeof C.ReplacementPreviewQuery> }>({
+    method: ["GET", "HEAD"],
+    url: "/api/storage/replacement-preview",
+    schema: { hide: true, querystring: C.ReplacementPreviewQuery },
+    handler: async (r, reply) => {
+      reply.header("Cache-Control", "private, no-store");
+      return sendVideo(
+        r,
+        reply,
+        await replacements.preview(
+          r.query,
+          r.query.fileVersion,
+          r.query.format,
+        ),
+      );
     },
   });
   registerArt(app, db);

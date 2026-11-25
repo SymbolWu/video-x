@@ -29,6 +29,7 @@ import com.squareup.moshi.JsonClass
 
 /**
  * @param relativePath
+ * @param inboxVolumeId
  * @param expectedInbox
  */
 
@@ -37,6 +38,9 @@ data class ManualFile (
 
     @Json(name = "relativePath")
     val relativePath: kotlin.String,
+
+    @Json(name = "inboxVolumeId")
+    val inboxVolumeId: java.util.UUID? = null,
 
     @Json(name = "expectedInbox")
     val expectedInbox: kotlin.String? = null

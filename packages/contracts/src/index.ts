@@ -568,6 +568,7 @@ export const ImportEdit = obj("ImportEdit", {
   fields: T.Ref(ImportFields),
 });
 export const ManualFile = obj("ManualFile", {
+  inboxVolumeId: T.Optional(id()),
   expectedInbox: T.Optional(T.String({ maxLength: 2048 })),
   relativePath: T.String({ minLength: 1, maxLength: 2048 }),
 });
@@ -593,10 +594,16 @@ export const GroupInfo = obj("GroupInfo", {
   position: T.Integer(),
 });
 export const DownloadDirectory = obj("DownloadDirectory", {
+  volumeId: T.Optional(id()),
+  expectedVolumeId: T.Optional(nullable(id())),
   dir: T.String({ minLength: 1, maxLength: 2048 }),
   expected: nullable(T.String({ maxLength: 2048 })),
 });
 export const DirectoryView = obj("DirectoryView", {
+  inboxVolumeId: T.Optional(nullable(id())),
+  inboxVolumes: T.Optional(
+    T.Array(T.Object({ id: id(), name: T.String(), status: T.String() })),
+  ),
   volume: T.Optional(T.String()),
   inbox: nullable(T.String()),
   targets: T.Array(T.Object({ key: T.String(), label: T.String() })),
@@ -617,6 +624,7 @@ export const DirectoryView = obj("DirectoryView", {
 export const BrowseDirectory = T.Object(
   {
     summaryOnly: T.Optional(T.Boolean()),
+    volumeId: T.Optional(id()),
     area: T.Optional(
       T.Union([T.Literal("inbox"), T.Literal("volume"), T.Literal("target")]),
     ),
@@ -756,6 +764,54 @@ export const PlaybackEvent = obj("PlaybackEvent", {
   ]),
 });
 export const PlaybackAck = obj("PlaybackAck", { status: T.String() });
+const downloadSource = {
+  volumeId: id(),
+  relativePath: T.String({ minLength: 1, maxLength: 2048 }),
+};
+export const InspectReplacement = obj("InspectReplacement", {
+  ...downloadSource,
+  ...RevisionInput.properties,
+});
+const replacementFile = {
+  ...InspectReplacement.properties,
+  fileVersion: T.String({ pattern: "^[0-9]+:[0-9]+$", maxLength: 80 }),
+  stem: T.String({ maxLength: 300 }),
+};
+export const CheckReplacementName = obj(
+  "CheckReplacementName",
+  replacementFile,
+);
+export const SubmitReplacement = obj("SubmitReplacement", {
+  ...replacementFile,
+  requestId: id(),
+});
+export const ReplacementPreviewQuery = T.Object(
+  {
+    ...downloadSource,
+    fileVersion: replacementFile.fileVersion,
+    format: T.Union([T.Literal("mp4"), T.Literal("matroska")]),
+  },
+  { additionalProperties: false },
+);
+export const ReplacementFileInfo = obj("ReplacementFileInfo", {
+  requestId: id(),
+  relativePath: T.String(),
+  volume: T.String(),
+  fileVersion: replacementFile.fileVersion,
+  format: ReplacementPreviewQuery.properties.format,
+  width: nullable(T.Integer()),
+  height: nullable(T.Integer()),
+  videoCodec: nullable(T.String()),
+  durationMs: T.Integer({ format: "int64" }),
+  extension: T.String(),
+  suggestedStem: T.String(),
+  targetDirectory: T.String(),
+});
+export const ReplacementNameCheck = obj("ReplacementNameCheck", {
+  path: nullable(T.String()),
+  error: nullable(T.String()),
+});
+
 export const schemas = [
   GroupMember,
   GroupInput,
@@ -765,6 +821,11 @@ export const schemas = [
   ReplacementTarget,
   EditionCheck,
   EditionRestore,
+  InspectReplacement,
+  CheckReplacementName,
+  SubmitReplacement,
+  ReplacementFileInfo,
+  ReplacementNameCheck,
   EditionTarget,
   DictionaryChoice,
   DictionaryChoicePage,

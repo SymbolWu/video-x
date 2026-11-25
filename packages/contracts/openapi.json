@@ -217,6 +217,190 @@
           }
         }
       },
+      "InspectReplacement": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "volumeId",
+          "relativePath",
+          "expectedRevision"
+        ],
+        "properties": {
+          "volumeId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "relativePath": {
+            "minLength": 1,
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "expectedRevision": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "CheckReplacementName": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "volumeId",
+          "relativePath",
+          "expectedRevision",
+          "fileVersion",
+          "stem"
+        ],
+        "properties": {
+          "volumeId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "relativePath": {
+            "minLength": 1,
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "expectedRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "fileVersion": {
+            "pattern": "^[0-9]+:[0-9]+$",
+            "maxLength": 80,
+            "type": "string"
+          },
+          "stem": {
+            "maxLength": 300,
+            "type": "string"
+          }
+        }
+      },
+      "SubmitReplacement": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "volumeId",
+          "relativePath",
+          "expectedRevision",
+          "fileVersion",
+          "stem",
+          "requestId"
+        ],
+        "properties": {
+          "volumeId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "relativePath": {
+            "minLength": 1,
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "expectedRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "fileVersion": {
+            "pattern": "^[0-9]+:[0-9]+$",
+            "maxLength": 80,
+            "type": "string"
+          },
+          "stem": {
+            "maxLength": 300,
+            "type": "string"
+          },
+          "requestId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        }
+      },
+      "ReplacementFileInfo": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "requestId",
+          "relativePath",
+          "volume",
+          "fileVersion",
+          "format",
+          "width",
+          "height",
+          "videoCodec",
+          "durationMs",
+          "extension",
+          "suggestedStem",
+          "targetDirectory"
+        ],
+        "properties": {
+          "requestId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "relativePath": {
+            "type": "string"
+          },
+          "volume": {
+            "type": "string"
+          },
+          "fileVersion": {
+            "pattern": "^[0-9]+:[0-9]+$",
+            "maxLength": 80,
+            "type": "string"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "mp4",
+              "matroska"
+            ]
+          },
+          "width": {
+            "type": "integer",
+            "nullable": true
+          },
+          "height": {
+            "type": "integer",
+            "nullable": true
+          },
+          "videoCodec": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "extension": {
+            "type": "string"
+          },
+          "suggestedStem": {
+            "type": "string"
+          },
+          "targetDirectory": {
+            "type": "string"
+          }
+        }
+      },
+      "ReplacementNameCheck": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "path",
+          "error"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "EditionTarget": {
         "additionalProperties": false,
         "type": "object",
@@ -1106,6 +1290,10 @@
           "expectedRevision"
         ],
         "properties": {
+          "inboxVolumeId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "expectedInbox": {
             "maxLength": 2048,
             "type": "string"
@@ -1280,6 +1468,10 @@
           "relativePath"
         ],
         "properties": {
+          "inboxVolumeId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "expectedInbox": {
             "maxLength": 2048,
             "type": "string"
@@ -1344,6 +1536,34 @@
           "limit"
         ],
         "properties": {
+          "inboxVolumeId": {
+            "format": "uuid",
+            "type": "string",
+            "nullable": true
+          },
+          "inboxVolumes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "name",
+                "status"
+              ],
+              "properties": {
+                "id": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "volume": {
             "type": "string"
           },
@@ -1421,6 +1641,15 @@
           "expected"
         ],
         "properties": {
+          "volumeId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "expectedVolumeId": {
+            "format": "uuid",
+            "type": "string",
+            "nullable": true
+          },
           "dir": {
             "minLength": 1,
             "maxLength": 2048,
@@ -6986,6 +7215,15 @@
           },
           {
             "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "query",
+            "name": "volumeId",
+            "required": false
+          },
+          {
+            "schema": {
               "type": "string",
               "enum": [
                 "inbox",
@@ -9749,6 +9987,459 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EditionRestore"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/media/{id}/editions/{editionId}/replacement/inspect": {
+      "post": {
+        "operationId": "inspectReplacement",
+        "summary": "检测下载文件",
+        "tags": [
+          "Imports"
+        ],
+        "description": "检测下载文件",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InspectReplacement"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "作品 ID"
+          },
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "editionId",
+            "required": true,
+            "description": "播放版本 ID"
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplacementFileInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/media/{id}/editions/{editionId}/replacement/name": {
+      "post": {
+        "operationId": "checkReplacementName",
+        "summary": "检查替换文件名",
+        "tags": [
+          "Imports"
+        ],
+        "description": "检查替换文件名",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckReplacementName"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "作品 ID"
+          },
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "editionId",
+            "required": true,
+            "description": "播放版本 ID"
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplacementNameCheck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/media/{id}/editions/{editionId}/replacement": {
+      "post": {
+        "operationId": "submitReplacement",
+        "summary": "在原目录替换播放文件",
+        "tags": [
+          "Imports"
+        ],
+        "description": "在原目录替换播放文件",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitReplacement"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "作品 ID"
+          },
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "editionId",
+            "required": true,
+            "description": "播放版本 ID"
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRow"
                 }
               }
             }

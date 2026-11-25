@@ -42,9 +42,11 @@ export function VideoFacts({ data }: { data: FileFacts }) {
 export function EditionComparison({
   previous,
   candidate,
+  previewUrl,
 }: {
   previous: Schemas["EditionInfo"];
-  candidate: Schemas["ImportRow"];
+  candidate: Schemas["ReplacementFileInfo"];
+  previewUrl: string;
 }) {
   const oldDuration = previous.durationMs ?? 0;
   const durationChanged =
@@ -70,7 +72,9 @@ export function EditionComparison({
         </div>
         <div>
           <h3>候选文件</h3>
-          <p>{candidate.move?.directory || candidate.relativePath}</p>
+          <p>
+            {candidate.volume} / {candidate.relativePath}
+          </p>
           <dl>
             <VideoFacts data={candidate} />
           </dl>
@@ -84,7 +88,7 @@ export function EditionComparison({
           {lowerResolution ? "候选文件的分辨率低于原文件。" : ""}
         </p>
       )}
-      <CandidatePreview key={candidate.id} id={candidate.id} />
+      <CandidatePreview key={previewUrl} url={previewUrl} />
       <p className="edition-comparison-note">
         替换完成后，原文件和原版本进度会保留。新版本从头播放。
         {previous.isDefault ? "默认播放会切到新文件。" : ""}
@@ -93,14 +97,14 @@ export function EditionComparison({
   );
 }
 
-function CandidatePreview({ id }: { id: string }) {
+function CandidatePreview({ url }: { url: string }) {
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
   return open ? (
     <div className="edition-preview">
       <video
         aria-label="候选文件试播"
-        src={"/api/imports/" + id + "/edition-preview"}
+        src={url}
         controls
         preload="metadata"
         onError={() => setFailed(true)}

@@ -13,6 +13,9 @@ type Reader = Pick<Transaction, "query">;
 type Binding = {
   id: string;
   file_id: string;
+  root_id: string;
+  title: string;
+  volume: string;
   revision: number;
   file_revision: string;
   is_default: boolean;
@@ -38,7 +41,7 @@ export async function editionBinding(
 ) {
   const [row] = await tx.query<Binding>(sql`
     SELECT e.id,e.revision::int,e.is_default,e.archived_at,e.cut,e.language,e.notes,
-      p.file_id,p.bound_content_revision,
+      p.file_id,p.bound_content_revision,f.root_id,m.title,r.name AS volume,
       (SELECT count(*)::int FROM video_x.edition_parts WHERE edition_id=e.id) AS part_count,
       f.revision AS file_revision,f.content_revision,f.relative_path,f.size_bytes,f.mtime_ns,
       r.mount_path,r.expected_marker,r.archived_at AS root_archived

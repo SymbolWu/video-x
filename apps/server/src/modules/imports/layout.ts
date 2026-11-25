@@ -113,93 +113,180 @@ export async function listDirectory(root: string, sub: string) {
     );
 }
 type Reader = Pick<Transaction, "query">;
+type DownloadRoot = {
+  id: string;
+  name: string;
+  status: string;
+  mount_path: string;
+  download_directory: string | null;
+  expected_marker: string;
+};
+
+async function downloadRoots(db: Reader, root: string, cfg = layout(root)) {
+  const paths = cfg?.readRoots.length ? cfg.readRoots : [root];
+  const rows = await db.query<DownloadRoot>(sql`
+    SELECT id,name,status,mount_path,download_directory,expected_marker
+    FROM video_x.storage_roots
+    WHERE archived_at IS NULL
+      AND mount_path IN (SELECT jsonb_array_elements_text(${JSON.stringify(paths)}::jsonb))
+    ORDER BY name,id`);
+  return rows;
+}
+
 export async function activeInbox(db: Reader, root: string) {
   const cfg = layout(root);
   if (!cfg) return null;
-  const [saved] = await db.query(
-    sql`SELECT download_directory FROM video_x.storage_roots WHERE mount_path=${root} AND archived_at IS NULL`,
-  );
-  return (saved?.download_directory ?? cfg.inbox) as string | null;
+  const volumes = await downloadRoots(db, root, cfg);
+  const saved = volumes.find((v) => v.download_directory);
+  if (saved)
+    return {
+      mount: saved.mount_path,
+      dir: saved.download_directory!,
+      volume: saved.name,
+      id: saved.id,
+    };
+  if (cfg.readRoots.length || !cfg.inbox) return null;
+  return {
+    mount: root,
+    dir: cfg.inbox,
+    volume: path.basename(root),
+    id: volumes[0]?.id,
+  };
 }
+
 export async function selectInbox(
   db: Database,
   root: string,
-  dir: string,
-  expected: string | null,
+  input: {
+    dir: string;
+    expected: string | null;
+    volumeId?: string;
+    expectedVolumeId?: string | null;
+  },
 ) {
   const cfg = layout(root);
   if (!cfg) throw problem("尚未登记可选择的存储卷。");
+  const { dir, expected, expectedVolumeId, volumeId } = input;
   relative(dir);
-  await directory(root, dir);
-  for (const t of cfg.targets)
-    if (
-      t.root === root &&
-      t.dir &&
-      (t.dir === dir ||
-        dir.startsWith(t.dir + "/") ||
-        t.dir.startsWith(dir + "/"))
-    )
-      throw problem("下载目录和整理分类必须分别选择。");
   await db.transaction(async (tx) => {
     await tx.query(sql`SELECT pg_advisory_xact_lock(72649009)`);
-    const id = await registerTarget(tx, {
-      root,
-      dir: "",
-      key: "source",
-      label: path.basename(root),
-      limit: 0,
+    const volumes = await downloadRoots(tx, root, cfg);
+    const chosen = volumes.find((v) => v.id === volumeId);
+    if ((!chosen && cfg.readRoots.length) || (volumeId && !chosen))
+      throw problem("请从已登记的媒体盘中选择下载目录。");
+    const mount = chosen?.mount_path ?? root;
+    const marker = await rootMarker(mount);
+    if (chosen && chosen.expected_marker !== marker)
+      throw problem("已挂载磁盘与登记卷标识不符。");
+    await directory(mount, dir).catch(() => {
+      throw problem("此目录无法读取，请选择已挂载的目录。");
     });
+    if (
+      cfg.targets.some(
+        (t) =>
+          t.root === mount &&
+          (!t.dir ||
+            t.dir === dir ||
+            dir.startsWith(t.dir + "/") ||
+            t.dir.startsWith(dir + "/")),
+      )
+    )
+      throw problem("下载目录和整理分类必须分别选择。");
     const previous = await activeInbox(tx, root);
-    if (previous !== expected && previous !== dir)
+    const id =
+      chosen?.id ??
+      (await registerTarget(
+        tx,
+        { root, dir: "", key: "source", label: path.basename(root), limit: 0 },
+        marker,
+      ));
+    if (previous?.id === id && previous.dir === dir) return;
+    if (
+      (previous?.dir ?? null) !== expected ||
+      (cfg.readRoots.length &&
+        (previous?.id ?? null) !== (expectedVolumeId ?? null))
+    )
       throw problem("下载目录已修改，请重新打开选择器。");
-    if (previous && previous !== dir)
-      await tx.query(
-        sql`UPDATE video_x.import_item_files b SET requires_move=true FROM video_x.media_files f,video_x.import_items i WHERE i.id=b.item_id AND i.published_media_id IS NULL AND f.id=b.file_id AND f.root_id=${id} AND starts_with(f.relative_path,${previous + "/"})`,
-      );
-    await tx.query(
-      sql`UPDATE video_x.storage_roots SET download_directory=${dir} WHERE id=${id}`,
-    );
+    if (previous?.id) {
+      await tx.query(sql`UPDATE video_x.import_item_files b SET requires_move=true
+        FROM video_x.media_files f,video_x.import_items i
+        WHERE i.id=b.item_id AND i.published_media_id IS NULL AND f.id=b.file_id
+          AND f.root_id=${previous.id} AND starts_with(f.relative_path,${previous.dir + "/"})`);
+    }
+    await tx.query(sql`UPDATE video_x.storage_roots
+      SET download_directory=CASE WHEN id=${id} THEN ${dir} ELSE null END
+      WHERE id=${id} OR (download_directory IS NOT NULL AND
+        id IN (SELECT jsonb_array_elements_text(${JSON.stringify(volumes.map((v) => v.id))}::jsonb)::uuid))`);
   });
   return browse(db, root, {});
 }
+
 export async function browse(
   db: Database,
   root: string,
-  q: { area?: string; target?: string; dir?: string; summaryOnly?: boolean },
+  q: {
+    area?: string;
+    target?: string;
+    volumeId?: string;
+    dir?: string;
+    summaryOnly?: boolean;
+  },
 ) {
   const cfg = layout(root);
-  const inbox = await activeInbox(db, root),
-    volume = cfg ? path.basename(root) : undefined;
+  const active = await activeInbox(db, root);
+  const inbox = active?.dir ?? null;
   const targets = cfg?.targets.map(({ key, label }) => ({ key, label })) ?? [];
-  if (!cfg || !q.area)
+  if (!cfg || !q.area) {
+    const volumes = cfg ? await downloadRoots(db, root, cfg) : [];
     return {
       inbox,
-      volume,
+      volume:
+        active?.volume ??
+        (cfg && !cfg.readRoots.length ? path.basename(root) : undefined),
+      inboxVolumeId: active?.id ?? null,
+      inboxVolumes: volumes.map(({ id, name, status }) => ({
+        id,
+        name,
+        status,
+      })),
       targets,
       entries: [],
       used: 0,
       limit: 0,
     };
+  }
   const t = q.area === "target" ? targetFor(root, q.target ?? "") : null;
   const sub = relative(q.dir ?? "", true);
-  const marker = await rootMarker(t?.root ?? root);
+  const selected =
+    q.area === "volume" && q.volumeId
+      ? (await downloadRoots(db, root, cfg)).find((v) => v.id === q.volumeId)
+      : undefined;
+  if (q.area === "volume" && !selected && (q.volumeId || cfg.readRoots.length))
+    throw problem("请先选择一块已登记的媒体盘。");
+  if (
+    q.area === "inbox" &&
+    (!active || (q.volumeId && q.volumeId !== active.id))
+  )
+    throw problem("下载目录未设置或已改变，请重新选择。");
+  const mount =
+    t?.root ??
+    selected?.mount_path ??
+    (q.area === "inbox" ? active!.mount : root);
+  const marker = await rootMarker(mount);
   const [registered] = await db.query(
-    sql`SELECT expected_marker FROM video_x.storage_roots WHERE mount_path=${t?.root ?? root} AND archived_at IS NULL`,
+    sql`SELECT expected_marker FROM video_x.storage_roots WHERE mount_path=${mount} AND archived_at IS NULL`,
   );
   if (registered && registered.expected_marker !== marker)
     throw problem("已挂载磁盘与登记卷标识不符。");
-  if (q.area === "inbox" && !inbox)
-    throw problem("请先到系统状态选择下载目录。");
   if (q.area === "volume")
     return {
-      volume,
+      volume: selected?.name ?? path.basename(mount),
       inbox,
       targets,
-      entries: (await listDirectory(root, sub)).filter((e) => e.folder),
+      entries: (await listDirectory(mount, sub)).filter((e) => e.folder),
       used: 0,
       limit: 0,
     };
-  const mount = t?.root ?? root;
   const folder = t ? checkTarget(root, t, sub) : path.join(inbox!, sub);
   const all = await listDirectory(mount, folder);
   if (t && q.summaryOnly) {
@@ -275,8 +362,12 @@ export async function browse(
     limit: t?.limit ?? 0,
   };
 }
-export async function registerTarget(tx: Transaction, target: Target) {
-  const marker = await rootMarker(target.root);
+export async function registerTarget(
+  tx: Transaction,
+  target: Target,
+  expectedMarker?: string,
+) {
+  const marker = expectedMarker ?? (await rootMarker(target.root));
   const [r] = await tx.query(
     sql`INSERT INTO video_x.storage_roots(library_id,name,mount_path,expected_marker) VALUES('10000000-0000-4000-8000-000000000001',${target.label},${target.root},${marker}) ON CONFLICT(library_id,mount_path) DO UPDATE SET last_checked_at=now() WHERE storage_roots.expected_marker=excluded.expected_marker AND storage_roots.archived_at IS NULL RETURNING id`,
   );
@@ -318,8 +409,8 @@ export async function setTargets(
     const current = await activeInbox(tx, root);
     if (
       current &&
-      t.root === root &&
-      (dir === current || dir.startsWith(current + "/"))
+      t.root === current.mount &&
+      (dir === current.dir || dir.startsWith(current.dir + "/"))
     )
       throw problem("下载目录不能作为整理目标。");
     const targetId = await registerTarget(tx, t);
@@ -333,7 +424,7 @@ export async function setTargets(
         !r ||
         r.stage === "published" ||
         r.revision !== m.revision ||
-        r.mount_path !== root
+        !allowedRoot(root, r.mount_path)
       )
         throw problem("草稿已改变、未绑定文件或已发布。");
       const [previous] = await tx.query(

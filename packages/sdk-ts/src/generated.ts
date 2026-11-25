@@ -636,6 +636,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/media/{id}/editions/{editionId}/replacement/inspect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 检测下载文件
+         * @description 检测下载文件
+         */
+        post: operations["inspectReplacement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/media/{id}/editions/{editionId}/replacement/name": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 检查替换文件名
+         * @description 检查替换文件名
+         */
+        post: operations["checkReplacementName"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/media/{id}/editions/{editionId}/replacement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 在原目录替换播放文件
+         * @description 在原目录替换播放文件
+         */
+        post: operations["submitReplacement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/playback/plans": {
         parameters: {
             query?: never;
@@ -820,6 +880,51 @@ export interface components {
         EditionRestore: {
             /** Format: uuid */
             id: string;
+        };
+        InspectReplacement: {
+            /** Format: uuid */
+            volumeId: string;
+            relativePath: string;
+            expectedRevision: number;
+        };
+        CheckReplacementName: {
+            /** Format: uuid */
+            volumeId: string;
+            relativePath: string;
+            expectedRevision: number;
+            fileVersion: string;
+            stem: string;
+        };
+        SubmitReplacement: {
+            /** Format: uuid */
+            volumeId: string;
+            relativePath: string;
+            expectedRevision: number;
+            fileVersion: string;
+            stem: string;
+            /** Format: uuid */
+            requestId: string;
+        };
+        ReplacementFileInfo: {
+            /** Format: uuid */
+            requestId: string;
+            relativePath: string;
+            volume: string;
+            fileVersion: string;
+            /** @enum {string} */
+            format: "mp4" | "matroska";
+            width: number | null;
+            height: number | null;
+            videoCodec: string | null;
+            /** Format: int64 */
+            durationMs: number;
+            extension: string;
+            suggestedStem: string;
+            targetDirectory: string;
+        };
+        ReplacementNameCheck: {
+            path: string | null;
+            error: string | null;
         };
         EditionTarget: {
             /** Format: uuid */
@@ -1029,6 +1134,8 @@ export interface components {
             fields: ("title" | "identifier" | "summary" | "releaseDate" | "posterId" | "supportsChinese" | "actors" | "directors" | "series" | "tags" | "studios")[];
         };
         BindFile: {
+            /** Format: uuid */
+            inboxVolumeId?: string;
             expectedInbox?: string;
             relativePath: string;
             expectedRevision: number;
@@ -1064,6 +1171,8 @@ export interface components {
             fields: components["schemas"]["ImportFields"];
         };
         ManualFile: {
+            /** Format: uuid */
+            inboxVolumeId?: string;
             expectedInbox?: string;
             relativePath: string;
         };
@@ -1079,6 +1188,14 @@ export interface components {
             error: string | null;
         };
         DirectoryView: {
+            /** Format: uuid */
+            inboxVolumeId?: string | null;
+            inboxVolumes?: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                status: string;
+            }[];
             volume?: string;
             inbox: string | null;
             targets: {
@@ -1099,6 +1216,10 @@ export interface components {
             limit: number;
         };
         DownloadDirectory: {
+            /** Format: uuid */
+            volumeId?: string;
+            /** Format: uuid */
+            expectedVolumeId?: string | null;
             dir: string;
             expected: string | null;
         };
@@ -4378,6 +4499,7 @@ export interface operations {
         parameters: {
             query?: {
                 summaryOnly?: boolean;
+                volumeId?: string;
                 area?: "inbox" | "volume" | "target";
                 target?: string;
                 dir?: string;
@@ -6508,6 +6630,336 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EditionRestore"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    inspectReplacement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 作品 ID */
+                id: string;
+                /** @description 播放版本 ID */
+                editionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["InspectReplacement"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplacementFileInfo"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    checkReplacementName: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 作品 ID */
+                id: string;
+                /** @description 播放版本 ID */
+                editionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CheckReplacementName"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplacementNameCheck"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    submitReplacement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 作品 ID */
+                id: string;
+                /** @description 播放版本 ID */
+                editionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SubmitReplacement"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRow"];
                 };
             };
             /** @description Default Response */

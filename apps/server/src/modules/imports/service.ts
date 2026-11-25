@@ -1,3 +1,4 @@
+import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type { Static } from "@sinclair/typebox";
 import type {
@@ -57,7 +58,7 @@ export class Imports {
       missing: sql`(i.draft->>'posterId' IS NULL OR nullif(btrim(i.draft->>'summary'),'') IS NULL OR i.draft->>'releaseDate' IS NULL OR (jsonb_array_length(i.draft->'actorIds')=0 AND coalesce(jsonb_array_length(i.draft->'sourceNames'->'actors'),0)=0) OR i.draft->>'categoryId'='20000000-0000-4000-8000-000000000001')`,
       reviewed: sql`i.reviewed_revision IS NOT NULL AND i.stage<>'published'`,
       failed: sql`f.probe_status='failed'`,
-      blocked: sql`(${blocked} OR mr.error IS NOT NULL OR (b.requires_move AND mp.item_id IS NULL AND i.published_media_id IS NULL) OR (${download ? sql`i.published_media_id IS NULL AND mp.item_id IS NULL AND r.mount_path=${this.root} AND starts_with(f.relative_path,${download + "/"})` : sql`false`}))`,
+      blocked: sql`(${blocked} OR mr.error IS NOT NULL OR (b.requires_move AND mp.item_id IS NULL AND i.published_media_id IS NULL) OR (${download ? sql`i.published_media_id IS NULL AND mp.item_id IS NULL AND r.mount_path=${download.mount} AND starts_with(f.relative_path,${download.dir + "/"})` : sql`false`}))`,
       published: sql`i.stage='published'`,
     };
     const term = q.q?.trim() ?? "";
@@ -129,7 +130,7 @@ export class Imports {
   get(id: string) {
     return this.row(this.db, id);
   }
-  private async row(tx: Pick<Transaction, "query">, id: string) {
+  async row(tx: Pick<Transaction, "query">, id: string) {
     const [row] = await tx.query<Row>(
       sql`SELECT ${columns} ${joins} WHERE i.id=${id} AND i.merged_into_id IS NULL`,
     );
@@ -294,8 +295,8 @@ export class Imports {
         );
         if (!target) throw problem("目标作品不可用。");
         if (
-          (!edition.replacement && !target.release_date) ||
-          !row.fields.releaseDate
+          !edition.replacement &&
+          (!target.release_date || !row.fields.releaseDate)
         )
           throw new AppError(
             400,
@@ -303,12 +304,22 @@ export class Imports {
             "请先补齐作品和草稿的发行日期。",
           );
         if (edition.replacement) {
-          await activeBinding(
+          const binding = await activeBinding(
             tx,
             edition.mediaId,
             edition.replacement.editionId,
             edition.replacement.expectedRevision,
           );
+          const [move] = await tx.query(sql`
+            SELECT target_root,target_path FROM video_x.import_move_plans WHERE item_id=${id}
+          `);
+          if (
+            !move ||
+            move.target_root !== binding.root_id ||
+            path.posix.dirname(move.target_path) !==
+              path.posix.dirname(binding.relative_path)
+          )
+            throw problem("替换文件必须入库到原文件所在目录。");
           const [duplicate] = await tx.query(sql`
             SELECT 1 FROM video_x.import_item_files b
             JOIN video_x.edition_parts p ON p.file_id=b.file_id
@@ -491,7 +502,8 @@ export class Imports {
         "FILE_UNAVAILABLE",
         "文件离线、内容已更换或探测失败。请重新扫描后核对。",
       );
-    await this.validateFields(tx, d);
+    if (!publish || !i.draft.editionTarget?.replacement)
+      await this.validateFields(tx, d);
     if (!publish) {
       await tx.query(
         sql`UPDATE video_x.import_items SET stage='ready',reviewed_revision=draft_revision,reviewed_at=now(),reviewed_by=(SELECT account_id FROM video_x.profiles WHERE id=${profile}) WHERE id=${id}`,
@@ -518,6 +530,12 @@ export class Imports {
             target.replacement.editionId,
             target.replacement.expectedRevision,
           );
+          if (
+            f.root_id !== previous.root_id ||
+            path.posix.dirname(f.relative_path) !==
+              path.posix.dirname(previous.relative_path)
+          )
+            throw problem("替换文件必须入库到原文件所在目录。");
           isDefault = previous.is_default;
           await tx.query(
             sql`UPDATE video_x.editions SET archived_at=now() WHERE id=${previous.id}`,

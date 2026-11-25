@@ -17,6 +17,7 @@ type Props = {
   area: Area;
   title: string;
   target?: string;
+  volumeId?: string;
   inbox: string | null;
   dir: string;
   onDir: (s: string) => void;
@@ -29,6 +30,7 @@ export function DirectoryTree({
   area,
   title,
   target,
+  volumeId,
   inbox,
   dir,
   onDir,
@@ -54,11 +56,11 @@ export function DirectoryTree({
   const paths = [...new Set(["", ...expanded.filter((p) => p !== "/"), dir])];
   const queries = useQueries({
     queries: paths.map((p) => ({
-      queryKey: ["storage", "tree", area, target || "", inbox, p],
+      queryKey: ["storage", "tree", area, target || "", volumeId, inbox, p],
       queryFn: () =>
         unwrap(
           api.GET("/api/storage/browse", {
-            params: { query: { area, dir: p, target } },
+            params: { query: { area, dir: p, target, volumeId } },
           }),
         ),
       staleTime: 5000,

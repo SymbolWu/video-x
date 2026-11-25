@@ -30,6 +30,7 @@ import com.squareup.moshi.JsonClass
 /**
  * @param relativePath
  * @param expectedRevision
+ * @param inboxVolumeId
  * @param expectedInbox
  */
 
@@ -41,6 +42,9 @@ data class BindFile (
 
     @Json(name = "expectedRevision")
     val expectedRevision: kotlin.Int,
+
+    @Json(name = "inboxVolumeId")
+    val inboxVolumeId: java.util.UUID? = null,
 
     @Json(name = "expectedInbox")
     val expectedInbox: kotlin.String? = null

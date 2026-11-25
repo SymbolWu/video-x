@@ -130,7 +130,9 @@ export function SystemStatus() {
               </div>
               <button
                 type="button"
-                disabled={!storage.data?.volume}
+                disabled={
+                  !storage.data?.volume && !storage.data?.inboxVolumes?.length
+                }
                 onClick={() => {
                   notice("");
                   pick(true);

@@ -606,3 +606,44 @@ a.editor-row-name:hover,
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.dialog:has(.edition-download-picker) {
+  width: min(640px, calc(100vw - 24px));
+}
+.edition-source-field {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--editor-line);
+  border-radius: 8px;
+}
+.edition-source-field button {
+  flex: none;
+}
+.edition-source-field > div,
+.edition-target-path {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  overflow-wrap: anywhere;
+}
+.edition-source-field span,
+.edition-target-path span,
+.edition-target-path small {
+  color: var(--editor-muted);
+}
+.edition-filename {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.edition-filename input {
+  flex: 1;
+  min-width: 0;
+}
+.edition-filename > span {
+  font-weight: 400;
+  color: var(--editor-muted);
+}
