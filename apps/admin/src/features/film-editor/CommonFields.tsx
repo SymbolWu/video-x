@@ -46,6 +46,7 @@ export function CommonFields({
     return (
       <RelationList
         kind={kind}
+        categoryId={d.categoryId}
         ids={d[key] ?? []}
         items={items}
         categories={categories}

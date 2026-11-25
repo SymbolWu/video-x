@@ -878,3 +878,157 @@ test("影片剧照可直接重排，演员选择跨页保留，分集和录入�
   await append.waitFor();
   assert.ok(await append.evaluate((node) => document.activeElement === node));
 });
+
+test("影片系列和标签带入未保存主分类，分组筛选时保留所选", async (t) => {
+  const fixtures = new Map(responses);
+  const drama = { id: "drama", name: "剧情" };
+  const animation = { id: "animation", name: "动画" };
+  fixtures.set("/api/categories", [drama, animation]);
+  fixtures.set("/api/media/" + film.id, {
+    ...film,
+    categoryId: drama.id,
+    revision: 3,
+    releaseDate: "2024-10-18",
+  });
+  fixtures.set("/api/dictionary", [
+    {
+      id: "theme-coast",
+      kind: "tag",
+      name: "海岸",
+      detail: "theme",
+      isVisible: true,
+      categoryId: animation.id,
+    },
+    {
+      id: "place-coast",
+      kind: "tag",
+      name: "海岸",
+      detail: "place",
+      isVisible: true,
+      categoryId: animation.id,
+    },
+    {
+      id: "crew",
+      kind: "tag",
+      name: "探险队",
+      detail: "role",
+      isVisible: true,
+      categoryId: animation.id,
+    },
+    {
+      id: "custom",
+      kind: "tag",
+      name: "旅行",
+      detail: "自定义组",
+      isVisible: true,
+      categoryId: animation.id,
+    },
+    {
+      id: "hidden",
+      kind: "tag",
+      name: "隐藏标签",
+      detail: "other",
+      isVisible: false,
+      categoryId: animation.id,
+    },
+    {
+      id: "stage",
+      kind: "tag",
+      name: "舞台",
+      detail: "place",
+      isVisible: true,
+      categoryId: drama.id,
+    },
+    { id: "studio", kind: "studio", name: "制作机构", isVisible: true },
+  ]);
+  const seriesScopes = [];
+  fixtures.set("/api/franchises", (route) => {
+    const scope = new URL(route.request().url()).searchParams.get("categoryId");
+    seriesScopes.push(scope);
+    const category = scope === animation.id ? animation : drama;
+    const name = scope === animation.id ? "动画系列" : "剧情系列";
+    return route.fulfill({
+      json: pageOf([{ id: category.id, name, categoryName: category.name }]),
+    });
+  });
+  const p = await openPage(t, "/manage/#media/" + film.id, {
+    fixtures,
+    viewport: { width: 390, height: 760 },
+  });
+  await p.getByRole("button", { name: "归类与关联", exact: true }).click();
+  await p.getByRole("combobox", { name: "主分类", exact: true }).click();
+  await p.getByRole("option", { name: "动画", exact: true }).click();
+
+  const seriesTrigger = p.getByRole("button", {
+    name: "添加系列",
+    exact: true,
+  });
+  await seriesTrigger.click();
+  const series = p.getByRole("dialog", { name: "添加系列" });
+  const seriesCategory = series.getByRole("group", { name: "系列分类" });
+  assert.equal(
+    await seriesCategory
+      .getByRole("button", { name: "动画" })
+      .getAttribute("aria-pressed"),
+    "true",
+  );
+  await series.getByRole("checkbox", { name: /动画系列/ }).check();
+  await seriesCategory.getByRole("button", { name: "剧情" }).click();
+  await series.getByRole("checkbox", { name: /剧情系列/ }).check();
+  await series.getByText("已选 2 项", { exact: true }).waitFor();
+  assert.deepEqual(seriesScopes.slice(0, 2), [animation.id, drama.id]);
+  await series.getByRole("button", { name: "取消", exact: true }).click();
+  await p.waitForFunction(
+    () => document.activeElement?.textContent === "添加系列",
+  );
+
+  await p.getByRole("button", { name: "添加标签", exact: true }).click();
+  const tags = p.getByRole("dialog", { name: "添加标签" });
+  const tagCategory = tags.getByRole("group", { name: "标签分类" });
+  const theme = tags.getByRole("region", { name: "主题", exact: true });
+  const place = tags.getByRole("region", { name: "地点", exact: true });
+  assert.equal(
+    await tagCategory
+      .getByRole("button", { name: "动画" })
+      .getAttribute("aria-pressed"),
+    "true",
+  );
+  await theme.getByRole("button", { name: "海岸", exact: true }).press("Space");
+  await place.getByRole("button", { name: "海岸", exact: true }).click();
+  assert.equal(
+    await theme
+      .getByRole("button", { name: "海岸", exact: true })
+      .getAttribute("aria-pressed"),
+    "true",
+  );
+  const chosen = tags.getByRole("list", { name: "本次已选" });
+  assert.ok(await chosen.getByText("动画 · 主题", { exact: true }).isVisible());
+  assert.ok(await chosen.getByText("动画 · 地点", { exact: true }).isVisible());
+  assert.equal(
+    await tags.getByRole("button", { name: "隐藏标签", exact: true }).count(),
+    0,
+  );
+  assert.equal(
+    await tags.getByRole("button", { name: "舞台", exact: true }).count(),
+    0,
+  );
+
+  await tagCategory.getByRole("button", { name: "全部分类" }).click();
+  assert.ok(await place.getByRole("button", { name: "舞台 剧情" }).isVisible());
+  await chosen
+    .getByRole("button", { name: "取消选择 海岸，动画 · 地点" })
+    .click();
+  await tags.getByRole("searchbox", { name: "搜索标签" }).fill("没有匹配");
+  await tags.getByText("没有匹配的标签", { exact: true }).waitFor();
+  await tags.getByText("已选 1 项", { exact: true }).waitFor();
+  await tags.getByRole("button", { name: "添加所选" }).click();
+  await tags.waitFor({ state: "hidden" });
+  assert.ok(await p.getByRole("button", { name: "移除 海岸" }).isVisible());
+  assert.ok(
+    await p.evaluate(
+      () =>
+        document.documentElement.scrollWidth <=
+        document.documentElement.clientWidth,
+    ),
+  );
+});

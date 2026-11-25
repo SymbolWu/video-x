@@ -91,23 +91,6 @@
   gap: 8px;
   margin: 0;
 }
-.picker-selection {
-  padding: 8px;
-  color: var(--editor-muted);
-  font-size: 12px;
-  background: var(--editor-control);
-  border-radius: 6px;
-}
-.picker-selection .editor-chips {
-  margin-top: 6px;
-  max-height: 112px;
-  overflow: auto;
-  padding: 3px;
-}
-.picker-selection .editor-chips button {
-  min-height: 25px;
-  padding: 3px 5px;
-}
 .relation-picker footer {
   display: flex;
   align-items: center;
@@ -135,8 +118,321 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
-@media (max-width: 500px) {
-  .picker-search {
-    grid-template-columns: 1fr;
+.dialog:has(.catalog-relation-picker) {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  max-height: min(700px, calc(100dvh - 40px));
+  border-color: var(--editor-control-line);
+}
+.dialog:has(.catalog-relation-picker[data-kind="tags"]) {
+  width: min(780px, calc(100vw - 24px));
+}
+.dialog:has(.catalog-relation-picker[data-kind="series"]) {
+  width: min(720px, calc(100vw - 24px));
+}
+.dialog:has(.catalog-relation-picker) > header {
+  gap: 16px;
+  margin: 0;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--editor-line);
+}
+.dialog:has(.catalog-relation-picker) > header button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 33px;
+  height: 33px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--editor-muted);
+  font-size: 19px;
+}
+.dialog:has(.catalog-relation-picker) > header button:hover {
+  background: var(--editor-raised);
+  color: var(--text);
+}
+.catalog-relation-picker {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0;
+}
+.catalog-relation-picker .picker-toolbar {
+  flex: none;
+  display: grid;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--editor-line);
+}
+.catalog-relation-picker .picker-search {
+  grid-template-columns: minmax(0, 1fr);
+}
+.catalog-relation-picker .picker-search:has(> .select-trigger) {
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 150px);
+}
+.picker-search-field {
+  position: relative;
+  color: var(--editor-muted);
+}
+.picker-search-field > svg {
+  position: absolute;
+  inset: 50% auto auto 11px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.picker-search-field input {
+  width: 100%;
+  padding-inline-start: 34px;
+}
+.dialog .catalog-relation-picker .picker-search-field input:focus-visible {
+  border-color: var(--editor-accent);
+  outline-offset: -1px;
+  outline-width: 1px;
+}
+.picker-category-row {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+.picker-category-row > span {
+  flex: none;
+  color: var(--editor-muted);
+  font-size: 12px;
+}
+.picker-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+.catalog-relation-picker .picker-categories button {
+  min-height: 28px;
+  max-width: 100%;
+  padding: 3px 9px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--editor-muted);
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.catalog-relation-picker .picker-categories button:hover {
+  color: var(--text);
+  background: var(--editor-raised);
+}
+.catalog-relation-picker .picker-categories button[aria-pressed="true"] {
+  color: var(--editor-accent);
+  background: #e9a4b717;
+  border-color: #e9a4b743;
+  font-weight: 650;
+}
+.catalog-relation-picker .picker-results {
+  min-height: min(132px, 24dvh);
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  padding: 4px 16px 4px 20px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.catalog-relation-picker .picker-choice-list label {
+  min-height: 52px;
+}
+.picker-series-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px 0;
+}
+.catalog-relation-picker .picker-series-grid label {
+  border: 1px solid var(--editor-line);
+  border-radius: 7px;
+  min-height: 62px;
+  background: var(--editor-control);
+}
+.catalog-relation-picker
+  .picker-series-grid
+  label:hover:not(:has(input:disabled)) {
+  border-color: var(--editor-control-line);
+  background: var(--editor-raised);
+}
+.catalog-relation-picker
+  .picker-series-grid
+  label:has(input:checked:not(:disabled)) {
+  border-color: #e9a4b780;
+  background: #e9a4b712;
+}
+.catalog-relation-picker .picker-avatar {
+  width: 36px;
+  height: 40px;
+}
+.catalog-relation-picker .picker-series-grid .picker-avatar {
+  width: 42px;
+  height: 46px;
+}
+.picker-series-grid .picker-avatar img {
+  object-fit: contain;
+}
+.catalog-relation-picker .picker-results .picker-linked {
+  color: var(--editor-accent);
+  font-size: 11px;
+}
+.picker-tag-group {
+  padding-block: 10px 13px;
+}
+.picker-tag-group + .picker-tag-group {
+  border-top: 1px solid var(--editor-line);
+}
+.picker-tag-group h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.picker-tag-group h3 small {
+  margin-inline-start: 5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+.picker-tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.catalog-relation-picker .picker-tag {
+  position: relative;
+  min-height: 32px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px 9px 4px 20px;
+  background: var(--editor-control);
+  color: var(--text);
+  font-weight: 500;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.picker-tag::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  transform: translateY(-50%);
+  color: #77737c;
+}
+.catalog-relation-picker .picker-tag small {
+  min-width: 0;
+  color: var(--editor-muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+.catalog-relation-picker
+  .picker-tag:hover:not(:disabled, [aria-pressed="true"]) {
+  background: var(--editor-raised);
+  border-color: #a89ba57a;
+}
+.catalog-relation-picker .picker-tag[aria-pressed="true"] {
+  background: #e9a4b719;
+  color: var(--editor-accent);
+  border-color: #e9a4b78c;
+}
+.catalog-relation-picker .picker-tag[aria-pressed="true"]::before {
+  width: 8px;
+  height: 5px;
+  border-radius: 0;
+  border-width: 0 0 1.5px 1.5px;
+  color: currentColor;
+  transform: translateY(-65%) rotate(-45deg);
+}
+.catalog-relation-picker .picker-tag:disabled {
+  border-style: dashed;
+  color: var(--editor-muted);
+  border-color: var(--editor-control-line);
+  background: transparent;
+  opacity: 1;
+  cursor: default;
+}
+.catalog-relation-picker .picker-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 24px 8px;
+  text-align: center;
+}
+.catalog-relation-picker .picker-empty-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.catalog-relation-picker .picker-footer {
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch;
+  gap: 9px;
+  padding: 11px 20px 14px;
+  border-top: 1px solid var(--editor-line);
+  background: var(--editor-surface);
+}
+.picker-summary,
+.catalog-relation-picker .picker-footer .pager span {
+  margin: 0;
+  color: var(--editor-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.catalog-relation-picker .picker-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.picker-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 10px;
+  margin-right: auto;
+}
+.picker-summary strong {
+  color: var(--text);
+  font-weight: 550;
+}
+.picker-selected-list {
+  max-height: min(66px, 12dvh);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding: 2px;
+}
+.catalog-relation-picker .picker-selected-list button {
+  min-height: 24px;
+  padding: 2px 5px;
+  border-color: transparent;
+}
+@media (max-width: 580px) {
+  .picker-series-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dialog:has(.catalog-relation-picker) {
+    max-height: calc(100dvh - 28px);
+  }
+  .catalog-relation-picker :is(.picker-toolbar, .picker-footer),
+  .dialog:has(.catalog-relation-picker) > header {
+    padding-inline: 14px;
+  }
+  .catalog-relation-picker .picker-results {
+    padding-inline: 14px 12px;
+  }
+}
+@media (max-width: 390px) {
+  .catalog-relation-picker .picker-search:has(> .select-trigger) {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

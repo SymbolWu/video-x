@@ -4,17 +4,18 @@ import { api, unwrap, type Schemas } from "@video-x/sdk-ts";
 import { ErrorNotice } from "@video-x/ui";
 import { StudioIcon } from "../../shared/StudioIcon";
 import { moveItem } from "./moveItem";
+import { RelationPicker } from "./RelationPicker";
 import {
-  RelationPicker,
   relationLabels,
   type RelationItem,
   type RelationKind,
-} from "./RelationPicker";
+} from "./relationChoices";
 
 export { relationLabels, type RelationItem };
 
 export function RelationList({
   kind,
+  categoryId,
   ids,
   items,
   categories,
@@ -23,6 +24,7 @@ export function RelationList({
   children,
 }: {
   kind: RelationKind;
+  categoryId: string;
   ids: string[];
   items: Record<string, RelationItem>;
   categories: Schemas["Category"][];
@@ -62,7 +64,7 @@ export function RelationList({
     resolved.data?.[id] ||
     (resolved.isFetching ? "读取中…" : "未命名资料");
   return (
-    <section className="editor-relation">
+    <section className="editor-relation" data-credit={isCredit || undefined}>
       <header className="editor-section-heading">
         <h2>
           {label} <small>{ids.length}</small>
@@ -143,6 +145,7 @@ export function RelationList({
       {picking && (
         <RelationPicker
           kind={kind}
+          categoryId={categoryId}
           categories={categories}
           ids={ids}
           dismiss={() => setPicking(false)}

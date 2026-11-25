@@ -333,6 +333,18 @@ a.editor-row-name:hover,
   width: 32px;
   height: 32px;
 }
+.editor-relation[data-credit] .editor-data-list li {
+  min-height: 62px;
+}
+.editor-relation[data-credit] .editor-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 7px;
+}
+.editor-relation[data-credit] .editor-row-name {
+  font-size: 16px;
+  line-height: 1.5;
+}
 .editor-episode-art {
   width: 54px;
 }

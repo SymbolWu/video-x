@@ -3,13 +3,8 @@ import { useState, type FormEvent } from "react";
 import { api, unwrap, type Schemas } from "@video-x/sdk-ts";
 import { ErrorNotice, Modal, Select } from "@video-x/ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useDictionary } from "./useDictionary";
 type D = Schemas["DictionaryEntry"];
-function useDictionary() {
-  return useQuery({
-    queryKey: ["dictionary"],
-    queryFn: () => unwrap(api.GET("/api/dictionary")),
-  });
-}
 export function DictionaryPage({ tags }: { tags: boolean }) {
   const label = tags ? "标签" : "片商",
     kind = tags ? "tag" : "studio",
