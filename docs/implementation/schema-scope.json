@@ -2361,7 +2361,7 @@
       "definition": "bigint NOT NULL DEFAULT 0 CHECK (legacy_play_count >= 0)",
       "purpose": "旧库迁入的不可重建播放次数；新次数来自已开始会话",
       "source": "docs/planning/database/field-provenance.json",
-      "enabled": false
+      "enabled": true
     },
     {
       "field": "user_media_state.created_at",

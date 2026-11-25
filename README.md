@@ -4,6 +4,10 @@
 
 M2 进行中，本地扫描、草稿编辑、人工发布以及 Web 和 Android 的真实播放与跨端毫秒续播已贯通。M0/M1 本地版本已交付，三端真实资料切片已运行；本机 Docker 构建、启动与重启验收已通过。能力及边界见 [阶段记录](docs/implementation/status.md)，完整目标见 [产品需求](docs/planning/product-requirements.md)。现有开发样例与用户旧库独立。
 
+## 开发约定
+
+从[贡献指南](CONTRIBUTING.md)开始。目录与依赖遵循[代码规范](docs/standards/code.md)，页面设计和验收遵循[界面与交互规范](docs/standards/interface.md)。仓库代理入口为 [AGENTS.md](AGENTS.md)。
+
 ## 本地启动
 
 本机已经初始化，重复启动只需 `pnpm db:local`、`pnpm dev`，另开终端运行 `pnpm dev:worker`。以下完整步骤用于首次安装。
@@ -26,7 +30,7 @@ pnpm dev
 
 ## M2 录入和播放试用
 
-先运行 `pnpm db:migrate`，用 `node tooling/media-sample.mjs` 准备项目专属的 22 秒测试片，启动开发服务与 worker。在管理端「录入工作台」扫描文件。点「编辑」可保存资料并使旧确认失效；点「核对」确认当前版本后，独立点「手动发布」才会出现在观看端。本地开发使用 PATH 中的 ffprobe，容器镜像内置该工具，无需向后端配置可执行文件路径。
+先运行 `pnpm db:migrate`，用 `node tooling/media-sample.mjs` 准备项目专属的 22 秒测试片，启动开发服务与 worker。在管理端「系统状态」选择测试下载目录，回到「录入工作台」打开文件树并勾选测试片。设置整理目标，补齐完整发行日期、保存并核对，再手动发布。本地开发使用 PATH 中的 ffprobe，容器镜像内置该工具，无需向后端配置可执行文件路径。
 
 发布后，在观看 Web 或 Android 打开该片详情并播放。暂停或退出后，另一端的详情会显示「继续播放」和断点时间。Android 模拟器连接开发 API 使用 `http://10.0.2.2:5120/`。目前已实测 MP4/H.264/AAC 的双向续播。
 
@@ -42,10 +46,13 @@ pnpm dev
 pnpm contracts:generate
 pnpm typecheck
 pnpm test
+pnpm test:ui
 pnpm build
 pnpm contracts:check
 pnpm android:build
 ```
+
+浏览器回归使用本地构建和内置测试资料，覆盖管理端与窄屏观看端。可使用已安装的 Chrome，或先执行 `pnpm exec playwright install chromium`。
 
 本机已创建的开发账号位于 `.runtime/dev-access.json`（600 权限）；仅用于新开发库。全新空开发库可用 `pnpm dev:bootstrap` 生成随机账号及样例。
 

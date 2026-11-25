@@ -1,7 +1,9 @@
 name: verify
 on:
   push:
+    branches: [main, "feat/**"]
   pull_request:
+    branches: [main]
 permissions:
   contents: read
 concurrency:
@@ -40,10 +42,19 @@ jobs:
           distribution: temurin
           java-version: "17"
       - run: pnpm install --frozen-lockfile
+      - name: Check topic branch name
+        if: github.event_name == 'pull_request' || github.ref_name != 'main'
+        env:
+          TOPIC_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: pnpm check:branch "$TOPIC_BRANCH"
       - name: Install media probe for integration tests
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: pnpm db:migrate
       - run: pnpm check
+      - name: Verify browser workflows using the production build
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          pnpm test:ui:built
   android:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
