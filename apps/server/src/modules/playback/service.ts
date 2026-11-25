@@ -42,7 +42,7 @@ async function source(
  FROM video_x.media_items m JOIN video_x.editions e ON e.media_id=m.id
  JOIN video_x.edition_parts p ON p.edition_id=e.id JOIN video_x.media_files f ON f.id=p.file_id
  JOIN video_x.storage_roots r ON r.id=f.root_id WHERE m.id=${mediaId} AND m.published_at IS NOT NULL AND m.archived_at IS NULL
- AND e.archived_at IS NULL AND r.archived_at IS NULL AND ${partId ? sql`p.id=${partId}` : editionId ? sql`e.id=${editionId}` : sql`e.is_default`} ORDER BY p.part_no LIMIT 1`);
+ AND ${partId ? sql`true` : sql`e.archived_at IS NULL`} AND r.archived_at IS NULL AND ${partId ? sql`p.id=${partId}` : editionId ? sql`e.id=${editionId}` : sql`e.is_default`} ORDER BY p.part_no LIMIT 1`);
   if (!r)
     throw new AppError(404, "NO_MEDIA_FILE", "这部作品还没有可播放的文件。");
   if (r.parts !== 1) throw invalid("当前播放器支持单文件版本。");

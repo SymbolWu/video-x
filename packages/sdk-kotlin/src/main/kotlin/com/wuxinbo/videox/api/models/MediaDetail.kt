@@ -54,6 +54,7 @@ import com.squareup.moshi.JsonClass
  * @param stillIds
  * @param directors
  * @param editions
+ * @param pendingReplacementId
  * @param resumeEditionId
  * @param releaseDate
  * @param identifier
@@ -134,6 +135,9 @@ data class MediaDetail (
 
     @Json(name = "editions")
     val editions: kotlin.collections.List<EditionInfo>? = null,
+
+    @Json(name = "pendingReplacementId")
+    val pendingReplacementId: java.util.UUID? = null,
 
     @Json(name = "resumeEditionId")
     val resumeEditionId: java.util.UUID? = null,

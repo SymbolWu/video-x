@@ -27,7 +27,9 @@ src/main/kotlin/com/wuxinbo/videox/api/models/DirectoryView.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DirectoryViewEntriesInner.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DirectoryViewTargetsInner.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/DownloadDirectory.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/EditionCheck.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/EditionInfo.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/EditionRestore.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/EditionTarget.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/ErrorResponse.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/Franchise.kt
@@ -70,6 +72,8 @@ src/main/kotlin/com/wuxinbo/videox/api/models/PlaybackRequest.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PlaybackSession.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/Profile.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/PublishEdition.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/ReplacedEdition.kt
+src/main/kotlin/com/wuxinbo/videox/api/models/ReplacementTarget.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RevisionInput.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RunLookup.kt
 src/main/kotlin/com/wuxinbo/videox/api/models/RuntimeStatus.kt

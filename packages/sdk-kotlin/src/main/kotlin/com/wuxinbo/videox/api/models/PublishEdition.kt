@@ -23,6 +23,7 @@
 
 package com.wuxinbo.videox.api.models
 
+import com.wuxinbo.videox.api.models.ReplacementTarget
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -31,6 +32,7 @@ import com.squareup.moshi.JsonClass
  * @param mediaId
  * @param name
  * @param expectedRevision
+ * @param replacement
  */
 
 
@@ -43,7 +45,10 @@ data class PublishEdition (
     val name: kotlin.String,
 
     @Json(name = "expectedRevision")
-    val expectedRevision: kotlin.Int
+    val expectedRevision: kotlin.Int,
+
+    @Json(name = "replacement")
+    val replacement: ReplacementTarget? = null
 
 ) {
 

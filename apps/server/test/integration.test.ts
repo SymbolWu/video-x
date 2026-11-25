@@ -22,7 +22,7 @@ import { tmpdir } from "node:os";
 import { once } from "node:events";
 import { fileURLToPath } from "node:url";
 import { runMove, recoverMoves } from "../src/modules/imports/moves.js";
-import { stat, mkdir, readFile } from "node:fs/promises";
+import { stat, mkdir, readFile, rename } from "node:fs/promises";
 import { spawn, execFileSync } from "node:child_process";
 import { runScan } from "../src/modules/imports/scan.js";
 import { runLookup } from "../src/modules/sources/service.js";
@@ -1769,6 +1769,152 @@ test("Download selection, target planning, manual publication and recoverable mo
           ).statusCode,
           200,
         );
+      },
+    );
+    await t.test(
+      "replace after a failed move, keep the old source and restore it",
+      async () => {
+        const mediaId = (await row(a)).publishedMediaId;
+        const mediaPath = "/api/media/" + mediaId;
+        const before = await ok("GET", mediaPath);
+        const old = before.editions.find(
+          (edition: { isDefault: boolean }) => edition.isDefault,
+        );
+        const oldFile = join(root, old.filename);
+        const check = mediaPath + "/editions/" + old.id + "/check";
+        assert.equal(
+          (await ok("POST", check, { expectedRevision: old.revision })).status,
+          "present",
+        );
+        await rename(oldFile, oldFile + ".hold");
+        try {
+          assert.equal(
+            (await ok("POST", check, { expectedRevision: old.revision }))
+              .status,
+            "missing",
+          );
+        } finally {
+          await rename(oldFile + ".hold", oldFile);
+        }
+        assert.equal(
+          (await ok("POST", check, { expectedRevision: old.revision })).status,
+          "present",
+        );
+
+        const name = "replacement.mp4";
+        const targetFile = join(root, "Library", name);
+        const replacementBytes = Buffer.concat([
+          original,
+          Buffer.from([
+            0, 0, 0, 8, 102, 114, 101, 101, 0, 0, 0, 8, 102, 114, 101, 101,
+          ]),
+        ]);
+        await writeFile(join(root, "Download", name), replacementBytes);
+        const candidate = await selectFile(name);
+        await ok(
+          "POST",
+          "/api/imports/targets",
+          await plan([candidate], "local"),
+        );
+        const draft = await act(candidate, "review");
+        const url = "/api/imports/" + candidate + "/edition-preview";
+        assert.deepEqual((await call("GET", url)).rawPayload, replacementBytes);
+        const play = (intent: "play" | "resume", editionId?: string) =>
+          ok("POST", "/api/playback/plans", { mediaId, intent, editionId });
+        const selected = await ok("POST", "/api/playback/sessions", {
+          mediaId,
+          editionId: old.id,
+          intent: "play",
+          requestId: randomUUID(),
+        });
+        await ok(
+          "POST",
+          "/api/playback/sessions/" + selected.sessionId + "/events",
+          {
+            seq: 1,
+            eventId: randomUUID(),
+            kind: "start",
+            positionMs: 800,
+            partId: selected.partId,
+          },
+        );
+        const request = {
+          mediaId,
+          name: "替换版",
+          expectedRevision: draft.revision,
+          replacement: { editionId: old.id, expectedRevision: old.revision },
+        };
+        const publishPath = "/api/imports/" + candidate + "/publish-edition";
+        assert.equal(
+          (
+            await call("POST", publishPath, {
+              ...request,
+              replacement: {
+                ...request.replacement,
+                expectedRevision: old.revision + 1,
+              },
+            })
+          ).statusCode,
+          409,
+        );
+        await ok("POST", publishPath, request);
+        await writeFile(targetFile, "collision", { flag: "wx" });
+        const job = await runId(candidate);
+        await runMove(db, root, job);
+        assert.equal((await row(candidate)).move.state, "failed");
+        assert.equal((await play("play")).editionId, old.id);
+        await unlink(targetFile);
+        await ok("POST", publishPath, {
+          ...request,
+          expectedRevision: (await row(candidate)).revision,
+        });
+        await runMove(db, root, job);
+
+        const after = await ok("GET", mediaPath);
+        assert.equal(after.title, before.title);
+        assert.equal(after.editions.length, before.editions.length);
+        const edition = after.editions.find(
+          (edition: { isDefault: boolean }) => edition.isDefault,
+        );
+        assert.ok(
+          edition &&
+            edition.id !== old.id &&
+            edition.replacedEdition.filename === old.filename,
+        );
+        const fresh = await play("play");
+        assert.equal(fresh.mode, "fresh");
+        assert.equal(after.resumeEditionId, null);
+        assert.equal(fresh.editionId, edition.id);
+        assert.equal(fresh.positionMs, 0);
+        assert.deepEqual(
+          (await call("GET", selected.streamUrl)).rawPayload,
+          original,
+        );
+        assert.deepEqual(await readFile(targetFile), replacementBytes);
+        assert.deepEqual(await readFile(oldFile), original);
+        assert.equal((await call("GET", url)).statusCode, 404);
+        const restore = mediaPath + "/editions/" + edition.id + "/restore";
+        await rename(oldFile, oldFile + ".hold");
+        try {
+          assert.equal(
+            (
+              await call("POST", restore, {
+                expectedRevision: edition.revision,
+              })
+            ).statusCode,
+            409,
+          );
+          assert.equal((await play("play")).editionId, edition.id);
+        } finally {
+          await rename(oldFile + ".hold", oldFile);
+        }
+        assert.equal(
+          (await ok("POST", restore, { expectedRevision: edition.revision }))
+            .id,
+          old.id,
+        );
+        assert.equal((await play("resume", old.id)).positionMs, 800);
+        assert.deepEqual(await readFile(targetFile), replacementBytes);
       },
     );
     await t.test(

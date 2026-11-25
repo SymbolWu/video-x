@@ -15,6 +15,8 @@ import com.wuxinbo.videox.api.models.DictionaryChoicePage
 import com.wuxinbo.videox.api.models.DictionaryEdit
 import com.wuxinbo.videox.api.models.DictionaryEntry
 import com.wuxinbo.videox.api.models.DictionaryWrite
+import com.wuxinbo.videox.api.models.EditionCheck
+import com.wuxinbo.videox.api.models.EditionRestore
 import com.wuxinbo.videox.api.models.ErrorResponse
 import com.wuxinbo.videox.api.models.Franchise
 import com.wuxinbo.videox.api.models.FranchiseCreate
@@ -30,9 +32,34 @@ import com.wuxinbo.videox.api.models.PersonCreate
 import com.wuxinbo.videox.api.models.PersonPage
 import com.wuxinbo.videox.api.models.PersonPatch
 import com.wuxinbo.videox.api.models.PersonProfile
+import com.wuxinbo.videox.api.models.RevisionInput
 import com.wuxinbo.videox.api.models.ScanResult
 
 interface CatalogApi {
+    /**
+     * POST api/media/{id}/editions/{editionId}/check
+     * 重新检测版本文件
+     * 检查登记路径上的原文件，并返回检测结果。
+     * Responses:
+     *  - 200: Default Response
+     *  - 400: Default Response
+     *  - 401: Default Response
+     *  - 403: Default Response
+     *  - 404: Default Response
+     *  - 409: Default Response
+     *  - 413: Default Response
+     *  - 415: Default Response
+     *  - 429: Default Response
+     *  - 500: Default Response
+     *
+     * @param id 作品 ID
+     * @param editionId 播放版本 ID
+     * @param revisionInput  (optional)
+     * @return [EditionCheck]
+     */
+    @POST("api/media/{id}/editions/{editionId}/check")
+    suspend fun checkEditionFile(@Path("id") id: java.util.UUID, @Path("editionId") editionId: java.util.UUID, @Body revisionInput: RevisionInput? = null): Response<EditionCheck>
+
     /**
      * POST api/categories
      * 
@@ -575,6 +602,30 @@ interface CatalogApi {
      */
     @GET("api/people")
     suspend fun listPeople(@Query("q") q: kotlin.String? = null, @Query("categoryId") categoryId: java.util.UUID? = null, @Query("direction") direction: DirectionListPeople? = null, @Query("page") page: kotlin.Int? = 1, @Query("pageSize") pageSize: kotlin.Int? = 24, @Query("sort") sort: SortListPeople? = null): Response<PersonPage>
+
+    /**
+     * POST api/media/{id}/editions/{editionId}/restore
+     * 恢复被替换的版本
+     * 检测原文件通过后，将原版本恢复到播放列表。
+     * Responses:
+     *  - 200: Default Response
+     *  - 400: Default Response
+     *  - 401: Default Response
+     *  - 403: Default Response
+     *  - 404: Default Response
+     *  - 409: Default Response
+     *  - 413: Default Response
+     *  - 415: Default Response
+     *  - 429: Default Response
+     *  - 500: Default Response
+     *
+     * @param id 作品 ID
+     * @param editionId 播放版本 ID
+     * @param revisionInput  (optional)
+     * @return [EditionRestore]
+     */
+    @POST("api/media/{id}/editions/{editionId}/restore")
+    suspend fun restoreEditionFile(@Path("id") id: java.util.UUID, @Path("editionId") editionId: java.util.UUID, @Body revisionInput: RevisionInput? = null): Response<EditionRestore>
 
     /**
      * PATCH api/categories/{id}/visibility

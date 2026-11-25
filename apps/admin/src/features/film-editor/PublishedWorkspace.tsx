@@ -125,7 +125,7 @@ function Editor({
   const [error, fail] = useState("");
   const [issue, setIssue] = useState<FieldIssue | null>(null);
   const [saved, didSave] = useState(false);
-  const [append, setAppend] = useState(false);
+  const [filePicker, setFilePicker] = useState<true | Schemas["EditionInfo"]>();
   const [episodeIds, reorder] = useState((m.episodes ?? []).map((e) => e.id));
   const group = m.kind === "group";
   const tabs: Tab[] = [...commonTabs, group ? "分集" : "版本与文件"];
@@ -136,7 +136,8 @@ function Editor({
     JSON.stringify(d) !== JSON.stringify(original) || episodeChanges;
   const locked = saving || uploading;
   const canLeave = useLeaveGuard(dirty || locked, locked);
-  const { publication, progress, track } = useEditionPublication(m.id);
+  const { publication, progress, track, retry, retrying, retryError } =
+    useEditionPublication(m.id, m.pendingReplacementId);
   const initialRestore = useRef(navigation.restoredEpisode);
   const restored = useRef(false);
 
@@ -316,7 +317,10 @@ function Editor({
         <>
           {publication?.state === "running" && (
             <div className="editor-notice" role="status">
-              正在整理并发布新版本… <a href="#jobs">查看后台任务</a>
+              {publication.replacement
+                ? "正在核验并替换文件…"
+                : "正在整理并发布新版本…"}{" "}
+              <a href="#jobs">查看后台任务</a>
             </div>
           )}
           {progress.isError && publication?.state === "running" && (
@@ -329,12 +333,21 @@ function Editor({
           )}
           {publication?.state === "done" && (
             <div className="editor-notice" data-tone="positive" role="status">
-              新版本已发布
+              {publication.replacement ? "播放文件已替换" : "新版本已发布"}
             </div>
           )}
           {publication?.state === "failed" && (
             <div className="editor-notice" role="alert" data-tone="attention">
-              <span>{publication.error}</span>
+              <span>{retryError || publication.error}</span>
+              {publication.replacement && publication.retryable && (
+                <button
+                  type="button"
+                  disabled={retrying || dirty}
+                  onClick={() => void retry()}
+                >
+                  {retrying ? "正在重试…" : "重试替换"}
+                </button>
+              )}
               <a href="#jobs">查看后台任务</a>
             </div>
           )}
@@ -344,15 +357,17 @@ function Editor({
             dateRequired={!validReleaseDate(d.releaseDate)}
             publishing={publication?.state === "running"}
             fixDate={goToDate}
-            append={() => setAppend(true)}
+            append={() => setFilePicker(true)}
+            replace={setFilePicker}
           />
-          {append && (
+          {filePicker && (
             <AppendEdition
               media={m}
-              close={() => setAppend(false)}
+              previous={filePicker === true ? undefined : filePicker}
+              close={() => setFilePicker(undefined)}
               openIntake={navigation.openIntake}
               done={(row) => {
-                setAppend(false);
+                setFilePicker(undefined);
                 track(row);
               }}
             />

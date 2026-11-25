@@ -45,7 +45,7 @@ const poster = (purpose: string) =>
   sql`(SELECT mi.asset_id FROM video_x.media_images mi JOIN video_x.assets a ON a.id=mi.asset_id AND a.state='ready' WHERE mi.media_id=m.id AND mi.purpose=${purpose} ORDER BY mi.position LIMIT 1)`;
 const stateJoin = (profileId: string) =>
   sql`LEFT JOIN video_x.user_media_state u ON u.media_id=m.id AND u.profile_id=${profileId}`;
-const resume = sql`(SELECT pp.position_ms FROM video_x.playback_progress pp JOIN video_x.editions ed ON ed.id=pp.edition_id AND ed.archived_at IS NULL JOIN video_x.edition_parts part ON part.id=pp.part_id JOIN video_x.media_files mf ON mf.id=part.file_id AND mf.availability='present' AND mf.content_revision=part.bound_content_revision WHERE pp.profile_id=u.profile_id AND pp.edition_id=u.resume_edition_id AND pp.completed_at IS NULL AND pp.position_ms>0 LIMIT 1)`;
+const resume = sql`(SELECT pp.position_ms FROM video_x.playback_progress pp JOIN video_x.editions ed ON ed.id=pp.edition_id AND ed.archived_at IS NULL JOIN video_x.edition_parts part ON part.id=pp.part_id JOIN video_x.media_files mf ON mf.id=part.file_id AND mf.availability='present' AND mf.probe_status='succeeded' AND mf.content_revision=part.bound_content_revision WHERE pp.profile_id=u.profile_id AND pp.edition_id=u.resume_edition_id AND pp.completed_at IS NULL AND pp.position_ms>0 LIMIT 1)`;
 const mediaSelect = (profileId: string) =>
   sql`SELECT ${poster("poster")} AS "posterId",${poster("backdrop")} AS "backdropId",${resume}::float8 AS "resumeMs",COALESCE((SELECT SUM(mf.duration_ms) FROM video_x.editions e JOIN video_x.edition_parts ep ON ep.edition_id=e.id JOIN video_x.media_files mf ON mf.id=ep.file_id WHERE e.media_id=m.id AND e.is_default AND e.archived_at IS NULL),m.declared_runtime_ms)::float8 AS "durationMs",m.id,m.title,m.summary,m.kind,m.episode_number AS "episodeNumber",m.release_year AS "releaseYear",m.primary_category_id AS "categoryId",c.name AS "categoryName",m.supports_chinese AS "supportsChinese",m.created_at::text AS "createdAt",m.revision::int,COALESCE(u.is_favorite,false) AS "isFavorite",u.rating,u.watched_at::text AS "watchedAt",COALESCE(u.revision,0)::int AS "stateRevision" FROM video_x.media_items m JOIN video_x.categories c ON c.id=m.primary_category_id LEFT JOIN video_x.user_media_state u ON u.media_id=m.id AND u.profile_id=${profileId}`;
 const personSelect = (profileId: string) =>
@@ -195,8 +195,15 @@ export class Catalog {
       linkedFileCount: number;
       releaseDate: string | null;
       identifier: string | null;
+      pendingReplacementId: string | null;
     }>(
-      sql`SELECT notes,release_date::text AS "releaseDate",(SELECT value FROM video_x.media_identifiers WHERE media_id=${id} AND is_primary LIMIT 1) identifier,(SELECT count(DISTINCT part.file_id)::int FROM video_x.editions ed JOIN video_x.edition_parts part ON ed.id=part.edition_id WHERE ed.media_id=${id} AND ed.archived_at IS NULL) AS "linkedFileCount" FROM video_x.media_items WHERE id=${id}`,
+      sql`SELECT notes,release_date::text AS "releaseDate",(SELECT value FROM video_x.media_identifiers WHERE media_id=${id} AND is_primary LIMIT 1) identifier,(SELECT i.id FROM video_x.editions active
+          JOIN video_x.import_items i ON i.draft->'editionTarget'->'replacement'->>'editionId'=active.id::text
+          JOIN video_x.import_move_runs run ON i.id=ANY(run.members)
+          WHERE active.media_id=${id} AND active.archived_at IS NULL AND i.published_edition_id IS NULL
+            AND run.state IN ('queued','running','failed')
+          ORDER BY (run.state IN ('queued','running')) DESC,run.created_at DESC LIMIT 1) AS "pendingReplacementId",
+        (SELECT count(DISTINCT part.file_id)::int FROM video_x.editions ed JOIN video_x.edition_parts part ON ed.id=part.edition_id WHERE ed.media_id=${id} AND ed.archived_at IS NULL) AS "linkedFileCount" FROM video_x.media_items WHERE id=${id}`,
     );
     const actors = await this.db.query<PersonDto>(
       sql`${personSelect(profileId)} WHERE p.archived_at IS NULL AND EXISTS(SELECT 1 FROM video_x.credits cr WHERE cr.media_id=${id} AND cr.person_id=p.id AND cr.job='actor') ORDER BY (SELECT min(cr.position) FROM video_x.credits cr WHERE cr.media_id=${id} AND cr.person_id=p.id AND cr.job='actor'),p.id`,
@@ -207,18 +214,35 @@ export class Catalog {
     const editions = await this.db.query<
       NonNullable<MediaDetailDto["editions"]>[number]
     >(
-      sql`SELECT e.id,e.name,e.is_default AS "isDefault",f.relative_path AS filename,vs.width,vs.height,
-        CASE WHEN r.status IN ('offline','identity_mismatch') THEN 'offline' ELSE f.availability END availability
+      sql`SELECT e.id,e.name,e.is_default AS "isDefault",f.relative_path AS filename,vs.width,vs.height,vs.codec AS "videoCodec",
+        e.revision::int,f.duration_ms::float8 AS "durationMs",previous.info AS "replacedEdition",
+        (SELECT count(*)::int FROM video_x.edition_parts WHERE edition_id=e.id) AS "partCount",
+        CASE WHEN r.archived_at IS NOT NULL OR r.status IN ('offline','identity_mismatch') THEN 'offline'
+          WHEN f.availability='missing' THEN 'missing'
+          WHEN f.content_revision<>ep.bound_content_revision OR f.probe_error_code='changed' THEN 'changed'
+          WHEN f.probe_status='failed' THEN CASE WHEN f.probe_error_code='unreadable' THEN 'unreadable' ELSE 'probe_failed' END
+          ELSE f.availability END availability
         FROM video_x.editions e JOIN video_x.edition_parts ep ON ep.edition_id=e.id AND ep.part_no=1
         JOIN video_x.media_files f ON f.id=ep.file_id JOIN video_x.storage_roots r ON r.id=f.root_id
-        LEFT JOIN LATERAL (SELECT width,height FROM video_x.media_streams WHERE file_id=f.id AND kind='video' ORDER BY stream_index LIMIT 1) vs ON true
+        LEFT JOIN LATERAL (SELECT width,height,codec FROM video_x.media_streams WHERE file_id=f.id AND kind='video' ORDER BY stream_index LIMIT 1) vs ON true
+        LEFT JOIN LATERAL (
+          SELECT jsonb_build_object('name',old.name,'filename',old_file.relative_path) AS info
+          FROM video_x.import_items i
+          JOIN video_x.editions old ON old.id::text=i.draft->'editionTarget'->'replacement'->>'editionId'
+            AND old.media_id=e.media_id AND old.archived_at IS NOT NULL
+          JOIN video_x.edition_parts old_part ON old_part.edition_id=old.id AND old_part.part_no=1
+          JOIN video_x.media_files old_file ON old_file.id=old_part.file_id
+          WHERE i.published_edition_id=e.id LIMIT 1
+        ) previous ON true
         WHERE e.media_id=${id} AND e.archived_at IS NULL ORDER BY e.is_default DESC,e.created_at,e.id`,
     );
     const stills = await this.db.query(
       sql`SELECT asset_id FROM video_x.media_images WHERE media_id=${id} AND purpose='still' ORDER BY position`,
     );
     const [state] = await this.db.query(
-      sql`SELECT resume_edition_id FROM video_x.user_media_state WHERE media_id=${id} AND profile_id=${profileId}`,
+      sql`SELECT s.resume_edition_id FROM video_x.user_media_state s
+        JOIN video_x.editions e ON e.id=s.resume_edition_id AND e.archived_at IS NULL
+        WHERE s.media_id=${id} AND s.profile_id=${profileId}`,
     );
     const franchises = await this.db.query<FranchiseDto>(
       sql`${franchiseSelect} WHERE f.archived_at IS NULL AND EXISTS(SELECT 1 FROM video_x.franchise_items fi WHERE fi.media_id=${id} AND fi.franchise_id=f.id) ORDER BY f.name,f.id`,
@@ -228,6 +252,7 @@ export class Catalog {
       directors,
       editions,
       stillIds: stills.map((s) => s.asset_id),
+      pendingReplacementId: notes?.pendingReplacementId ?? null,
       resumeEditionId: state?.resume_edition_id ?? null,
       tagIds: (
         await this.db.query(

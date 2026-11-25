@@ -48,6 +48,8 @@ import com.squareup.moshi.JsonClass
  * @param actors
  * @param series
  * @param videoCodec
+ * @param width
+ * @param height
  * @param editionTarget
  * @param needsTarget
  * @param move
@@ -103,6 +105,12 @@ data class ImportRow (
 
     @Json(name = "videoCodec")
     val videoCodec: kotlin.String?,
+
+    @Json(name = "width")
+    val width: kotlin.Int? = null,
+
+    @Json(name = "height")
+    val height: kotlin.Int? = null,
 
     @Json(name = "editionTarget")
     val editionTarget: EditionTarget? = null,

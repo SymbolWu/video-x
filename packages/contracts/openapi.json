@@ -118,6 +118,25 @@
           "filename": {
             "type": "string"
           },
+          "revision": {
+            "type": "integer"
+          },
+          "partCount": {
+            "type": "integer"
+          },
+          "durationMs": {
+            "format": "int64",
+            "type": "integer",
+            "nullable": true
+          },
+          "videoCodec": {
+            "type": "string",
+            "nullable": true
+          },
+          "replacedEdition": {
+            "$ref": "#/components/schemas/ReplacedEdition",
+            "nullable": true
+          },
           "width": {
             "type": "integer",
             "nullable": true
@@ -127,6 +146,73 @@
             "nullable": true
           },
           "availability": {
+            "type": "string"
+          }
+        }
+      },
+      "ReplacedEdition": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "filename",
+          "name"
+        ],
+        "properties": {
+          "filename": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ReplacementTarget": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "editionId",
+          "expectedRevision"
+        ],
+        "properties": {
+          "editionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "expectedRevision": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "EditionCheck": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "present",
+              "offline",
+              "missing",
+              "unreadable",
+              "changed",
+              "probe_failed"
+            ]
+          }
+        }
+      },
+      "EditionRestore": {
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "format": "uuid",
             "type": "string"
           }
         }
@@ -142,6 +228,9 @@
           "mediaId": {
             "format": "uuid",
             "type": "string"
+          },
+          "replacement": {
+            "$ref": "#/components/schemas/ReplacementTarget"
           },
           "name": {
             "minLength": 1,
@@ -211,6 +300,9 @@
           "mediaId": {
             "format": "uuid",
             "type": "string"
+          },
+          "replacement": {
+            "$ref": "#/components/schemas/ReplacementTarget"
           },
           "name": {
             "minLength": 1,
@@ -1419,6 +1511,14 @@
           "videoCodec"
         ],
         "properties": {
+          "width": {
+            "type": "integer",
+            "nullable": true
+          },
+          "height": {
+            "type": "integer",
+            "nullable": true
+          },
           "editionTarget": {
             "$ref": "#/components/schemas/EditionTarget",
             "nullable": true
@@ -2327,6 +2427,11 @@
             "items": {
               "$ref": "#/components/schemas/EditionInfo"
             }
+          },
+          "pendingReplacementId": {
+            "format": "uuid",
+            "type": "string",
+            "nullable": true
           },
           "resumeEditionId": {
             "format": "uuid",
@@ -9342,6 +9447,308 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ImportRow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/media/{id}/editions/{editionId}/check": {
+      "post": {
+        "operationId": "checkEditionFile",
+        "summary": "重新检测版本文件",
+        "tags": [
+          "Catalog"
+        ],
+        "description": "检查登记路径上的原文件，并返回检测结果。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "作品 ID"
+          },
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "editionId",
+            "required": true,
+            "description": "播放版本 ID"
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditionCheck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/media/{id}/editions/{editionId}/restore": {
+      "post": {
+        "operationId": "restoreEditionFile",
+        "summary": "恢复被替换的版本",
+        "tags": [
+          "Catalog"
+        ],
+        "description": "检测原文件通过后，将原版本恢复到播放列表。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "作品 ID"
+          },
+          {
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "editionId",
+            "required": true,
+            "description": "播放版本 ID"
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          },
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditionRestore"
                 }
               }
             }

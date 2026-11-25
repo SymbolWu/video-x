@@ -195,17 +195,42 @@ const dictLinks = {
 const stillIds = T.Optional(
   T.Array(id(), { uniqueItems: true, maxItems: 100 }),
 );
+export const ReplacedEdition = obj("ReplacedEdition", {
+  filename: T.String(),
+  name: T.String(),
+});
+export const ReplacementTarget = obj("ReplacementTarget", {
+  editionId: id(),
+  expectedRevision: T.Integer({ minimum: 1 }),
+});
+export const EditionRestore = obj("EditionRestore", { id: id() });
+export const EditionCheck = obj("EditionCheck", {
+  status: T.Union([
+    T.Literal("present"),
+    T.Literal("offline"),
+    T.Literal("missing"),
+    T.Literal("unreadable"),
+    T.Literal("changed"),
+    T.Literal("probe_failed"),
+  ]),
+});
 export const EditionInfo = obj("EditionInfo", {
   id: id(),
   name: T.String(),
   isDefault: T.Boolean(),
   filename: T.String(),
+  revision: T.Optional(T.Integer()),
+  partCount: T.Optional(T.Integer()),
+  durationMs: T.Optional(nullable(T.Integer({ format: "int64" }))),
+  videoCodec: T.Optional(nullable(T.String())),
+  replacedEdition: T.Optional(nullable(T.Ref(ReplacedEdition))),
   width: nullable(T.Integer()),
   height: nullable(T.Integer()),
   availability: T.String(),
 });
 export const EditionTarget = obj("EditionTarget", {
   mediaId: id(),
+  replacement: T.Optional(T.Ref(ReplacementTarget)),
   name: T.String({ minLength: 1, maxLength: 160 }),
 });
 
@@ -214,6 +239,7 @@ export const MediaDetail = obj("MediaDetail", {
   stillIds,
   directors: T.Optional(T.Array(T.Ref(Person))),
   editions: T.Optional(T.Array(T.Ref(EditionInfo))),
+  pendingReplacementId: T.Optional(nullable(id())),
   resumeEditionId: T.Optional(nullable(id())),
   releaseDate: T.Optional(nullable(T.String({ format: "date" }))),
   identifier: T.Optional(nullable(T.String())),
@@ -617,6 +643,8 @@ export const MoveInfo = obj("MoveInfo", {
   error: nullable(T.String()),
 });
 export const ImportRow = obj("ImportRow", {
+  width: T.Optional(nullable(T.Integer())),
+  height: T.Optional(nullable(T.Integer())),
   editionTarget: T.Optional(nullable(T.Ref(EditionTarget))),
   needsTarget: T.Optional(T.Boolean()),
   move: T.Optional(nullable(T.Ref(MoveInfo))),
@@ -733,6 +761,10 @@ export const schemas = [
   GroupInput,
   GroupInfo,
   EditionInfo,
+  ReplacedEdition,
+  ReplacementTarget,
+  EditionCheck,
+  EditionRestore,
   EditionTarget,
   DictionaryChoice,
   DictionaryChoicePage,

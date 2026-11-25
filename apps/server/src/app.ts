@@ -10,6 +10,8 @@ import { Database, AppError, sql } from "./platform/db.js";
 import { config } from "./platform/config.js";
 import { login, authenticate } from "./modules/identity/service.js";
 import { Dictionary } from "./modules/catalog/dictionary.js";
+import { EditionFiles } from "./modules/catalog/edition-files.js";
+import { sendVideo } from "./modules/playback/video-response.js";
 import { Catalog } from "./modules/catalog/service.js";
 import { Imports } from "./modules/imports/service.js";
 import { providers } from "./modules/sources/providers.js";
@@ -838,6 +840,68 @@ export async function createApp(
         r.body,
       ),
   );
+  const editionFiles = new EditionFiles(db, mediaRoot);
+  const editionParams = C.T.Object({
+    id: C.T.String({ format: "uuid", description: "作品 ID" }),
+    editionId: C.T.String({ format: "uuid", description: "播放版本 ID" }),
+  });
+  app.post<{
+    Params: { id: string; editionId: string };
+    Body: Static<typeof C.RevisionInput>;
+  }>(
+    "/api/media/:id/editions/:editionId/check",
+    {
+      schema: {
+        ...authSchema,
+        operationId: "checkEditionFile",
+        summary: "重新检测版本文件",
+        description: "检查登记路径上的原文件，并返回检测结果。",
+        tags: ["Catalog"],
+        params: editionParams,
+        body: C.T.Ref(C.RevisionInput),
+        response: response(C.EditionCheck),
+      },
+    },
+    (r) =>
+      editionFiles.check(
+        r.params.id,
+        r.params.editionId,
+        r.body.expectedRevision,
+      ),
+  );
+  app.post<{
+    Params: { id: string; editionId: string };
+    Body: Static<typeof C.RevisionInput>;
+  }>(
+    "/api/media/:id/editions/:editionId/restore",
+    {
+      schema: {
+        ...authSchema,
+        operationId: "restoreEditionFile",
+        summary: "恢复被替换的版本",
+        description: "检测原文件通过后，将原版本恢复到播放列表。",
+        tags: ["Catalog"],
+        params: editionParams,
+        body: C.T.Ref(C.RevisionInput),
+        response: response(C.EditionRestore),
+      },
+    },
+    (r) =>
+      editionFiles.restore(
+        r.params.id,
+        r.params.editionId,
+        r.body.expectedRevision,
+      ),
+  );
+  app.route<{ Params: { id: string } }>({
+    method: ["GET", "HEAD"],
+    url: "/api/imports/:id/edition-preview",
+    schema: { hide: true, params: C.IdParams },
+    handler: async (req, reply) => {
+      reply.header("Cache-Control", "private, no-store");
+      return sendVideo(req, reply, await imports.preview(req.params.id));
+    },
+  });
   registerArt(app, db);
   registerPlayback(app, db, mediaRoot, authSchema);
   app.get(

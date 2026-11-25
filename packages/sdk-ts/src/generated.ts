@@ -596,6 +596,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/media/{id}/editions/{editionId}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 重新检测版本文件
+         * @description 检查登记路径上的原文件，并返回检测结果。
+         */
+        post: operations["checkEditionFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/media/{id}/editions/{editionId}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 恢复被替换的版本
+         * @description 检测原文件通过后，将原版本恢复到播放列表。
+         */
+        post: operations["restoreEditionFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/playback/plans": {
         parameters: {
             query?: never;
@@ -754,13 +794,37 @@ export interface components {
             name: string;
             isDefault: boolean;
             filename: string;
+            revision?: number;
+            partCount?: number;
+            /** Format: int64 */
+            durationMs?: number | null;
+            videoCodec?: string | null;
+            replacedEdition?: components["schemas"]["ReplacedEdition"];
             width: number | null;
             height: number | null;
             availability: string;
         };
+        ReplacedEdition: {
+            filename: string;
+            name: string;
+        };
+        ReplacementTarget: {
+            /** Format: uuid */
+            editionId: string;
+            expectedRevision: number;
+        };
+        EditionCheck: {
+            /** @enum {string} */
+            status: "present" | "offline" | "missing" | "unreadable" | "changed" | "probe_failed";
+        };
+        EditionRestore: {
+            /** Format: uuid */
+            id: string;
+        };
         EditionTarget: {
             /** Format: uuid */
             mediaId: string;
+            replacement?: components["schemas"]["ReplacementTarget"];
             name: string;
         };
         DictionaryChoice: {
@@ -778,6 +842,7 @@ export interface components {
         PublishEdition: {
             /** Format: uuid */
             mediaId: string;
+            replacement?: components["schemas"]["ReplacementTarget"];
             name: string;
             expectedRevision: number;
         };
@@ -1051,6 +1116,8 @@ export interface components {
             count: number;
         };
         ImportRow: {
+            width?: number | null;
+            height?: number | null;
             editionTarget?: components["schemas"]["EditionTarget"];
             needsTarget?: boolean;
             move?: components["schemas"]["MoveInfo"];
@@ -1277,6 +1344,8 @@ export interface components {
             stillIds?: string[];
             directors?: components["schemas"]["Person"][];
             editions?: components["schemas"]["EditionInfo"][];
+            /** Format: uuid */
+            pendingReplacementId?: string | null;
             /** Format: uuid */
             resumeEditionId?: string | null;
             /** Format: date */
@@ -6219,6 +6288,226 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImportRow"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    checkEditionFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 作品 ID */
+                id: string;
+                /** @description 播放版本 ID */
+                editionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RevisionInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditionCheck"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Default Response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    restoreEditionFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 作品 ID */
+                id: string;
+                /** @description 播放版本 ID */
+                editionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RevisionInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditionRestore"];
                 };
             };
             /** @description Default Response */

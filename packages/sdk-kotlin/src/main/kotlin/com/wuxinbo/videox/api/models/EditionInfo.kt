@@ -23,6 +23,7 @@
 
 package com.wuxinbo.videox.api.models
 
+import com.wuxinbo.videox.api.models.ReplacedEdition
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -35,6 +36,11 @@ import com.squareup.moshi.JsonClass
  * @param width
  * @param height
  * @param availability
+ * @param revision
+ * @param partCount
+ * @param durationMs
+ * @param videoCodec
+ * @param replacedEdition
  */
 
 
@@ -59,7 +65,22 @@ data class EditionInfo (
     val height: kotlin.Int?,
 
     @Json(name = "availability")
-    val availability: kotlin.String
+    val availability: kotlin.String,
+
+    @Json(name = "revision")
+    val revision: kotlin.Int? = null,
+
+    @Json(name = "partCount")
+    val partCount: kotlin.Int? = null,
+
+    @Json(name = "durationMs")
+    val durationMs: kotlin.Long? = null,
+
+    @Json(name = "videoCodec")
+    val videoCodec: kotlin.String? = null,
+
+    @Json(name = "replacedEdition")
+    val replacedEdition: ReplacedEdition? = null
 
 ) {
 
