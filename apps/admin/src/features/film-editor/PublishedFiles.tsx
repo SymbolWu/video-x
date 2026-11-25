@@ -293,8 +293,10 @@ function EditionRows({
             <div className="edition-maintenance">
               <dl>
                 <VideoFacts data={edition} />
-                <dt>媒体相对路径</dt>
-                <dd>{path}</dd>
+                <div className="edition-file-path">
+                  <dt>媒体相对路径</dt>
+                  <dd>{path}</dd>
+                </div>
               </dl>
               <div className="edition-maintenance-actions">
                 <button type="button" disabled={!canMaintain} onClick={check}>

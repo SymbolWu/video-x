@@ -89,7 +89,13 @@ export function AppendEdition({
       title={previous ? "替换播放文件" : "追加播放版本"}
       close={() => !busy && close()}
     >
-      <div className="relation-picker">
+      <div
+        className={
+          previous
+            ? "relation-picker edition-replacement-picker"
+            : "relation-picker"
+        }
+      >
         <input
           type="search"
           autoFocus

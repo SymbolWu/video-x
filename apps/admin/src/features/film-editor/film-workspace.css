@@ -457,10 +457,18 @@ a.editor-row-name:hover,
 }
 .editor-version-path dl {
   margin: 0;
-  padding: 8px 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 16px;
+  padding: 12px 14px;
   border: 1px solid var(--editor-line);
   border-radius: 6px;
   background: var(--editor-surface);
+}
+.edition-file-path {
+  grid-column: 1 / -1;
+  padding-top: 10px;
+  border-top: 1px solid var(--editor-line);
 }
 .editor-version-path dt {
   color: var(--editor-muted);
@@ -553,6 +561,14 @@ a.editor-row-name:hover,
   margin: 0 0 6px;
   font-size: 1rem;
 }
+.edition-comparison-grid h3 small {
+  margin-inline-start: 6px;
+  color: var(--editor-muted);
+  font-weight: 500;
+}
+.edition-replacement-picker .picker-results {
+  min-height: 0;
+}
 .edition-comparison-grid p,
 .edition-comparison-note {
   color: var(--editor-muted);
@@ -560,10 +576,16 @@ a.editor-row-name:hover,
 }
 .edition-comparison-grid dl {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  gap: 4px 12px;
+  gap: 4px;
   margin: 10px 0 0;
   font-size: 0.875rem;
+}
+.edition-comparison-grid dl > div {
+  display: grid;
+  grid-template-columns: 3em minmax(0, 1fr);
+}
+.edition-comparison-grid dt {
+  color: var(--editor-muted);
 }
 .edition-comparison-grid dd {
   margin: 0;

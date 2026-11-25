@@ -19,14 +19,22 @@ function duration(ms: number | null | undefined) {
 export function VideoFacts({ data }: { data: FileFacts }) {
   return (
     <>
-      <dt>画面</dt>
-      <dd>
-        {data.width && data.height ? data.width + " × " + data.height : "未知"}
-      </dd>
-      <dt>时长</dt>
-      <dd>{duration(data.durationMs)}</dd>
-      <dt>编码</dt>
-      <dd>{data.videoCodec || "未知"}</dd>
+      <div>
+        <dt>画面</dt>
+        <dd>
+          {data.width && data.height
+            ? data.width + " × " + data.height
+            : "未知"}
+        </dd>
+      </div>
+      <div>
+        <dt>时长</dt>
+        <dd>{duration(data.durationMs)}</dd>
+      </div>
+      <div>
+        <dt>编码</dt>
+        <dd>{data.videoCodec || "未知"}</dd>
+      </div>
     </>
   );
 }
