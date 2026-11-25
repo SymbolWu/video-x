@@ -22,16 +22,18 @@
 .runtime/environments/production/compose ps
 ```
 
-两个旧媒体盘须挂载到原卷名。8T 的标识文件在迁移时登记，12T 沿用原标识。生产容器以只读方式访问旧媒体盘的标识和已挂载目录，生产录入工作区在本环境的 `media/Download` 与 `media/Library`。
+两个旧媒体盘须挂载到原卷名。8T 的标识文件在迁移时登记，12T 沿用原标识。test 和生产都在「系统状态 → 媒体存储」从两块登记的媒体盘选择下载目录。API 对实盘使用只读挂载，开放给 API 的路径包括登记的归档目录和下载候选目录。两套环境各有独立的录入工作区。
 
-test 环境在「系统状态 → 媒体存储」从两块登记的媒体盘选择下载目录。API 对实盘使用只读挂载。Worker 的实盘写权限只覆盖下表四个目录，盘根、卷标识、下载目录和 `DevTarget` 维持只读。从实盘下载目录整理入库时，Worker 校验复制后的内容并保留下载源文件。
+| 媒体盘 | test Worker 可写范围 | 生产 Worker 可写范围 |
+| --- | --- | --- |
+| `WD_12T_DISK` | `日本`、`欧美` | 整卷目录 |
+| `WD_8T_DISK` | `日本`、`欧美` | 整卷目录 |
 
-| 媒体盘 | test Worker 可写影片目录 |
-| --- | --- |
-| `WD_12T_DISK` | `日本`、`欧美` |
-| `WD_8T_DISK` | `日本`、`欧美` |
+生产两个卷的 `.video-x-root` 分别以只读方式绑定到 Worker。test 的盘标识、下载目录和 `DevTarget` 使用只读挂载。两套环境从实盘下载目录整理入库时都会校验复制后的内容并保留下载源。
 
-这四个目录同时登记在 test 的 `mounts.json` 和 API、Worker 共用的 `VIDEO_X_STORAGE_LAYOUT.targets` 中。替换影片时，目标目录取旧文件当前绑定的媒体盘与父目录。调整挂载后以运行中容器的挂载表为准，并用独立样片检查实际路径和源文件摘要。原配置备份保存在 test 的 `backup/` 下。
+生产 API 和 Worker 共用 `VIDEO_X_STORAGE_LAYOUT.targets` 归档目录清单。12T 的归档目录为「三级」「动漫」「国产 AV」「日本」「欧美」「国产」「上古av」「欧美系列」，8T 的归档目录为「国产 AV」「日本」「欧美」「国产」「欧美系列」。Worker 的整卷写权限与应用的入库目标登记各自生效。替换文件时，应用根据旧文件当前绑定的媒体盘和父目录锁定入库位置。
+
+调整挂载后以运行中容器的挂载表为准。文件操作在 test 用独立样片验证实际路径和源文件摘要。生产发布核对目录树、替换入口、已有文件的只读状态及目录库记录摘要。原配置备份保存在各环境的 `backup/` 下。
 
 系统状态区分录入工作区、图片仓库和已登记影片盘。盘标识通过容器内的 `.video-x-root` 核对。Docker Compose 通过 `VIDEO_X_HOST_STORAGE_SNAPSHOT` 指向只读挂载的宿主机容量快照，UUID 匹配且采样不超过三分钟时才显示容量。缺少有效读数时，挂载状态仍独立显示。本机登录启动项 `com.video-x.storage-status` 每分钟运行一次采集器。注册时用 `tooling/macos-storage-snapshot.mjs` 将盘根 UUID 标识与 macOS 卷 UUID 对照登记。后续采集只查询对应 macOS 卷的容量。采样文件位于 `~/Library/Application Support/video-x/storage-status/storage.json`。两套环境共用这些宿主机读数。
 
