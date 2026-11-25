@@ -22,7 +22,16 @@
 .runtime/environments/production/compose ps
 ```
 
-两个旧媒体盘须挂载到原卷名。API 和 Worker 通过只读绑定访问 UUID 标识及本环境需要的媒体子目录。新增影片的下载目录和整理目标在本环境自己的 `media/Download` 与 `media/Library`。8T 的标识文件由本次迁移新增，12T 沿用原标识。
+两个旧媒体盘须挂载到原卷名。8T 的标识文件在迁移时登记，12T 沿用原标识。生产容器以只读方式访问旧媒体盘的标识和已挂载目录，生产录入工作区在本环境的 `media/Download` 与 `media/Library`。
+
+test 环境在「系统状态 → 媒体存储」从两块登记的媒体盘选择下载目录。API 对实盘使用只读挂载。Worker 的实盘写权限只覆盖下表四个目录，盘根、卷标识、下载目录和 `DevTarget` 维持只读。从实盘下载目录整理入库时，Worker 校验复制后的内容并保留下载源文件。
+
+| 媒体盘 | test Worker 可写影片目录 |
+| --- | --- |
+| `WD_12T_DISK` | `日本`、`欧美` |
+| `WD_8T_DISK` | `日本`、`欧美` |
+
+这四个目录同时登记在 test 的 `mounts.json` 和 API、Worker 共用的 `VIDEO_X_STORAGE_LAYOUT.targets` 中。替换影片时，目标目录取旧文件当前绑定的媒体盘与父目录。调整挂载后以运行中容器的挂载表为准，并用独立样片检查实际路径和源文件摘要。原配置备份保存在 test 的 `backup/` 下。
 
 系统状态区分录入工作区、图片仓库和已登记影片盘。盘标识通过容器内的 `.video-x-root` 核对。Docker Compose 通过 `VIDEO_X_HOST_STORAGE_SNAPSHOT` 指向只读挂载的宿主机容量快照，UUID 匹配且采样不超过三分钟时才显示容量。缺少有效读数时，挂载状态仍独立显示。本机登录启动项 `com.video-x.storage-status` 每分钟运行一次采集器。注册时用 `tooling/macos-storage-snapshot.mjs` 将盘根 UUID 标识与 macOS 卷 UUID 对照登记。后续采集只查询对应 macOS 卷的容量。采样文件位于 `~/Library/Application Support/video-x/storage-status/storage.json`。两套环境共用这些宿主机读数。
 
