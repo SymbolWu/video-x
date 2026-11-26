@@ -232,9 +232,14 @@
   }
 
   function detailStills(f) {
-    const pool = films.filter((x) => x.id !== f.id && x.category === f.category).slice(0, 2);
-    const extra = pool.length === 2 ? pool : films.filter((x) => x.id !== f.id).slice(0, 2);
-    return [f, ...extra].slice(0, 3);
+    const scenes = f.categoryEn === "Animation"
+      ? ["assets/scenes/coast.jpg", "assets/scenes/sea.jpg"]
+      : ["assets/scenes/desert.jpg", "assets/scenes/coast.jpg"];
+    return [
+      { src: f.backdrop, position: "50% 30%" },
+      { src: scenes[0], position: "50% 50%" },
+      { src: scenes[1], position: "50% 50%" }
+    ];
   }
 
   function renderDetail(id) {
@@ -287,7 +292,7 @@
           <section>
             <div class="detail-section-head"><h2>剧照</h2><span>Stills / 03</span></div>
             <div class="still-row">
-              ${stills.map((s, i) => `<a class="still" href="#play/${f.id}"><img src="${s.backdrop}" alt="" /><span>STILL ${fmt(i + 1)}</span></a>`).join('')}
+              ${stills.map((s, i) => `<button class="still" type="button" data-still-index="${i}" aria-label="查看剧照 ${i + 1}"><img src="${s.src}" alt="" style="object-position:${s.position}" /><span>STILL ${fmt(i + 1)}</span></button>`).join('')}
             </div>
           </section>
           <section>
@@ -327,6 +332,63 @@
     bindDetail(f);
   }
 
+  function openStillViewer(film, index) {
+    const stills = detailStills(film);
+    let current = index;
+    const lastFocus = document.activeElement;
+    document.querySelector('[data-still-viewer]')?.remove();
+    const root = document.createElement('div');
+    root.className = 'still-viewer';
+    root.dataset.stillViewer = '';
+    root.setAttribute('role', 'dialog');
+    root.setAttribute('aria-modal', 'true');
+    root.setAttribute('aria-label', '剧照浏览');
+    root.innerHTML = [
+      '<button class="still-viewer-scrim" data-still-close aria-label="关闭剧照浏览"></button>',
+      '<div class="still-viewer-frame">',
+      '<header class="still-viewer-head"><div><p class="eyebrow">STILLS</p><h2>' + esc(film.title) + '</h2></div><button class="still-viewer-close" data-still-close aria-label="关闭">×</button></header>',
+      '<figure class="still-viewer-figure"><img data-still-image src="' + stills[index].src + '" alt="" style="object-position:' + stills[index].position + '" /><figcaption><span data-still-caption>STILL ' + fmt(index + 1) + ' / ' + fmt(stills.length) + '</span><small>← → 切换 · Esc 关闭</small></figcaption></figure>',
+      '<div class="still-viewer-arrows"><button data-still-prev aria-label="上一张">←</button><button data-still-next aria-label="下一张">→</button></div>',
+      '<div class="still-viewer-thumbs">' + stills.map((s, i) => '<button data-still-thumb="' + i + '"' + (i === index ? ' class="is-active"' : '') + ' aria-label="第 ' + (i + 1) + ' 张剧照"><img src="' + s.src + '" alt="" style="object-position:' + s.position + '" /></button>').join('') + '</div>',
+      '</div>'
+    ].join('');
+    document.body.appendChild(root);
+    document.body.classList.add('is-locked');
+    requestAnimationFrame(() => root.classList.add('is-open'));
+    const image = $('[data-still-image]', root);
+    const caption = $('[data-still-caption]', root);
+    const paint = () => {
+      image.src = stills[current].src;
+      image.style.objectPosition = stills[current].position;
+      caption.textContent = 'STILL ' + fmt(current + 1) + ' / ' + fmt(stills.length);
+      $$('[data-still-thumb]', root).forEach((b, i) => b.classList.toggle('is-active', i === current));
+    };
+    const close = () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.classList.remove('is-locked');
+      root.remove();
+      if (lastFocus && lastFocus.isConnected) lastFocus.focus({ preventScroll: true });
+    };
+    const step = (delta) => {
+      current = (current + delta + stills.length) % stills.length;
+      paint();
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+    };
+    root.addEventListener('click', (e) => {
+      if (e.target.closest('[data-still-close]')) { close(); return; }
+      if (e.target.closest('[data-still-prev]')) { step(-1); return; }
+      if (e.target.closest('[data-still-next]')) { step(1); return; }
+      const thumb = e.target.closest('[data-still-thumb]');
+      if (thumb) { current = Number(thumb.dataset.stillThumb); paint(); }
+    });
+    document.addEventListener('keydown', onKey);
+    $('.still-viewer-close', root).focus();
+  }
+
   function bindDetail(f) {
     const favBtn = $('[data-detail-fav]', $('[data-view="detail"]'));
     favBtn.addEventListener('click', () => {
@@ -353,6 +415,7 @@
       renderDetail(f.id);
       toast(n === 0 ? '已取消评分' : state.ratings.get(f.id) ? '已评分 ' + n + ' 星' : '已取消评分');
     }));
+    $$('[data-view="detail"] [data-still-index]').forEach((b) => b.addEventListener('click', () => openStillViewer(f, Number(b.dataset.stillIndex))));
     $$('[data-view="detail"] [data-series]').forEach((a) => a.addEventListener('click', (e) => {
       e.preventDefault();
       openEntity('films', 'series', a.dataset.series);
@@ -768,4 +831,10 @@
   initFilters();
   renderHome();
   renderRoute();
+  if (new URLSearchParams(location.search).get("stills") === "1") {
+    setTimeout(() => {
+      const film = filmById.get(state.detailId);
+      if (film && state.route === "detail") openStillViewer(film, 0);
+    }, 420);
+  }
 })();

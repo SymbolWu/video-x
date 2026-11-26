@@ -33,6 +33,7 @@ shot() {
 shot web-discover "web.html?capture=1#discover" 1440 900
 shot web-library "web.html?capture=1#library" 1440 900
 shot web-detail "web.html?capture=1#detail/129" 1440 900
+shot web-stills "web.html?capture=1&stills=1#detail/129" 1440 900
 shot web-player "web.html?capture=1#player/693134" 1440 900
 shot web-collections "web.html?capture=1#collections" 1440 900
 shot web-profile "web.html?capture=1#profile" 1440 900
