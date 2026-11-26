@@ -1404,6 +1404,12 @@
       return;
     }
     if (e.target.closest("input, select, textarea, label")) return;
+    const stage = e.target.closest("[data-stage]");
+    if (stage) {
+      state.intakeStage = stage.dataset.stage;
+      render();
+      return;
+    }
     const act = e.target.closest("[data-act]");
     if (!act) return;
     const action = act.dataset.act;

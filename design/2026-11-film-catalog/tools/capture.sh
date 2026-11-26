@@ -23,7 +23,7 @@ shot() {
   w=$3
   h=$4
   "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars \
-    --user-data-dir="/tmp/vx-film-$name" --virtual-time-budget=1000 \
+    --user-data-dir="/tmp/vx-film-$name" --virtual-time-budget=3000 \
     --window-size="$w,$h" --screenshot="/tmp/vx-film-$name.png" \
     "http://127.0.0.1:$PORT/$path" >/dev/null 2>&1
   sips -s format jpeg -s formatOptions 90 "/tmp/vx-film-$name.png" --out "$OUT/$name.jpg" >/dev/null

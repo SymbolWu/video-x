@@ -31,13 +31,13 @@
 }
 
 .lab-head .wordmark {
-  font-size: 18px;
+  font-size: 19px;
 }
 
 .lab-head .wordmark small {
   color: #8f8a80;
   font-family: var(--font-mono);
-  font-size: 7px;
+  font-size: 11px;
   font-weight: 400;
   letter-spacing: 0.08em;
 }
@@ -45,18 +45,22 @@
 .lab-head > p {
   color: #777269;
   font-family: var(--font-mono);
-  font-size: 7.5px;
+  font-size: 11px;
   letter-spacing: 0.08em;
 }
 
 .lab-back {
   margin-left: auto;
   color: #c7a25c;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .lab-back:hover {
   color: #e1c58e;
+}
+
+.lab-body .eyebrow {
+  font-size: 11px;
 }
 
 .lab-main {
@@ -89,7 +93,7 @@
 
 .lab-intro > p {
   color: #9b968c;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.75;
 }
 
@@ -124,12 +128,12 @@
 .lab-control-block > header span {
   color: #c7a25c;
   font-family: var(--font-mono);
-  font-size: 6.5px;
+  font-size: 11px;
 }
 
 .lab-control-block > header h2 {
   color: #e8e3d8;
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 600;
 }
 
@@ -182,7 +186,7 @@
 .theme-copy b {
   display: block;
   color: #ede8dd;
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -191,7 +195,7 @@
   margin-top: 1px;
   overflow: hidden;
   color: #827d73;
-  font-size: 7px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -200,7 +204,7 @@
   flex: none;
   color: #c7a25c;
   font-family: var(--font-mono);
-  font-size: 6px;
+  font-size: 11px;
   font-style: normal;
   letter-spacing: 0.05em;
 }
@@ -232,7 +236,7 @@
 
 .radius-options b {
   display: block;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -240,7 +244,7 @@
   display: block;
   margin-top: 2px;
   font-family: var(--font-mono);
-  font-size: 6.5px;
+  font-size: 11px;
 }
 
 .radius-scale {
@@ -273,7 +277,7 @@
 .radius-scale small {
   color: #6f6a61;
   font-family: var(--font-mono);
-  font-size: 6px;
+  font-size: 11px;
 }
 
 .lab-note .eyebrow {
@@ -290,7 +294,7 @@
 .lab-note > p:not(.eyebrow) {
   margin-top: 5px;
   color: #989287;
-  font-size: 8.5px;
+  font-size: 11.5px;
   line-height: 1.65;
 }
 
@@ -310,7 +314,7 @@
 .lab-note dt,
 .lab-note dd {
   font-family: var(--font-mono);
-  font-size: 6.5px;
+  font-size: 11px;
 }
 
 .lab-note dt {
@@ -484,7 +488,7 @@
 .spec-brand small {
   color: rgba(241, 239, 234, 0.38);
   font-family: var(--font-mono);
-  font-size: 5.5px;
+  font-size: 11px;
   letter-spacing: 0.08em;
 }
 
@@ -497,7 +501,7 @@
   padding: 8px 4px 4px;
   color: rgba(241, 239, 234, 0.32);
   font-family: var(--font-mono);
-  font-size: 5.5px;
+  font-size: 11px;
   letter-spacing: 0.1em;
 }
 
@@ -507,14 +511,14 @@
   min-height: 27px;
   padding: 0 7px;
   color: rgba(241, 239, 234, 0.64);
-  font-size: 8px;
+  font-size: 11.5px;
 }
 
 .spec-rail nav a em {
   margin-left: auto;
   color: rgba(241, 239, 234, 0.32);
   font-family: var(--font-mono);
-  font-size: 6px;
+  font-size: 11px;
   font-style: normal;
 }
 
@@ -544,13 +548,13 @@
   color: #1b1a17;
   background: #c7a25c;
   border-radius: 50%;
-  font-size: 7px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .spec-rail-foot p {
   color: rgba(241, 239, 234, 0.72);
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .spec-rail-foot small {
@@ -558,7 +562,7 @@
   margin-top: 1px;
   color: rgba(241, 239, 234, 0.34);
   font-family: var(--font-mono);
-  font-size: 5.5px;
+  font-size: 11px;
 }
 
 .spec-main {
@@ -577,7 +581,7 @@
   color: var(--muted);
   border-bottom: 1px solid var(--line);
   font-family: var(--font-mono);
-  font-size: 6.5px;
+  font-size: 11px;
 }
 
 .spec-top i {
@@ -598,7 +602,7 @@
 
 .spec-exit {
   color: var(--ink-2);
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .spec-page {
@@ -615,7 +619,7 @@
 
 .spec-page-head .eyebrow {
   color: var(--muted);
-  font-size: 6px;
+  font-size: 11px;
 }
 
 .spec-page-head h1 {
@@ -633,7 +637,7 @@
   color: var(--ink);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-sm);
-  font-size: 8px;
+  font-size: 11.5px;
   transition: background var(--fast), color var(--fast), border-color var(--fast);
 }
 
@@ -655,7 +659,7 @@
 .spec-btn-sm {
   min-height: 26px;
   padding: 0 9px;
-  font-size: 7.5px;
+  font-size: 11px;
 }
 
 .spec-counts {
@@ -692,7 +696,7 @@
 
 .spec-counts span {
   color: var(--muted);
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .spec-toolbar {
@@ -709,7 +713,7 @@
   gap: 14px;
   min-width: 0;
   color: var(--muted);
-  font-size: 7.5px;
+  font-size: 11px;
   white-space: nowrap;
 }
 
@@ -730,7 +734,7 @@
   align-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 6.5px;
+  font-size: 11px;
 }
 
 .spec-search input {
@@ -742,7 +746,7 @@
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   outline: 0;
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .spec-search input:focus {
@@ -761,7 +765,7 @@
   color: var(--muted);
   border-bottom: 1px solid var(--line);
   font-family: var(--font-mono);
-  font-size: 5.8px;
+  font-size: 11px;
   font-weight: 400;
   letter-spacing: 0.04em;
   text-align: left;
@@ -780,7 +784,7 @@
   padding: 7px 6px;
   color: var(--ink-2);
   border-bottom: 1px solid var(--line);
-  font-size: 7.5px;
+  font-size: 11px;
   vertical-align: middle;
 }
 
@@ -808,7 +812,7 @@
   display: block;
   overflow: hidden;
   color: var(--ink);
-  font-size: 8.5px;
+  font-size: 11.5px;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -820,7 +824,7 @@
   overflow: hidden;
   color: var(--muted);
   font-family: var(--font-mono);
-  font-size: 5.8px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -834,7 +838,7 @@
   color: transparent;
   border: 1px solid var(--line-strong);
   border-radius: var(--r-xs);
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .is-selected .spec-check {
@@ -850,7 +854,7 @@
   padding: 2px 5px;
   border: 1px solid var(--line);
   border-radius: var(--r-xs);
-  font-size: 6.5px;
+  font-size: 11px;
   white-space: nowrap;
 }
 
@@ -870,7 +874,7 @@
 .spec-coverage {
   color: var(--muted);
   font-family: var(--font-mono);
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .spec-coverage.is-warn {
@@ -879,7 +883,7 @@
 
 .spec-link {
   color: var(--accent);
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .spec-link:hover {
@@ -897,7 +901,7 @@
   background: var(--paper-2);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
-  font-size: 6.5px;
+  font-size: 11px;
 }
 
 .spec-batch b {
@@ -906,7 +910,7 @@
 
 .spec-batch button {
   color: var(--ink-2);
-  font-size: 6.5px;
+  font-size: 11px;
 }
 
 .spec-batch button:hover {
@@ -943,14 +947,14 @@
 
 .spec-panel h2 {
   color: var(--ink);
-  font-size: 8px;
+  font-size: 11.5px;
   font-weight: 500;
 }
 
 .spec-panel header small {
   color: var(--muted);
   font-family: var(--font-mono);
-  font-size: 5.8px;
+  font-size: 11px;
 }
 
 .spec-tags {
@@ -976,14 +980,14 @@
 }
 
 .spec-tags b {
-  font-size: 7.5px;
+  font-size: 11px;
   font-weight: 500;
 }
 
 .spec-tags small {
   color: var(--muted);
   font-family: var(--font-mono);
-  font-size: 5.8px;
+  font-size: 11px;
 }
 
 .spec-collection {
@@ -1010,7 +1014,7 @@
   display: block;
   margin-top: 5px;
   color: var(--ink);
-  font-size: 7.5px;
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -1018,7 +1022,7 @@
   display: block;
   margin-top: 1px;
   color: var(--muted);
-  font-size: 6px;
+  font-size: 11px;
 }
 
 .spec-form {
@@ -1032,7 +1036,7 @@
 .spec-form label {
   display: block;
   color: var(--muted);
-  font-size: 5.8px;
+  font-size: 11px;
 }
 
 .spec-form input {
@@ -1045,7 +1049,7 @@
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   outline: 0;
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .spec-form div {
@@ -1057,7 +1061,7 @@
 
 .spec-form div > button:first-child {
   color: var(--muted);
-  font-size: 6.5px;
+  font-size: 11px;
 }
 
 .lab-caption {
@@ -1067,12 +1071,12 @@
   padding: 8px 2px 0;
   color: #8f8a80;
   font-family: var(--font-mono);
-  font-size: 6.5px;
+  font-size: 11px;
 }
 
 .lab-caption small {
   color: #5f5b54;
-  font-size: 6px;
+  font-size: 11px;
 }
 
 .lab-foot {
@@ -1091,14 +1095,14 @@
 }
 
 .lab-foot p {
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .lab-foot div {
   margin-left: auto;
   display: flex;
   gap: 16px;
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .lab-foot a:hover {

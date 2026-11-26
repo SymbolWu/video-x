@@ -441,7 +441,7 @@
         <div class="player-title"><b>${esc(f.title)}</b><small>${esc(f.en || f.category)} · ${esc(editionName)} · 静帧预览</small></div>
         <div class="player-top-right"><span>4K UHD · 5.1</span><span>断点会记录</span></div>
       </header>
-      <div class="player-stage" style="--poster:url('${f.backdrop}')">
+      <div class="player-stage" style="--poster:url('${new URL(f.backdrop, location.href).href}')">
         <img class="player-frame" data-player-frame src="${f.backdrop}" alt="" />
         <button class="player-center" data-player-toggle aria-label="播放">${icon('play', 26)}</button>
       </div>
@@ -581,7 +581,7 @@
     $$('[data-player-toggle]', view).forEach((b) => b.addEventListener('click', togglePlay));
     $$('[data-player-skip]', view).forEach((b) => b.addEventListener('click', () => seekBy(Number(b.dataset.playerSkip))));
     stage.addEventListener('click', (e) => {
-      if (e.target.closest('button, input, .player-menu')) return;
+      if (e.composedPath().some((n) => n.matches && n.matches('button, input, .player-menu'))) return;
       if (!menu.hidden) { menu.hidden = true; showChrome(); return; }
       togglePlay();
     });
