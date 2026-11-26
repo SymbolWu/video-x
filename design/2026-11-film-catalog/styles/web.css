@@ -1346,7 +1346,29 @@
 
 /* — Detail — */
 .view-detail {
+  position: relative;
+  isolation: isolate;
   padding-top: 0;
+}
+
+.view-detail::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--detail-ambient);
+  background-size: cover;
+  background-position: center 34%;
+  filter: blur(70px) brightness(0.48) saturate(1.3);
+  opacity: 0.52;
+  pointer-events: none;
+}
+
+.detail-hero,
+.detail-personal-bar,
+.detail-body {
+  position: relative;
+  z-index: 1;
 }
 
 .detail-crumb {

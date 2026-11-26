@@ -255,6 +255,7 @@
     const selectedEdition = state.editions.get(f.id) || f.editions[0].name;
     const stills = detailStills(f);
     const view = $('[data-view="detail"]');
+    view.style.setProperty('--detail-ambient', `url("${new URL(f.backdrop, location.href).href}")`);
     view.innerHTML = `
       <nav class="detail-crumb"><a href="#library">${icon('arrow-left', 15)} 返回</a><span aria-hidden="true">/</span><span>影片详情</span></nav>
       <div class="detail-hero">
