@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>video—x · 放映目录 · 观看端</title>
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/web.css" />
+  </head>
+  <body class="grain web-body">
+    <header class="web-head" data-head>
+      <a class="wordmark" href="#discover" aria-label="video—x 发现">
+        video<span>—</span>x
+        <small>私人放映目录</small>
+      </a>
+      <nav class="web-nav" aria-label="观看导航">
+        <a href="#discover" data-nav="discover">发现</a>
+        <a href="#library" data-nav="library">片库</a>
+        <a href="#collections" data-nav="collections">收藏</a>
+      </nav>
+      <div class="web-head-right">
+        <button class="head-search" data-open-search>
+          <span>检索片库</span>
+          <kbd>⌘ K</kbd>
+        </button>
+        <button class="head-avatar" data-open-profile aria-label="我的资料">W</button>
+      </div>
+    </header>
+
+    <main class="web-main" data-main>
+      <!-- ============================ DISCOVER ============================ -->
+      <section class="view view-discover" data-view="discover">
+        <section class="hero">
+          <div class="hero-media" aria-hidden="true">
+            <img src="assets/cinema/843-backdrop.jpg" alt="" />
+          </div>
+          <div class="hero-scrim" aria-hidden="true"></div>
+          <div class="hero-frame">
+            <div class="hero-copy">
+              <p class="eyebrow"><span>本周放映</span><span>No. 047</span></p>
+              <h1>
+                <span class="hero-title-cn">花样年华</span>
+                <em class="hero-title-en">In the Mood for Love</em>
+              </h1>
+              <p class="hero-meta">2000 <i>·</i> 爱情 <i>·</i> 99 分钟 <i>·</i> 王家卫</p>
+              <p class="hero-summary">六十年代的香港，两位邻居在一次次擦肩中走近彼此。有些话没有说出口，却留在了整条走廊的光影里。</p>
+              <div class="hero-actions">
+                <button class="hero-cta" data-play="843">
+                  <span class="hero-play-disc" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M9 6.5v11l9-5.5-9-5.5Z" fill="currentColor"/></svg>
+                  </span>
+                  <span>开始放映</span>
+                </button>
+                <a class="hero-link" href="#detail/843">查看资料 <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+            <aside class="hero-aside" aria-label="本期信息">
+              <div class="hero-index"><b>01</b><span>/ 03</span></div>
+              <dl class="hero-facts">
+                <div><dt>DIR.</dt><dd>王家卫</dd></div>
+                <div><dt>CAST</dt><dd>梁朝伟 · 张曼玉</dd></div>
+                <div><dt>FORMAT</dt><dd>4K 修复 · 原声</dd></div>
+                <div><dt>SHELF</dt><dd>A—014</dd></div>
+              </dl>
+            </aside>
+          </div>
+          <div class="hero-bottom">
+            <p class="hero-note">私人馆藏 · 第 47 期 · 2026 年 11 月</p>
+            <div class="hero-dots" aria-hidden="true">
+              <span class="is-on"></span><span></span><span></span>
+            </div>
+            <p class="hero-scroll">向下浏览 <span aria-hidden="true">↓</span></p>
+          </div>
+        </section>
+
+        <section class="band band-resume">
+          <header class="section-head">
+            <div>
+              <p class="eyebrow">Continue · 01</p>
+              <h2>继续观看</h2>
+            </div>
+            <p class="section-desc">断点留在这一帧，回来时不必重头。</p>
+          </header>
+          <div class="resume-strip" data-resume-strip></div>
+        </section>
+
+        <section class="band band-recent">
+          <header class="section-head">
+            <div>
+              <p class="eyebrow">Recently added · 02</p>
+              <h2>新近入藏</h2>
+            </div>
+            <a class="section-link" href="#library">浏览全部 <span>39 部</span> <span aria-hidden="true">→</span></a>
+          </header>
+          <div class="poster-grid poster-grid-home" data-home-grid></div>
+        </section>
+
+        <section class="manifesto">
+          <div class="manifesto-mark" aria-hidden="true">“</div>
+          <blockquote>
+            一间只属于自己的电影院。<br />
+            片单不必向任何人解释。
+          </blockquote>
+          <div class="manifesto-foot">
+            <span class="mono">The Programme / 2026</span>
+            <div class="manifesto-stats">
+              <span><b>39</b> 部影片</span>
+              <span><b>100</b> 位影人</span>
+              <span><b>07</b> 个系列</span>
+            </div>
+          </div>
+        </section>
+
+        <footer class="web-foot">
+          <span class="wordmark foot-mark">video<span>—</span>x</span>
+          <p>私人影视资料库 · 本页为视觉原型，数据来自开发样例。</p>
+          <div><a href="admin.html">管理端 ↗</a><a href="index.html">设计说明 ↗</a></div>
+        </footer>
+      </section>
+
+      <!-- ============================ LIBRARY ============================ -->
+      <section class="view view-library" data-view="library" hidden>
+        <header class="page-head">
+          <p class="eyebrow">The collection · 馆藏</p>
+          <div class="page-title-row">
+            <h1>片库</h1>
+            <p class="page-count"><span data-library-total>39</span> 部影片 <i>/</i> 100 位影人 <i>/</i> 07 个系列</p>
+          </div>
+          <div class="scope-banner" data-scope-banner hidden><span></span><button type="button" data-clear-scope>清除范围</button></div>
+        </header>
+
+        <div class="entity-tabs" role="tablist" aria-label="片库视图">
+          <button role="tab" aria-selected="true" data-entity="films">影片 <sup>39</sup></button>
+          <button role="tab" aria-selected="false" data-entity="people">演员 <sup>100</sup></button>
+          <button role="tab" aria-selected="false" data-entity="series">系列 <sup>07</sup></button>
+        </div>
+
+        <div class="library-toolbar">
+          <div class="category-line" data-category-line role="group" aria-label="分类"></div>
+          <div class="library-sort">
+            <span class="result-count"><b data-result-count>39</b> 部</span>
+            <button class="tool-text" data-sort-cycle>添加时间 <span aria-hidden="true">↓</span></button>
+            <button class="tool-text" data-open-filter>筛选 <span class="tool-count" data-filter-count hidden>0</span></button>
+            <button class="tool-icon" data-open-search aria-label="搜索片库"></button>
+          </div>
+        </div>
+
+        <div class="poster-grid poster-grid-library" data-library-grid></div>
+        <div class="library-empty" data-library-empty hidden>
+          <p class="eyebrow">No match</p>
+          <h2>没有符合条件的影片</h2>
+          <p>调整分类或清除筛选，回到完整馆藏。</p>
+          <button class="btn-ghost" data-clear-filters>清除筛选</button>
+        </div>
+        <nav class="pagination" aria-label="分页">
+          <span>01 <i>/</i> 04</span>
+          <div>
+            <button disabled aria-label="上一页">←</button>
+            <button aria-label="下一页">→</button>
+          </div>
+        </nav>
+      </section>
+
+      <!-- ============================ COLLECTIONS ============================ -->
+      <section class="view view-collections" data-view="collections" hidden>
+        <header class="page-head">
+          <p class="eyebrow">The shelf · 私人片单</p>
+          <div class="page-title-row">
+            <h1>收藏</h1>
+            <p class="page-count">03 个收藏夹 <i>/</i> 12 部喜欢</p>
+          </div>
+        </header>
+        <div class="collection-list" data-collection-list></div>
+        <section class="band band-liked">
+          <header class="section-head">
+            <div>
+              <p class="eyebrow">Liked · 喜欢</p>
+              <h2>我喜欢的</h2>
+            </div>
+            <p class="section-desc">喜欢与已看、评分各自独立；这里只收留偏爱。</p>
+          </header>
+          <div class="poster-grid poster-grid-home" data-liked-grid></div>
+        </section>
+      </section>
+
+      <!-- ============================ DETAIL ============================ -->
+      <section class="view view-detail" data-view="detail" hidden></section>
+
+      <!-- ============================ PLAYER ============================ -->
+      <section class="view view-player" data-view="player" hidden></section>
+    </main>
+
+    <!-- Filter drawer -->
+    <div class="drawer-layer" data-filter-layer hidden>
+      <button class="drawer-scrim" data-close-filter aria-label="关闭筛选"></button>
+      <aside class="filter-drawer" aria-label="筛选影片">
+        <header>
+          <p class="eyebrow">Filter · 筛选</p>
+          <button class="icon-button" data-close-filter aria-label="关闭">×</button>
+        </header>
+        <div class="filter-body">
+          <fieldset>
+            <legend>观看状态</legend>
+            <label><input type="radio" name="seen" value="all" checked /> 全部</label>
+            <label><input type="radio" name="seen" value="unseen" /> 未看</label>
+            <label><input type="radio" name="seen" value="seen" /> 已看</label>
+          </fieldset>
+          <fieldset>
+            <legend>喜欢</legend>
+            <label><input type="radio" name="fav" value="all" checked /> 全部</label>
+            <label><input type="radio" name="fav" value="fav" /> 已喜欢</label>
+          </fieldset>
+          <fieldset>
+            <legend>评分</legend>
+            <label><input type="radio" name="rating" value="all" checked /> 全部</label>
+            <label><input type="radio" name="rating" value="unrated" /> 未评分</label>
+            <label><input type="radio" name="rating" value="4" /> 4 星及以上</label>
+          </fieldset>
+          <fieldset>
+            <legend>发行年份</legend>
+            <div class="year-grid" data-year-grid></div>
+          </fieldset>
+        </div>
+        <footer>
+          <button class="drawer-reset" data-reset-filter>重置</button>
+          <button class="drawer-apply" data-apply-filter>查看 <span data-filter-preview>39</span> 部影片</button>
+        </footer>
+      </aside>
+    </div>
+
+    <!-- Search overlay -->
+    <div class="search-layer" data-search-layer hidden>
+      <div class="search-top">
+        <p class="eyebrow">Search · 检索</p>
+        <button class="icon-button" data-close-search aria-label="关闭检索">×</button>
+      </div>
+      <label class="search-input-wrap">
+        <span aria-hidden="true">⌕</span>
+        <input type="search" data-search-input placeholder="片名、演员、系列" autocomplete="off" />
+      </label>
+      <div class="search-results" data-search-results>
+        <p class="search-hint">输入片名或演员姓名，按 Esc 关闭。</p>
+      </div>
+    </div>
+
+    <div class="toast" data-toast role="status" aria-live="polite"></div>
+
+    <script src="scripts/icons.js"></script>
+    <script src="scripts/data.js"></script>
+    <script src="scripts/web.js"></script>
+  </body>
+</html>

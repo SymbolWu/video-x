@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>video—x · 放映目录 · 移动端</title>
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/mobile.css" />
+  </head>
+  <body class="grain mobile-body">
+    <main class="mobile-board">
+      <section class="board-copy">
+        <p class="eyebrow">Android · 05</p>
+        <h1>口袋里的<br />私人影院</h1>
+        <p class="board-lede">手机端不缩放桌面网页，也不把筛选藏进三层菜单。首屏只留下正在发生的事：继续看、找到下一部、以及一条随时可撤回的筛选条件。</p>
+        <nav class="screen-nav" aria-label="移动端画面">
+          <button data-screen="discover" aria-pressed="true"><span>01</span> 发现</button>
+          <button data-screen="library"><span>02</span> 片库</button>
+          <button data-screen="detail"><span>03</span> 详情</button>
+          <button data-screen="filters"><span>04</span> 筛选</button>
+          <button data-screen="player"><span>05</span> 播放</button>
+        </nav>
+        <div class="board-notes">
+          <div><span>触控</span><p>主操作 48 dp；筛选选项 44 dp；系统返回逐层关闭。</p></div>
+          <div><span>字号</span><p>正文 12–13，标题宋体；长标题两行截断，详情完整显示。</p></div>
+          <div><span>底部</span><p>四项导航固定，详情页由返回栈接管，不出现双底栏。</p></div>
+        </div>
+        <p class="board-foot">390 × 844 dp · Android 原生建议 · 非 WebView</p>
+      </section>
+
+      <section class="phone-shell" aria-label="手机预览">
+        <div class="phone">
+          <div class="m-status" aria-hidden="true">
+            <span>9:41</span>
+            <div class="status-icons">
+              <svg viewBox="0 0 20 12"><path d="M1 9.5h2V11H1zM5 7.5h2V11H5zM9 5h2v6H9zM13 2.5h2V11h-2z" fill="currentColor"/></svg>
+              <svg viewBox="0 0 16 12"><path d="M8 2.5c2.2 0 4.2.8 5.7 2.2l-1.1 1.1A6.6 6.6 0 0 0 8 4.2c-1.8 0-3.4.6-4.6 1.6L2.3 4.7A8.5 8.5 0 0 1 8 2.5Zm0 3.2c1.3 0 2.5.5 3.4 1.3l-1.1 1.1c-.6-.5-1.4-.8-2.3-.8-.9 0-1.7.3-2.3.8L4.6 7A5 5 0 0 1 8 5.7Zm0 3.1c.5 0 1 .2 1.3.6L8 10.8 6.7 9.4c.3-.4.8-.6 1.3-.6Z" fill="currentColor"/></svg>
+              <svg viewBox="0 0 24 12"><rect x="1" y="2.5" width="18" height="7" rx="1.5" fill="none" stroke="currentColor"/><rect x="3" y="4.5" width="13" height="3" fill="currentColor"/><path d="M21 5v2" stroke="currentColor"/></svg>
+            </div>
+          </div>
+
+          <div class="m-app" data-m-app>
+            <!-- DISCOVER -->
+            <section class="m-view m-view-discover" data-m-view="discover">
+              <div class="m-scroll">
+                <div class="m-topbar m-topbar-overlay">
+                  <span class="m-logo">v<span>×</span></span>
+                  <span class="m-top-title">发现</span>
+                  <button class="m-icon" data-open-m-search aria-label="搜索片库">
+                    <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+                  </button>
+                  <span class="m-avatar">W</span>
+                </div>
+
+                <section class="m-hero">
+                  <img src="assets/cinema/843-backdrop.jpg" alt="" />
+                  <div class="m-hero-scrim"></div>
+                  <div class="m-hero-copy">
+                    <p class="m-kicker">今晚放映 · No. 047</p>
+                    <h1>花样年华</h1>
+                    <p class="m-hero-en">In the Mood for Love</p>
+                    <p class="m-hero-meta">2000 · 爱情 · 99 分钟 · 王家卫</p>
+                    <p class="m-hero-summary">有些话没有说出口，却留在了整条走廊的光影里。</p>
+                    <button class="m-play" data-m-play="843"><span class="m-play-disc">▶</span><span>开始放映</span></button>
+                  </div>
+                  <div class="m-hero-index"><b>01</b><span>/ 03</span></div>
+                </section>
+
+                <section class="m-section">
+                  <header class="m-section-head"><div><p class="m-eyebrow">Continue</p><h2>继续观看</h2></div><span>断点已记下</span></header>
+                  <div class="m-resume" data-m-resume></div>
+                </section>
+
+                <section class="m-section">
+                  <header class="m-section-head"><div><p class="m-eyebrow">Recently added</p><h2>新近入藏</h2></div><button data-go-m="library">全部 39 部 →</button></header>
+                  <div class="m-poster-grid" data-m-home-grid></div>
+                </section>
+
+                <div class="m-manifesto">
+                  <span>“</span>
+                  <p>一间只属于自己的<br />电影院。</p>
+                  <small>THE PROGRAMME / 2026</small>
+                </div>
+              </div>
+              <nav class="m-nav" aria-label="底部导航">
+                <button data-go-m="discover" aria-current="page"><svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg><span>发现</span></button>
+                <button data-go-m="library"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><rect x="14" y="14" width="6.5" height="6.5"/></svg><span>片库</span></button>
+                <button data-go-m="collections"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 6.9a4.3 4.3 0 0 1 7.5 2.9C19.5 15.4 12 20 12 20Z"/></svg><span>收藏</span></button>
+                <button data-go-m="profile"><svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c0-4 3.2-6.5 7-6.5s7 2.5 7 6.5"/></svg><span>我的</span></button>
+              </nav>
+            </section>
+
+            <!-- LIBRARY -->
+            <section class="m-view m-view-library" data-m-view="library" hidden>
+              <div class="m-scroll" data-m-library-scroll>
+                <header class="m-lib-head">
+                  <div class="m-lib-top">
+                    <span class="m-logo">v<span>×</span></span>
+                    <div class="m-lib-actions">
+                      <button class="m-icon" data-open-m-search aria-label="搜索片库">
+                        <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+                      </button>
+                      <span class="m-avatar">W</span>
+                    </div>
+                  </div>
+                  <div class="m-lib-title"><h1>片库</h1><p><b>39</b> 部影片 · 07 个系列</p></div>
+                  <div class="m-entity-tabs">
+                    <button aria-pressed="true" data-m-entity="films">影片 <sup>39</sup></button>
+                    <button aria-pressed="false" data-m-entity="people">演员 <sup>100</sup></button>
+                    <button aria-pressed="false" data-m-entity="series">系列 <sup>07</sup></button>
+                  </div>
+                  <div class="m-category-scroll" data-m-categories></div>
+                  <div class="m-toolbar">
+                    <span class="m-result"><b data-m-count>39</b> 部</span>
+                    <button data-m-sort>添加时间 ↓</button>
+                    <button data-open-m-filter>筛选 <span class="m-filter-count" data-m-filter-count hidden>0</span></button>
+                  </div>
+                </header>
+                <div class="m-poster-grid m-poster-grid-library" data-m-library-grid></div>
+                <div class="m-empty" data-m-empty hidden>没有符合条件的影片。<button data-m-clear>清除筛选</button></div>
+                <div class="m-list-end">— 已到当前页末尾 —</div>
+              </div>
+              <nav class="m-nav" aria-label="底部导航">
+                <button data-go-m="discover"><svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg><span>发现</span></button>
+                <button data-go-m="library" aria-current="page"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><rect x="14" y="14" width="6.5" height="6.5"/></svg><span>片库</span></button>
+                <button data-go-m="collections"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 6.9a4.3 4.3 0 0 1 7.5 2.9C19.5 15.4 12 20 12 20Z"/></svg><span>收藏</span></button>
+                <button data-go-m="profile"><svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c0-4 3.2-6.5 7-6.5s7 2.5 7 6.5"/></svg><span>我的</span></button>
+              </nav>
+            </section>
+
+            <!-- DETAIL -->
+            <section class="m-view m-view-detail" data-m-view="detail" hidden></section>
+
+            <!-- PLAYER -->
+            <section class="m-view m-view-player" data-m-view="player" hidden></section>
+          </div>
+
+          <!-- FILTER SHEET -->
+          <div class="m-sheet-layer" data-m-filter-layer hidden>
+            <button class="m-sheet-scrim" data-close-m-filter aria-label="关闭筛选"></button>
+            <aside class="m-sheet" aria-label="筛选影片">
+              <header class="m-sheet-head"><div><p class="m-eyebrow">Filter</p><h2>筛选影片</h2></div><button class="m-sheet-close" data-close-m-filter aria-label="关闭">×</button></header>
+              <div class="m-sheet-body">
+                <section><p class="m-filter-label">分类 · 单选</p><div class="m-choice-grid cols-4" data-m-filter-categories></div></section>
+                <section><p class="m-filter-label">观看状态</p><div class="m-choice-grid cols-3" data-m-filter-seen><button data-val="all" aria-pressed="true">全部</button><button data-val="unseen">未看</button><button data-val="seen">已看</button></div></section>
+                <section><p class="m-filter-label">喜欢状态</p><div class="m-choice-grid cols-3" data-m-filter-fav><button data-val="all" aria-pressed="true">全部</button><button data-val="fav">已喜欢</button><button data-val="notfav">未喜欢</button></div></section>
+                <section><p class="m-filter-label">发行年份</p><div class="m-choice-grid cols-4" data-m-filter-years></div></section>
+                <section><p class="m-filter-label">我的评分</p><div class="m-choice-grid cols-3" data-m-filter-rating><button data-val="all" aria-pressed="true">全部</button><button data-val="unrated">未评分</button><button data-val="4">4 星及以上</button></div></section>
+                <section><p class="m-filter-label">排序依据</p><div class="m-choice-grid cols-2" data-m-filter-sort><button data-val="添加时间" aria-pressed="true">添加时间</button><button data-val="发行年份">发行年份</button><button data-val="名称">名称</button><button data-val="我的评分">我的评分</button></div></section>
+              </div>
+              <footer class="m-sheet-foot">
+                <button data-m-reset>重置</button>
+                <button class="m-apply" data-m-apply>查看 <span data-m-preview>39</span> 部影片</button>
+              </footer>
+            </aside>
+          </div>
+
+          <!-- SEARCH -->
+          <div class="m-search" data-m-search hidden>
+            <div class="m-search-top"><span class="m-logo">v<span>×</span></span><button data-close-m-search aria-label="关闭搜索">取消</button></div>
+            <label class="m-search-input"><span>⌕</span><input type="search" placeholder="片名、演员、系列" data-m-search-input /></label>
+            <div class="m-search-results" data-m-search-results><p>输入片名或演员姓名。</p></div>
+          </div>
+
+          <!-- SIMPLE COLLECTIONS / PROFILE -->
+          <section class="m-simple" data-m-simple hidden>
+            <header><button class="m-simple-back" data-close-m-simple aria-label="返回">←</button><span class="m-logo">v<span>×</span></span><h1 data-m-simple-title>收藏</h1></header>
+            <div data-m-simple-body></div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <script src="scripts/data.js"></script>
+    <script src="scripts/mobile.js"></script>
+  </body>
+</html>

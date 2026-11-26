@@ -1,0 +1,57 @@
+{
+  "coast": {
+    "localPath": "assets/coast.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  },
+  "city": {
+    "localPath": "assets/city.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  },
+  "forest": {
+    "localPath": "assets/forest.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  },
+  "desert": {
+    "localPath": "assets/desert.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  },
+  "mountain": {
+    "localPath": "assets/mountain.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  },
+  "sea": {
+    "localPath": "assets/sea.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  },
+  "summer": {
+    "localPath": "assets/summer.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  },
+  "road": {
+    "localPath": "assets/road.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  },
+  "person1": {
+    "localPath": "assets/person1.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  },
+  "person2": {
+    "localPath": "assets/person2.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  },
+  "person3": {
+    "localPath": "assets/person3.jpg",
+    "sourceUrl": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1000&q=85",
+    "usage": "Fictional design preview only"
+  }
+}

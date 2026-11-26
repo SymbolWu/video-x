@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>video—x · 放映目录 · 设计提案</title>
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/hub.css" />
+  </head>
+  <body class="grain hub-body">
+    <header class="hub-head">
+      <a class="wordmark" href="index.html">video<span>—</span>x <small>The Programme</small></a>
+      <nav aria-label="设计提案导航">
+        <a href="#idea">设计取向</a>
+        <a href="#system">视觉系统</a>
+        <a href="#map">代码映射</a>
+        <a href="#limits">原型边界</a>
+      </nav>
+      <a class="hub-enter" href="web.html">进入观看端 <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main class="hub-main">
+      <section class="hub-hero">
+        <div class="hub-hero-copy">
+          <p class="eyebrow">Design proposal · 2026.11 · 第 47 期</p>
+          <h1>把片库，做成一本<br /><em>可以翻开的<br />放映目录。</em></h1>
+          <p class="hub-lede">
+            不是把现有界面换个颜色，而是重写观看的节奏：让画面先说话，让资料退后半步。
+            观看端是一间暗房，管理端是一张日光下的编目桌，手机则是口袋里的一册放映单。
+          </p>
+          <div class="hub-hero-links">
+            <a class="hub-cta" href="web.html"><span>观看端</span><b aria-hidden="true">→</b></a>
+            <a class="hub-cta" href="admin.html"><span>管理端</span><b aria-hidden="true">→</b></a>
+            <a class="hub-cta" href="mobile.html"><span>移动端</span><b aria-hidden="true">→</b></a>
+          </div>
+          <dl class="hub-facts">
+            <div><dt>Scope</dt><dd>3 clients · 15 screens</dd></div>
+            <div><dt>Basis</dt><dd>existing routes &amp; data fields</dd></div>
+            <div><dt>Build</dt><dd>static HTML / CSS / JS</dd></div>
+          </dl>
+        </div>
+        <figure class="hub-hero-art">
+          <div class="art-frame">
+            <img src="screenshots/web-discover.jpg" alt="观看端发现页预览" />
+            <span class="art-label">01 / DISCOVER</span>
+          </div>
+          <figcaption>
+            <span>Nocturne</span>
+            <p>深色影院主题，宋体标题，黄铜色单一强调。首屏只留一部电影和一次开始。</p>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="client-strip" aria-label="三端入口">
+        <a href="web.html"><span>01 / 观看端</span><b>发现 · 片库 · 详情 · 播放</b><em>Web</em></a>
+        <a href="admin.html"><span>02 / 管理端</span><b>录入 · 资料库 · 编辑 · 系统</b><em>Desktop</em></a>
+        <a href="mobile.html"><span>03 / 移动端</span><b>发现 · 片库 · 详情 · 筛选</b><em>Android</em></a>
+      </section>
+
+      <section class="hub-section clients" id="clients">
+        <header class="hub-section-head">
+          <div><p class="eyebrow">The three rooms · 三端</p><h2>同一套语法，<br />三种光线。</h2></div>
+          <p>观看端负责沉浸，管理端负责判断，手机负责快速回到正在发生的事。它们共享宋体标题、等宽标签、细线与编号，但各自使用适合场景的底色。</p>
+        </header>
+
+        <div class="case-grid">
+          <a class="case case-web" href="web.html">
+            <div class="case-art"><img src="screenshots/web-discover.jpg" alt="观看端发现页" /><span class="case-open">打开观看端 ↗</span></div>
+            <div class="case-copy"><span>01</span><div><h3>观看端</h3><p>全幅剧照、宋体片名、无边框海报墙。把导航收成一行，把空间还给作品。</p></div><em>1440 × 900</em></div>
+          </a>
+
+          <a class="case case-mobile" href="mobile.html">
+            <div class="case-art"><img src="screenshots/mobile-discover.jpg" alt="移动端发现页" /><span class="case-open">打开移动端 ↗</span></div>
+            <div class="case-copy"><span>02</span><div><h3>移动端</h3><p>两列海报、底部四项、上拉筛选。详情由返回栈接管，不出现双底栏。</p></div><em>390 × 844</em></div>
+          </a>
+
+          <a class="case case-admin" href="admin.html">
+            <div class="case-art"><img src="screenshots/admin-intake.jpg" alt="管理端录入工作台" /><span class="case-open">打开管理端 ↗</span></div>
+            <div class="case-copy"><span>03</span><div><h3>管理端</h3><p>日光纸、牛血红、等宽字段。录入队列与核对抽屉在同一视线内，不用来回跳页。</p></div><em>1440 × 900</em></div>
+          </a>
+        </div>
+      </section>
+
+      <section class="hub-section idea" id="idea">
+        <header class="hub-section-head">
+          <div><p class="eyebrow">The idea · 设计取向</p><h2>四条克制的规则。</h2></div>
+          <p>现有实现的问题不是“不好用”，而是每个元素都在争夺注意力：胶囊筛选、圆角卡片、均匀网格、同一套深灰。新版本先做减法，再建立层级。</p>
+        </header>
+        <div class="principle-grid">
+          <article><span>01</span><h3>画面优先</h3><p>海报与剧照不装进卡片，不加圆角，不用统一比例裁切遮住原图。让图片自己形成节奏，文字只做注脚。</p></article>
+          <article><span>02</span><h3>编辑式层级</h3><p>宋体承担片名与章节，等宽字承担日期、编号、规格。大标题与 8px 标签之间故意留出跨度，界面才有呼吸。</p></article>
+          <article><span>03</span><h3>两个光线</h3><p>观看端用近黑与黄铜，管理端用暖纸与牛血红。不是两套品牌，而是同一套排印在白天与夜晚的不同曝光。</p></article>
+          <article><span>04</span><h3>动作靠近内容</h3><p>喜欢、评分、续播、核对都贴着正在看的东西。筛选是抽屉而不是新页面；确认与发布仍然是两个明确动作。</p></article>
+        </div>
+      </section>
+
+      <section class="hub-section system on-paper" id="system">
+        <header class="hub-section-head">
+          <div><p class="eyebrow">Visual system · 视觉系统</p><h2>一枚黄铜，<br />一张日光纸。</h2></div>
+          <p>颜色只承担状态与强调，不承担装饰。字号以 4px 为步进；管理端常用控件 32–36px，移动端触控目标至少 44–48dp。</p>
+        </header>
+
+        <div class="system-grid">
+          <div class="palette-block">
+            <div class="system-label"><span>01</span> Palette / 色板</div>
+            <div class="swatches">
+              <div class="swatch" style="--c:#0b0a09;--fg:#f2ece1"><span>Ink</span><b>#0B0A09</b><small>观看端底色</small></div>
+              <div class="swatch" style="--c:#11100e;--fg:#f2ece1"><span>Ink 02</span><b>#11100E</b><small>面板/播放器</small></div>
+              <div class="swatch" style="--c:#c7a25c;--fg:#0b0a09"><span>Brass</span><b>#C7A25C</b><small>观看端强调</small></div>
+              <div class="swatch" style="--c:#f2ece1;--fg:#1c1814"><span>Ivory</span><b>#F2ECE1</b><small>观看端文字</small></div>
+            </div>
+            <div class="swatches">
+              <div class="swatch" style="--c:#f4efe6;--fg:#1c1814"><span>Paper</span><b>#F4EFE6</b><small>管理端底色</small></div>
+              <div class="swatch" style="--c:#ece5d8;--fg:#1c1814"><span>Paper 02</span><b>#ECE5D8</b><small>侧栏/表头</small></div>
+              <div class="swatch" style="--c:#8e3a2f;--fg:#f4efe6"><span>Oxblood</span><b>#8E3A2F</b><small>管理端强调</small></div>
+              <div class="swatch" style="--c:#5f6d5b;--fg:#f4efe6"><span>Sage</span><b>#5F6D5B</b><small>完成/在线</small></div>
+            </div>
+          </div>
+
+          <div class="type-block">
+            <div class="system-label"><span>02</span> Typography / 字</div>
+            <div class="type-specimen">
+              <p class="type-cn">放映目录</p>
+              <p class="type-en">The Programme</p>
+              <p class="type-note">Songti SC · 标题 / 片名<br />Bodoni 72 / Didot · 拉丁副题<br />SF Mono · 日期、编号、字段</p>
+            </div>
+            <div class="type-scale">
+              <div><b>80</b><span>页面主标题</span></div>
+              <div><b>40</b><span>章节标题</span></div>
+              <div><b>18</b><span>卡片片名</span></div>
+              <div><b>12</b><span>正文</span></div>
+              <div><b>08</b><span>等宽标签</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="system-bottom">
+          <div><span>Spacing</span><p>4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96 / 128</p></div>
+          <div><span>Grid</span><p>观看端 12 栏，海报 5／6 列；管理端 248 侧栏 + 固定内容线；移动端 20px 边距 + 2 列。</p></div>
+          <div><span>Motion</span><p>进入 700–1000ms 缓出；悬停 180ms；播放器与抽屉 480ms。只用位移、透明度与 1.03 倍图片缩放。</p></div>
+        </div>
+      </section>
+
+      <section class="hub-section map" id="map">
+        <header class="hub-section-head">
+          <div><p class="eyebrow">Code to screen · 代码映射</p><h2>不是另起一套产品。<br />是把现有逻辑重新排布。</h2></div>
+          <p>每一屏都能在仓库里找到对应的路由、数据字段与操作状态。原型不新增业务能力，只改变信息的顺序与视觉权重。</p>
+        </header>
+        <div class="map-table">
+          <div class="map-row map-head"><span>现有代码</span><span>对应界面</span><span>设计动作</span></div>
+          <div class="map-row"><span><code>apps/web/src/app/Experience.tsx</code><br />WatchHeader / LibraryToolbar</span><span>观看端 · 片库</span><span>顶部单行导航；分类改成带计数的文字索引；工具栏只留数量、排序、筛选。</span></div>
+          <div class="map-row"><span><code>features/film/FilmDetail.tsx</code></span><span>观看端 · 详情</span><span>全幅剧照 + 浮动海报；简介、剧照、演员、系列按阅读顺序下沉；个人动作贴边。</span></div>
+          <div class="map-row"><span><code>features/playback/Playback.tsx</code><br />ScreeningRoom</span><span>观看端 · 播放</span><span>移除页面容器，只保留标题、时间轴、版本与返回；播放器之外没有第二层导航。</span></div>
+          <div class="map-row"><span><code>apps/admin/src/app/AdminShell.tsx</code></span><span>管理端 · 外壳</span><span>深色粉紫改成日光纸与牛血红；侧栏保留 184→248px 的信息容量，编号分组。</span></div>
+          <div class="map-row"><span><code>features/intake/Intake.tsx</code><br />QueueTable / ReviewCard</span><span>管理端 · 录入</span><span>队列表格与固定核对抽屉并置；完整度用 6 格细条；确认与发布仍分开。</span></div>
+          <div class="map-row"><span><code>features/catalog/CatalogPage.tsx</code></span><span>管理端 · 资料库</span><span>列表作为默认密度，封面缩略图、文件状态与版本仍在同一行；筛选靠边。</span></div>
+          <div class="map-row"><span><code>features/film-editor/FilmWorkspace.tsx</code></span><span>管理端 · 编辑</span><span>分区导航、表单、封面预览与发布检查三栏；保存栏吸底，状态不丢。</span></div>
+          <div class="map-row"><span><code>features/operations/SystemStatus.tsx</code></span><span>管理端 · 系统</span><span>卷容量做成编目卡片；Worker、数据库、工具与恢复状态分成两组信息。</span></div>
+          <div class="map-row"><span><code>apps/android/.../LibraryApp.kt</code><br />FilmDetail / LibraryFilters</span><span>移动端</span><span>底部四项固定；2 列海报；筛选是 88% 高度的底部抽屉；详情隐藏底栏。</span></div>
+        </div>
+      </section>
+
+      <section class="hub-section limits" id="limits">
+        <header class="hub-section-head">
+          <div><p class="eyebrow">Scope · 原型边界</p><h2>这是一份可点的设计稿，<br />不是已经落地的版本。</h2></div>
+          <p>没有启动数据库、没有写入真实媒体盘。所有页面都是静态 HTML/CSS/JS，使用现有设计目录中的影片封面与公开资料。</p>
+        </header>
+        <div class="limit-grid">
+          <article><h3>数据</h3><p>39 部影片、100 位影人、7 个系列来自现有 <code>cinemaCatalog</code> 演示资料。喜欢、评分、续播、草稿、卷容量为界面演示值，不写入数据库。</p></article>
+          <article><h3>已覆盖</h3><p>观看端：发现、片库、收藏、详情、播放。管理端：录入、资料库、编辑、系统状态。移动端：发现、片库、详情、筛选、播放。</p></article>
+          <article><h3>未覆盖</h3><p>真实视频解码、上传、来源抓取、发布事务、Android 原生返回栈与权限。标签、片商、任务、归档等页保留信息架构，未逐屏绘制。</p></article>
+          <article><h3>落地顺序</h3><p>先把 tokens 与字体接入 <code>packages/design-tokens</code>，再做共享按钮/字段；随后观看端外壳、管理端外壳、Android 主题，最后逐页替换。</p></article>
+        </div>
+      </section>
+
+      <section class="hub-end">
+        <p class="eyebrow">Open the prototypes</p>
+        <h2>现在，<br />打开其中一间。</h2>
+        <div class="end-links">
+          <a href="web.html"><span>01</span>观看端 <b>→</b></a>
+          <a href="admin.html"><span>02</span>管理端 <b>→</b></a>
+          <a href="mobile.html"><span>03</span>移动端 <b>→</b></a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="hub-foot">
+      <span class="wordmark">video<span>—</span>x</span>
+      <p>放映目录 / The Programme · 2026.11 · 设计原型</p>
+      <div><a href="README.md">设计说明</a><a href="web.html">观看端</a><a href="admin.html">管理端</a><a href="mobile.html">移动端</a></div>
+    </footer>
+
+    <script src="scripts/hub.js"></script>
+  </body>
+</html>

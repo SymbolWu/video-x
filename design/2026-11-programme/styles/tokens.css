@@ -1,0 +1,73 @@
+/* ============================================================
+   video—x · 放映目录 / The Programme
+   Design tokens · 2026.11
+   One grammar, two lights: cinema (ink) + archive (paper)
+   ============================================================ */
+
+:root {
+  /* — Cinema (viewing) — */
+  --ink: #0b0a09;
+  --ink-2: #11100e;
+  --ink-3: #171512;
+  --ink-4: #211e1a;
+  --ivory: #f2ece1;
+  --ivory-2: #d8cfc0;
+  --ivory-3: #9c9385;
+  --ivory-4: #6f685e;
+  --brass: #c7a25c;
+  --brass-bright: #e3c78f;
+  --brass-dim: rgba(199, 162, 92, 0.18);
+  --dark-line: rgba(242, 236, 225, 0.13);
+  --dark-line-strong: rgba(242, 236, 225, 0.26);
+
+  /* — Archive (management) — */
+  --paper: #f4efe6;
+  --paper-2: #ece5d9;
+  --paper-3: #e2d9ca;
+  --paper-4: #d6cab8;
+  --paper-ink: #1c1814;
+  --paper-ink-2: #3f382f;
+  --paper-muted: #7b7061;
+  --paper-line: #d4c9b8;
+  --paper-line-strong: #b9aa94;
+  --oxblood: #8e3a2f;
+  --oxblood-dark: #6d2b23;
+  --oxblood-soft: rgba(142, 58, 47, 0.09);
+  --sage: #5f6d5b;
+  --amber: #a56c2c;
+
+  /* — Type — */
+  --font-serif: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
+  --font-display: "Bodoni 72", "Didot", "Bodoni 72 Oldstyle", "Times New Roman", var(--font-serif);
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "SF Mono", "Menlo", "Monaco", "IBM Plex Mono", "Courier New", monospace;
+
+  /* — Measures — */
+  --gutter: 48px;
+  --gutter-md: 32px;
+  --gutter-sm: 20px;
+  --head-h: 76px;
+  --rail-w: 248px;
+  --admin-top-h: 58px;
+  --max-w: 1680px;
+  --read-w: 620px;
+
+  /* — Motion — */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --slow: 900ms;
+  --base: 420ms;
+  --fast: 180ms;
+}
+
+@media (max-width: 1100px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+@media (max-width: 720px) {
+  :root {
+    --gutter: 20px;
+    --head-h: 64px;
+  }
+}

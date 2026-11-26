@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>video—x · 放映目录 · 管理端</title>
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/admin.css" />
+  </head>
+  <body class="grain on-paper admin-body">
+    <div class="studio">
+      <aside class="studio-rail">
+        <a class="studio-brand" href="index.html" aria-label="video—x 设计总览">
+          video<span>—</span>x
+          <small>Studio</small>
+        </a>
+        <p class="rail-sub">私人媒体库<br /><span>Private archive · 2026</span></p>
+
+        <nav class="rail-nav" aria-label="管理导航">
+          <section>
+            <p class="rail-group"><span>01</span> 工作区</p>
+            <button data-admin-view="intake" aria-current="page">录入工作台 <b>9</b></button>
+            <button data-admin-view="catalog">影片资料库 <b>40</b></button>
+          </section>
+          <section>
+            <p class="rail-group"><span>02</span> 资料维护</p>
+            <button data-admin-view="people">演员 <b>100</b></button>
+            <button data-admin-view="series">系列 <b>7</b></button>
+            <button data-admin-view="collections">收藏夹 <b>3</b></button>
+            <button data-admin-view="categories">分类 <b>9</b></button>
+            <button data-admin-view="tags">标签</button>
+            <button data-admin-view="organizations">片商</button>
+          </section>
+          <section>
+            <p class="rail-group"><span>03</span> 运行</p>
+            <button data-admin-view="jobs">后台任务</button>
+            <button data-admin-view="settings">系统状态</button>
+            <button data-admin-view="enrich">演员资料补全</button>
+            <button data-admin-view="archive">归档</button>
+          </section>
+        </nav>
+
+        <footer class="rail-foot">
+          <div class="rail-vol">
+            <span>媒体卷 MEDIA-01</span>
+            <b>3.4 / 4.0 TB</b>
+            <i><em style="width: 85%"></em></i>
+          </div>
+          <div class="rail-user"><span>VX</span><p>个人媒体库<small>本地管理 · 已连接</small></p></div>
+        </footer>
+      </aside>
+
+      <div class="studio-main">
+        <header class="studio-top">
+          <p class="crumb"><span>管理端</span><i>/</i><b data-crumb>录入工作台</b></p>
+          <div class="top-actions">
+            <button class="cmd" data-command><span>检索资料</span><kbd>⌘ K</kbd></button>
+            <a class="watch-link" href="web.html">打开观看端 <span aria-hidden="true">↗</span></a>
+            <span class="env"><i></i>本地 · 已连接</span>
+            <button class="exit" data-toast="退出登录在正式实现中处理">退出</button>
+          </div>
+        </header>
+
+        <main class="studio-content">
+          <!-- ============================ INTAKE ============================ -->
+          <section class="admin-view" data-admin-view="intake">
+            <header class="admin-page-head">
+              <div>
+                <p class="eyebrow">Ingest · 01</p>
+                <h1>录入工作台</h1>
+                <p class="lede">核对下载目录里的文件，补齐资料，再手动发布到片库。抓取结果只作为候选，不替你作决定。</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn-outline" data-toast="下载目录选择沿用现有系统状态页">手动新建</button>
+                <button class="btn-dark" data-toast="文件选择器在正式实现中打开"><span>选择文件</span><span class="btn-arrow" aria-hidden="true">↗</span></button>
+              </div>
+            </header>
+
+            <div class="metric-row">
+              <div class="metric"><span class="metric-label">待核对 <i>/ Pending</i></span><b>05</b><small>其中 2 条为分集线索</small></div>
+              <div class="metric"><span class="metric-label">可确认 <i>/ Ready</i></span><b>01</b><small>降临 · 资料齐全</small></div>
+              <div class="metric"><span class="metric-label">发布阻断 <i>/ Blocked</i></span><b class="is-alert">01</b><small>抓取失败 · 缺简介</small></div>
+              <div class="metric"><span class="metric-label">本月入藏 <i>/ Added</i></span><b>12</b><small>较上月 +5</small></div>
+            </div>
+
+            <div class="intake-grid">
+              <section class="queue-panel" aria-label="录入队列">
+                <div class="queue-top">
+                  <nav class="queue-tabs" aria-label="队列状态">
+                    <button aria-pressed="true" data-queue-tab="all">全部 <b>9</b></button>
+                    <button aria-pressed="false" data-queue-tab="review">待核对 <b>5</b></button>
+                    <button aria-pressed="false" data-queue-tab="ready">已确认 <b>1</b></button>
+                    <button aria-pressed="false" data-queue-tab="published">已发布 <b>2</b></button>
+                    <button aria-pressed="false" data-queue-tab="blocked">阻断 <b>1</b></button>
+                  </nav>
+                  <label class="queue-search">
+                    <span aria-hidden="true">⌕</span>
+                    <input type="search" placeholder="搜索影片、演员或文件" data-queue-search />
+                  </label>
+                </div>
+                <div class="queue-hint">
+                  <span class="hint-mark">i</span>
+                  勾选同一作品的上下集，可创建分集容器；容器本身不绑定文件。
+                  <button data-toast="分集容器创建在正式实现中打开">创建分集容器 →</button>
+                </div>
+                <div class="queue-table-wrap">
+                  <table class="queue-table">
+                    <thead>
+                      <tr>
+                        <th class="check"><input type="checkbox" aria-label="选择当前页" /></th>
+                        <th>作品 / 文件</th>
+                        <th>分类 · 日期</th>
+                        <th>资料完整度</th>
+                        <th>状态</th>
+                        <th class="row-action">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody data-queue-body></tbody>
+                  </table>
+                </div>
+                <footer class="queue-foot">
+                  <span>显示 9 / 12 条 · 第 1 页</span>
+                  <div><button disabled aria-label="上一页">←</button><button aria-label="下一页">→</button></div>
+                </footer>
+              </section>
+
+              <aside class="review-panel" data-review-panel aria-label="核对选中草稿"></aside>
+            </div>
+          </section>
+
+          <!-- ============================ CATALOG ============================ -->
+          <section class="admin-view" data-admin-view="catalog" hidden>
+            <header class="admin-page-head">
+              <div>
+                <p class="eyebrow">Catalog · 02</p>
+                <h1>影片资料库</h1>
+                <p class="lede">已发布的正式资料与文件状态。列表用于扫描与校正，不承担发布决定。</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn-outline" data-toast="批量操作沿用现有选择范围">批量操作</button>
+                <button class="btn-dark" data-admin-view="editor"><span>编辑沙丘2</span><span class="btn-arrow" aria-hidden="true">→</span></button>
+              </div>
+            </header>
+
+            <div class="catalog-metrics">
+              <span><b>40</b> 部正式影片</span>
+              <span><b>02</b> 待检查文件</span>
+              <span><b>12</b> 个 4K 版本</span>
+              <span><b>03</b> 个分集容器</span>
+              <span class="metric-note">最近一次扫描：今天 09:42</span>
+            </div>
+
+            <div class="catalog-toolbar">
+              <label class="catalog-search"><span aria-hidden="true">⌕</span><input placeholder="搜索片名、编号或演员" data-catalog-search /></label>
+              <div class="catalog-filters">
+                <button class="filter-pill is-on" data-toast="分类筛选在正式实现中打开">全部分类 <span>▾</span></button>
+                <button class="filter-pill" data-toast="文件状态筛选在正式实现中打开">文件状态 <span>▾</span></button>
+                <button class="filter-pill" data-toast="排序面板在正式实现中打开">添加时间 <span>↓</span></button>
+              </div>
+              <div class="view-switch" role="group" aria-label="显示方式">
+                <button aria-pressed="false" data-catalog-view="poster">海报</button>
+                <button aria-pressed="false" data-catalog-view="backdrop">横图</button>
+                <button aria-pressed="true" data-catalog-view="table">列表</button>
+              </div>
+            </div>
+
+            <div class="catalog-table-wrap">
+              <table class="catalog-table">
+                <thead>
+                  <tr>
+                    <th class="check"><input type="checkbox" aria-label="选择当前页" /></th>
+                    <th>作品 / 编号</th>
+                    <th>分类</th>
+                    <th>年份</th>
+                    <th>主演</th>
+                    <th>版本</th>
+                    <th>文件</th>
+                    <th class="row-action">操作</th>
+                  </tr>
+                </thead>
+                <tbody data-catalog-body></tbody>
+              </table>
+            </div>
+            <footer class="catalog-foot">
+              <span>40 项资料 · 第 1 / 2 页</span>
+              <div><button disabled>← 上一页</button><button>下一页 →</button></div>
+            </footer>
+          </section>
+
+          <!-- ============================ EDITOR ============================ -->
+          <section class="admin-view" data-admin-view="editor" hidden>
+            <div class="editor-topline">
+              <button class="back-link" data-admin-view="catalog"><span aria-hidden="true">←</span> 返回资料库</button>
+              <span class="editor-state"><i></i>已发布 · revision 18</span>
+            </div>
+
+            <header class="editor-head">
+              <div class="editor-cover"><img src="assets/cinema/693134-poster.jpg" alt="" /></div>
+              <div class="editor-title">
+                <p class="eyebrow">Editing · 03</p>
+                <h1>沙丘2</h1>
+                <p>Dune: Part Two <i>/</i> VX-2024-3134 <i>/</i> 科幻</p>
+              </div>
+              <div class="editor-actions">
+                <button class="btn-outline" data-toast="预览在观看端打开">在观看端预览 ↗</button>
+                <button class="btn-dark" data-toast="已保存本次演示修改"><span>保存资料</span><span class="btn-arrow">→</span></button>
+              </div>
+            </header>
+
+            <div class="editor-grid">
+              <nav class="editor-sections" aria-label="资料分区">
+                <p class="rail-group"><span>01</span> 资料</p>
+                <button aria-current="page">基本资料</button>
+                <button data-toast="封面分区沿用同一表单骨架">封面</button>
+                <button data-toast="剧照分区沿用同一表单骨架">剧照</button>
+                <button data-toast="演职员分区沿用同一表单骨架">演职员</button>
+                <p class="rail-group"><span>02</span> 关联</p>
+                <button data-toast="归类与关联沿用同一表单骨架">归类与关联</button>
+                <button data-toast="分集分区沿用同一表单骨架">分集</button>
+                <p class="rail-group"><span>03</span> 文件</p>
+                <button data-toast="版本与文件沿用同一表单骨架">版本与文件</button>
+                <button data-toast="来源核对沿用同一表单骨架">来源核对</button>
+              </nav>
+
+              <div class="editor-form">
+                <section>
+                  <div class="form-section-head"><h2>基本资料</h2><span>Basic record / 01</span></div>
+                  <div class="field-grid">
+                    <label class="field field-wide"><span>作品标题 <i>*</i></span><input value="沙丘2" data-toast="标题已是最新" /></label>
+                    <label class="field"><span>主编号 / 番号</span><input value="VX-2024-3134" /></label>
+                    <label class="field"><span>发行日期 <i>*</i></span><input value="2024-03-08" /></label>
+                    <label class="field"><span>中文资料标记</span><select><option selected>未标注</option><option>支持</option><option>不支持</option></select></label>
+                    <label class="field"><span>主分类</span><select><option selected>科幻</option><option>动画</option><option>动作</option></select></label>
+                  </div>
+                  <label class="field field-area"><span>简介</span><textarea rows="4">保罗加入厄拉科斯的弗雷曼人，在复仇与未来之间作出选择。</textarea><small class="field-note">来源候选不会自动覆盖这里的手工内容。</small></label>
+                  <label class="field field-area"><span>我的资料备注</span><textarea rows="2">4K 版来自主媒体卷；保留 1080p 原版以便移动端直接播放。</textarea></label>
+                </section>
+
+                <section>
+                  <div class="form-section-head"><h2>归类与关联</h2><span>Classification / 02</span></div>
+                  <div class="relation-block">
+                    <span class="relation-label">系列</span>
+                    <div class="relation-chips"><span>沙丘 <button aria-label="移除沙丘">×</button></span><button class="add-chip" data-toast="系列选择器在正式实现中打开">+ 关联系列</button></div>
+                  </div>
+                  <div class="relation-block">
+                    <span class="relation-label">标签</span>
+                    <div class="relation-chips"><span>史诗 <button aria-label="移除史诗">×</button></span><span>沙漠 <button aria-label="移除沙漠">×</button></span><button class="add-chip" data-toast="标签选择器在正式实现中打开">+ 添加标签</button></div>
+                  </div>
+                  <div class="relation-block">
+                    <span class="relation-label">片商</span>
+                    <div class="relation-chips"><span>Legendary Pictures <button aria-label="移除片商">×</button></span><button class="add-chip" data-toast="片商选择器在正式实现中打开">+ 关联片商</button></div>
+                  </div>
+                </section>
+              </div>
+
+              <aside class="editor-preview">
+                <div class="preview-card">
+                  <div class="preview-head"><span>封面预览</span><small>Poster</small></div>
+                  <div class="preview-poster"><img src="assets/cinema/693134-poster.jpg" alt="沙丘2 海报" /></div>
+                  <div class="preview-backdrop"><img src="assets/cinema/693134-backdrop.jpg" alt="" /></div>
+                  <div class="preview-meta"><span>竖版 2:3</span><span>横版 16:9</span><button data-toast="图片选择器在正式实现中打开">更换</button></div>
+                </div>
+                <div class="check-card">
+                  <div class="preview-head"><span>发布检查</span><small>Ready</small></div>
+                  <ul>
+                    <li class="ok"><span>标题</span><b>已填写</b></li>
+                    <li class="ok"><span>完整发行日期</span><b>2024-03-08</b></li>
+                    <li class="ok"><span>主分类</span><b>科幻</b></li>
+                    <li class="ok"><span>播放文件</span><b>2 个版本</b></li>
+                    <li class="warn"><span>中文资料</span><b>未标注</b></li>
+                  </ul>
+                  <button class="check-action" data-toast="来源对照在正式实现中打开">查看来源对照 →</button>
+                </div>
+              </aside>
+            </div>
+
+            <footer class="editor-savebar">
+              <p><i></i>暂无未保存修改</p>
+              <div><button class="btn-outline" data-toast="已放弃本次演示修改">放弃修改</button><button class="btn-dark" data-toast="已保存本次演示修改">保存资料</button></div>
+            </footer>
+          </section>
+
+          <!-- ============================ SETTINGS ============================ -->
+          <section class="admin-view" data-admin-view="settings" hidden>
+            <header class="admin-page-head">
+              <div>
+                <p class="eyebrow">Operations · 04</p>
+                <h1>系统状态</h1>
+                <p class="lede">卷容量、Worker 心跳、数据库与工具版本。所有信息来自本机只读查询与最近一次探测。</p>
+              </div>
+              <div class="page-actions"><span class="health"><i></i>全部正常</span><button class="btn-outline" data-toast="重新检查在正式实现中打开">重新检查</button></div>
+            </header>
+
+            <div class="status-grid">
+              <article class="volume-card"><div class="card-head"><span>媒体卷 / MEDIA-01</span><b>可写</b></div><h2>3.4 <small>/ 4.0 TB</small></h2><div class="bar"><i style="width:85%"></i></div><p><span>/Volumes/Media-01</span><span>214 部影片</span></p></article>
+              <article class="volume-card"><div class="card-head"><span>归档卷 / ARCHIVE-02</span><b>可写</b></div><h2>2.1 <small>/ 8.0 TB</small></h2><div class="bar"><i style="width:26%"></i></div><p><span>/Volumes/Archive-02</span><span>86 部影片</span></p></article>
+              <article class="health-card"><div class="card-head"><span>Worker / 心跳</span><b class="ok">运行中</b></div><h2>12 <small>秒前</small></h2><p><span>版本 0.1.0</span><span>队列 0</span></p><div class="pulse"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+              <article class="health-card"><div class="card-head"><span>数据库 / PostgreSQL</span><b class="ok">已连接</b></div><h2>16 <small>· 12 ms</small></h2><p><span>schema 31</span><span>最近迁移 11.24</span></p></article>
+            </div>
+
+            <div class="ops-grid">
+              <section class="ops-panel">
+                <div class="panel-head"><h2>服务与工具</h2><span>Runtime</span></div>
+                <dl class="ops-list">
+                  <div><dt>API</dt><dd>127.0.0.1:5120</dd><b class="ok">正常</b></div>
+                  <div><dt>观看端</dt><dd>127.0.0.1:5180</dd><b class="ok">正常</b></div>
+                  <div><dt>PostgreSQL</dt><dd>16.4 · 本地卷</dd><b class="ok">正常</b></div>
+                  <div><dt>ffprobe</dt><dd>7.1 · PATH</dd><b class="ok">正常</b></div>
+                  <div><dt>媒体根标识</dt><dd>.video-x-root · 已验证</dd><b class="ok">正常</b></div>
+                </dl>
+              </section>
+              <section class="ops-panel">
+                <div class="panel-head"><h2>恢复与访问</h2><span>Access</span></div>
+                <dl class="ops-list">
+                  <div><dt>登录恢复</dt><dd>单账号 · 本机</dd><b class="warn">待验证</b></div>
+                  <div><dt>容器媒体挂载</dt><dd>只读 · 已挂载</dd><b class="ok">正常</b></div>
+                  <div><dt>外网服务</dt><dd>仅资料抓取</dd><b class="muted">未启用</b></div>
+                  <div><dt>最近备份</dt><dd>2026-11-25 23:00</dd><b class="ok">完成</b></div>
+                </dl>
+              </section>
+            </div>
+          </section>
+
+          <!-- ============================ PLACEHOLDER ============================ -->
+          <section class="admin-view" data-admin-view="entity" hidden>
+            <header class="admin-page-head">
+              <div>
+                <p class="eyebrow">Archive · 05</p>
+                <h1 data-entity-title>演员</h1>
+                <p class="lede">同一套资料维护骨架：列表用于扫描，详情用右侧检查面板承载，批量动作只在明确选中后出现。</p>
+              </div>
+              <div class="page-actions"><button class="btn-dark" data-toast="新增资料在正式实现中打开"><span>新增资料</span><span class="btn-arrow">+</span></button></div>
+            </header>
+            <div class="entity-preview">
+              <p class="mono">This screen shares the catalog grammar</p>
+              <h2>与影片资料库同构</h2>
+              <p>演员、系列、分类、标签与片商沿用同一套列表／详情／批量操作布局；本轮原型重点呈现录入、片库、编辑与系统状态。</p>
+              <button class="btn-outline" data-admin-view="catalog">查看影片资料库 →</button>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div class="admin-toast" data-admin-toast role="status" aria-live="polite"></div>
+    <script src="scripts/data.js"></script>
+    <script src="scripts/admin.js"></script>
+  </body>
+</html>
