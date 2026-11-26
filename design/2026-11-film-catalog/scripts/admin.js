@@ -629,8 +629,8 @@
     return [
       '<section class="form-section"><div class="form-head"><h2>版本与文件</h2><span>Editions / Files</span></div>',
       '<div class="edition-table">',
-      f.editions.map((e, i) => '<div class="edition-row"><span class="edition-index">' + (i + 1) + '</span><div><strong>' + esc(e.name) + (i === 0 ? ' <em>默认</em>' : '') + '</strong><small>' + esc(e.resolution) + ' · ' + esc(e.codec) + ' · ' + esc(e.size) + ' · ' + esc(e.duration) + '</small><small class="mono-line">/Volumes/Media-01/' + esc(f.title) + '/Dune.Part.Two.2024.2160p.mkv</small></div><span class="file-state ok"><i></i>记录正常</span><button class="inline-link" data-act="toast" data-id="文件选择器在正式实现中打开">修复文件</button></div>').join(''),
-      '</div><div class="edition-actions"><button class="btn-outline" data-act="toast" data-id="添加版本在正式实现中打开">＋ 添加版本</button><button class="btn-outline" data-act="toast" data-id="重新探测在正式实现中打开">重新探测</button></div></section>'
+      f.editions.map((e, i) => '<div class="edition-row"><span class="edition-index">' + (i + 1) + '</span><div><strong>' + esc(e.name) + (i === 0 ? ' <em>默认</em>' : '') + '</strong><small>' + esc(e.resolution) + ' · ' + esc(e.codec) + ' · ' + esc(e.size) + ' · ' + esc(e.duration) + '</small><small class="mono-line">' + esc(e.file || "/Volumes/Media-01/" + f.title + "/Dune.Part.Two.2024.2160p.mkv") + '</small></div><span class="file-state ok"><i></i>记录正常</span><button class="inline-link" data-act="pick-file" data-index="' + i + '">修复文件</button></div>').join(''),
+      '</div><div class="edition-actions"><button class="btn-outline" data-act="add-edition">＋ 添加版本</button><button class="btn-outline" data-act="reprobe">重新探测</button></div></section>'
     ].join('');
   }
 
@@ -684,6 +684,23 @@
 
   function overlayForm(kind, id) {
     const picked = D.drafts.filter((d) => state.selected.has(d.id));
+    if (kind === "files") {
+      const film = VX.films.find((x) => x.id === id);
+      return {
+        title: "修复文件 · " + (film ? film.title : ""),
+        body: '<p class="drawer-note" style="margin-top:0">从已挂载媒体卷选择替代文件；正式实现会先试播并核对时长。</p><div class="collection-picker">' + [
+          "/Volumes/Media-01/Dune.Part.Two.2024.2160p.mkv",
+          "/Volumes/Media-01/Dune.Part.Two.2024.1080p.mkv",
+          "/Volumes/Archive-02/Dune.Part.Two.2024.2160p.remux.mkv"
+        ].map((path) => '<label><input type="radio" name="file" data-of="file" value="' + esc(path) + '" /><span><b>' + esc(path.split("/").pop()) + '</b><small>' + esc(path) + '</small></span></label>').join('') + '</div>'
+      };
+    }
+    if (kind === "new-edition") {
+      return {
+        title: "添加版本",
+        body: '<div class="field-grid"><label class="field"><span>版本名称</span><input data-of="editionName" placeholder="例如：4K 修复" /></label><label class="field"><span>分辨率</span><select data-of="resolution"><option>2160p</option><option>1080p</option><option>720p</option></select></label><label class="field"><span>编码</span><input data-of="codec" value="H.265" /></label><label class="field"><span>大小</span><input data-of="size" placeholder="例如：58.4 GB" /></label><label class="field"><span>时长</span><input data-of="duration" placeholder="2:46:00" /></label></div><p class="drawer-note">版本创建后还需要绑定文件；演示中只记录版本元数据。</p>'
+      };
+    }
     if (kind === "logout") {
       return {
         title: "退出登录",
@@ -988,6 +1005,30 @@
       return toast("请填写容器名称");
     }
     const picked = D.drafts.filter((d) => state.selected.has(d.id));
+    if (type === "files") {
+      const film = VX.films.find((x) => x.id === id);
+      const chosen = $('[data-of="file"]:checked');
+      if (film && chosen && film.editions[state.overlay.extra]) film.editions[state.overlay.extra].file = chosen.value;
+      state.overlay = null;
+      render();
+      return toast("文件绑定已更新");
+    }
+    if (type === "new-edition") {
+      const film = VX.films.find((x) => x.id === id);
+      if (film) {
+        film.editions.push({
+          name: v.editionName || "新版本",
+          resolution: v.resolution || "1080p",
+          codec: v.codec || "H.264",
+          size: v.size || "—",
+          duration: v.duration || "—",
+          parts: 1
+        });
+      }
+      state.overlay = null;
+      render();
+      return toast("已添加版本");
+    }
     if (type === "portrait") {
       const person = D.people.find((p) => p.id === id);
       const chosen = $('[data-of="image"]:checked');
@@ -1396,6 +1437,9 @@
     }
     if (action === "jobs-refresh" || action === "settings-refresh") return toast("已重新检查（演示）");
     if (action === "pick-artwork") { return openOverlay("artwork", state.editorId, act.dataset.slot); }
+    if (action === "pick-file") { return openOverlay("files", state.editorId, Number(act.dataset.index)); }
+    if (action === "add-edition") { return openOverlay("new-edition", state.editorId); }
+    if (action === "reprobe") { return toast("重新探测完成 · 文件记录正常"); }
     if (action === "pick-portrait") { return openOverlay("portrait", id); }
     if (action === "pick-cover") { return openOverlay("cover", id); }
     if (action === "add-director") { return openOverlay("director", state.editorId); }
