@@ -274,7 +274,7 @@
           </div>
         </div>
       </div>
-      <div class="detail-personal-bar" style="--personal-poster:url('${new URL(f.backdrop, location.href).href}')">
+      <div class="detail-personal-bar">
         <div class="detail-tools">
           <button data-detail-fav aria-pressed="${fav}">${icon(fav ? 'heart-fill' : 'heart', 16)} ${fav ? '已喜欢' : '喜欢'}</button>
           <button data-detail-collection>${icon('folder', 16)} 收藏夹</button>
