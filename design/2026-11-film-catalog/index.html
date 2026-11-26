@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>video—x · 片库 · 设计说明 v3</title>
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/hub.css" />
+  </head>
+  <body class="grain hub-body">
+    <header class="hub-head">
+      <a class="wordmark" href="index.html">video<span>—</span>x <small>片库设计</small></a>
+      <nav aria-label="设计说明导航">
+        <a href="#clients">三端</a>
+        <a href="#modules">模块</a>
+        <a href="#system">视觉</a>
+        <a href="#scope">边界</a>
+      </nav>
+      <a class="hub-enter" href="web.html">打开观看端 <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main class="hub-main">
+      <section class="hub-hero">
+        <div class="hub-hero-copy">
+          <p class="eyebrow">v3 · 2026.11 · 基于 feat/film-catalog 代码</p>
+          <h1>先把片库，<br /><em>做得像片库。</em></h1>
+          <p class="hub-lede">
+            这一版不再从旧设计稿推导交互。入口、字段、状态和操作都按现有
+            <strong>apps/web</strong>、<strong>apps/admin</strong> 与
+            <strong>apps/android</strong> 重新映射：没有手动新建，没有侧栏常驻表单，
+            也没有宋体。
+          </p>
+          <div class="hub-hero-links">
+            <a class="hub-cta" href="web.html"><span>观看端</span><b aria-hidden="true">→</b></a>
+            <a class="hub-cta" href="admin.html"><span>管理端</span><b aria-hidden="true">→</b></a>
+            <a class="hub-cta" href="mobile.html"><span>移动端</span><b aria-hidden="true">→</b></a>
+          </div>
+          <dl class="hub-facts">
+            <div><dt>Admin</dt><dd>13 个路由视图</dd></div>
+            <div><dt>Web</dt><dd>6 个观看页面</dd></div>
+            <div><dt>Mobile</dt><dd>7 个一级 / 播放页面</dd></div>
+          </dl>
+        </div>
+        <figure class="hub-hero-art">
+          <div class="art-frame">
+            <img src="screenshots/web-library.jpg" alt="观看端片库预览" />
+            <span class="art-label">片库 / 7 列 / 无宋体</span>
+          </div>
+          <figcaption><span>Density</span><p>一屏 14 部影片，片名和文件信息同时可读；页面不再是展示型海报墙。</p></figcaption>
+        </figure>
+      </section>
+
+      <section class="client-strip" aria-label="三端入口">
+        <a href="web.html"><span>01 / 观看端</span><b>发现 · 片库 · 收藏 · 我的 · 详情 · 播放</b><em>Web</em></a>
+        <a href="admin.html"><span>02 / 管理端</span><b>录入 · 影片 · 演员 · 系列 · 分类 · 标签 · 片商 · 收藏夹 · 任务 · 系统</b><em>Desktop</em></a>
+        <a href="mobile.html"><span>03 / 移动端</span><b>发现 · 片库 · 收藏 · 我的 · 详情 · 筛选 · 播放</b><em>Android</em></a>
+      </section>
+
+      <section class="hub-section" id="clients">
+        <header class="hub-section-head">
+          <div><p class="eyebrow">Three clients</p><h2>三端，三种密度。</h2></div>
+          <p>观看端让作品占主导；管理端让状态、字段和操作同屏；移动端把一级页面与底部导航固定下来，不再用浮层冒充页面。</p>
+        </header>
+        <div class="case-grid">
+          <a class="case case-web" href="web.html">
+            <div class="case-art"><img src="screenshots/web-library.jpg" alt="观看端片库" /><span class="case-open">打开观看端 ↗</span></div>
+            <div class="case-copy"><span>01</span><div><h3>观看端</h3><p>7 列片库、480px 首屏、继续观看与分类索引。收藏与我的都是一级页面。</p></div><em>1440 × 900</em></div>
+          </a>
+          <a class="case case-mobile" href="mobile.html">
+            <div class="case-art"><img src="screenshots/mobile-collections.jpg" alt="移动端收藏" /><span class="case-open">打开移动端 ↗</span></div>
+            <div class="case-copy"><span>02</span><div><h3>移动端</h3><p>收藏与我的是一级页面：有页头、有底部 Tab；影片 3 列，系列 2 列。</p></div><em>390 × 844</em></div>
+          </a>
+          <a class="case case-admin" href="admin.html">
+            <div class="case-art"><img src="screenshots/admin-intake.jpg" alt="管理端录入工作台" /><span class="case-open">打开管理端 ↗</span></div>
+            <div class="case-copy"><span>03</span><div><h3>管理端</h3><p>录入队列全宽；操作进入右侧抽屉。页头与统计条在录入和影片库中完全同构。</p></div><em>1440 × 900</em></div>
+          </a>
+        </div>
+      </section>
+
+      <section class="hub-section" id="modules">
+        <header class="hub-section-head">
+          <div><p class="eyebrow">Every module</p><h2>每个模块，都有一页。</h2></div>
+          <p>管理端不再只画录入和影片库。以下每个路由都能在原型中打开；没有“手动新建”，只有当前实现已有的动作。</p>
+        </header>
+        <div class="module-table">
+          <div class="module-row module-head"><span>模块</span><span>现有实现</span><span>原型入口</span></div>
+          <div class="module-row"><span>录入工作台</span><span>Intake / QueueTable / ReviewPublishDialog</span><a href="admin.html?view=intake">打开 →</a></div>
+          <div class="module-row"><span>影片资料库</span><span>CatalogPage / CatalogTable</span><a href="admin.html?view=media">打开 →</a></div>
+          <div class="module-row"><span>演员</span><span>RecordGrid / RecordDetail / EntityEditor</span><a href="admin.html?view=people">打开 →</a></div>
+          <div class="module-row"><span>系列</span><span>RecordGrid / RecordDetail / EntityEditor</span><a href="admin.html?view=franchises">打开 →</a></div>
+          <div class="module-row"><span>收藏夹</span><span>CollectionsPage</span><a href="admin.html?view=collections">打开 →</a></div>
+          <div class="module-row"><span>分类</span><span>CatalogPage categories + visibility</span><a href="admin.html?view=categories">打开 →</a></div>
+          <div class="module-row"><span>标签</span><span>DictionaryPage</span><a href="admin.html?view=tags">打开 →</a></div>
+          <div class="module-row"><span>片商</span><span>DictionaryPage</span><a href="admin.html?view=organizations">打开 →</a></div>
+          <div class="module-row"><span>后台任务</span><span>JobsPage</span><a href="admin.html?view=jobs">打开 →</a></div>
+          <div class="module-row"><span>系统状态</span><span>SystemStatus</span><a href="admin.html?view=settings">打开 →</a></div>
+          <div class="module-row"><span>演员资料补全</span><span>ActorEnrichment</span><a href="admin.html?view=enrich">打开 →</a></div>
+          <div class="module-row"><span>归档</span><span>ArchivedRecords</span><a href="admin.html?view=archive">打开 →</a></div>
+          <div class="module-row"><span>影片编辑</span><span>PublishedWorkspace / FilmWorkspace</span><a href="admin.html?view=editor">打开 →</a></div>
+        </div>
+      </section>
+
+      <section class="hub-section system on-paper" id="system">
+        <header class="hub-section-head">
+          <div><p class="eyebrow">Sans only</p><h2>没有宋体。<br />也没有展示型页头。</h2></div>
+          <p>标题使用 Avenir Next / PingFang SC；字段、文件与状态使用等宽字。管理端页头只保留标题、说明和操作，统计条固定 50px。</p>
+        </header>
+        <div class="system-grid">
+          <div>
+            <div class="system-label"><span>01</span> Palette</div>
+            <div class="swatches">
+              <div class="swatch" style="--c:#0a0a0b;--fg:#f1efea"><span>Ink</span><b>#0A0A0B</b><small>观看端</small></div>
+              <div class="swatch" style="--c:#c7a25c;--fg:#0a0a0b"><span>Brass</span><b>#C7A25C</b><small>观看端强调</small></div>
+              <div class="swatch" style="--c:#f3f1ec;--fg:#1d1c19"><span>Paper</span><b>#F3F1EC</b><small>管理端</small></div>
+              <div class="swatch" style="--c:#8d3b31;--fg:#f3f1ec"><span>Oxblood</span><b>#8D3B31</b><small>管理端强调</small></div>
+            </div>
+            <div class="system-bottom" style="grid-template-columns:1fr"><div><span>Density</span><p>观看端 7 列海报；移动端 3 列影片 / 2 列系列；管理端表格 66–72px 行高，录入首屏 7 条草稿。</p></div></div>
+          </div>
+          <div class="type-block">
+            <div class="system-label"><span>02</span> Type</div>
+            <div class="type-specimen">
+              <p class="type-cn" style="font-family:var(--font-display);font-weight:650;letter-spacing:-0.045em">片库目录</p>
+              <p class="type-en" style="font-style:normal">Dune: Part Two</p>
+              <p class="type-note">Avenir Next / PingFang SC · 标题<br />SF Mono · 日期、编号、文件<br />不使用 Songti / STSong</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="hub-section" id="scope">
+        <header class="hub-section-head">
+          <div><p class="eyebrow">Scope</p><h2>静态原型，按现有字段演示。</h2></div>
+          <p>没有启动数据库，没有写入真实媒体盘。影片资料来自现有演示目录；草稿、任务、卷容量为界面演示值。</p>
+        </header>
+        <div class="limit-grid">
+          <article><h3>管理端</h3><p>录入队列全宽；核对、发布、整理目标、分集容器等操作进入右侧抽屉。完整编辑仍是独立页面。没有“手动新建”。</p></article>
+          <article><h3>观看端</h3><p>发现、片库、收藏、我的、详情、播放均为一级页面；头像进入我的，收藏夹与喜欢分成两个区块。</p></article>
+          <article><h3>移动端</h3><p>收藏与我的都有页头和底部 Tab，不再用没有导航的浮层；分类按钮 44px 高；系列与收藏夹 2 列。</p></article>
+          <article><h3>未覆盖</h3><p>真实解码、上传、发布事务、Android 原生返回栈与权限。需要接入时按现有 API 契约逐页替换。</p></article>
+        </div>
+      </section>
+
+      <section class="hub-end">
+        <p class="eyebrow">Open</p>
+        <h2>从片库开始。</h2>
+        <div class="end-links">
+          <a href="web.html"><span>01</span>观看端 <b>→</b></a>
+          <a href="admin.html"><span>02</span>管理端 <b>→</b></a>
+          <a href="mobile.html"><span>03</span>移动端 <b>→</b></a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="hub-foot">
+      <span class="wordmark">video<span>—</span>x</span>
+      <p>片库 / v3 · 基于 feat/film-catalog 代码 · 2026.11</p>
+      <div><a href="README.md">设计说明</a><a href="web.html">观看端</a><a href="admin.html">管理端</a><a href="mobile.html">移动端</a></div>
+    </footer>
+  </body>
+</html>

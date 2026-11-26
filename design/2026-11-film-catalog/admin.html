@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>video—x · 片库 · 管理端</title>
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/admin.css" />
+  </head>
+  <body class="grain on-paper admin-body">
+    <div class="studio">
+      <aside class="studio-rail">
+        <a class="studio-brand" href="index.html" aria-label="video—x 设计总览">
+          video<span>—</span>x <small>管理</small>
+        </a>
+        <p class="rail-sub">私人媒体库<br /><span>VX · LOCAL</span></p>
+
+        <nav class="rail-nav" aria-label="管理导航" data-rail></nav>
+
+        <footer class="rail-foot">
+          <div class="rail-vol">
+            <span>媒体卷 MEDIA-01</span>
+            <b>3.4 / 4.0 TB</b>
+            <i><em style="width: 85%"></em></i>
+          </div>
+          <div class="rail-user"><span>VX</span><p>个人媒体库<small>本地 · 已连接</small></p></div>
+        </footer>
+      </aside>
+
+      <div class="studio-main">
+        <header class="studio-top">
+          <p class="crumb"><span>管理端</span><i>/</i><b data-crumb>录入工作台</b></p>
+          <div class="top-actions">
+            <label class="global-search"><span aria-hidden="true">⌕</span><input data-global-search placeholder="检索资料" aria-label="检索资料" /><kbd>⌘ K</kbd></label>
+            <a class="watch-link" href="web.html">观看端 <span aria-hidden="true">↗</span></a>
+            <span class="env"><i></i>本地 · 已连接</span>
+            <button class="exit" data-toast="退出登录在正式实现中处理">退出</button>
+          </div>
+        </header>
+
+        <main class="studio-content" data-admin-view></main>
+      </div>
+    </div>
+
+    <div class="overlay-root" data-overlay></div>
+    <div class="admin-toast" data-admin-toast role="status" aria-live="polite"></div>
+
+    <script src="scripts/icons.js"></script>
+    <script src="scripts/data.js"></script>
+    <script src="scripts/admin-data.js"></script>
+    <script src="scripts/admin.js"></script>
+  </body>
+</html>

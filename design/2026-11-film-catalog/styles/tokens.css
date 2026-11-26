@@ -1,0 +1,68 @@
+/* ============================================================
+   video—x · 片库
+   Code-driven visual system · 2026.11
+   No serif type. Film library, not a magazine.
+   ============================================================ */
+
+:root {
+  /* — Cinema — */
+  --ink: #0a0a0b;
+  --ink-2: #111113;
+  --ink-3: #18181b;
+  --ink-4: #222226;
+  --ivory: #f1efea;
+  --ivory-2: #d0ccc3;
+  --ivory-3: #928d84;
+  --ivory-4: #66625b;
+  --brass: #c7a25c;
+  --brass-bright: #e1c58e;
+  --brass-dim: rgba(199, 162, 92, 0.16);
+  --dark-line: rgba(241, 239, 234, 0.11);
+  --dark-line-strong: rgba(241, 239, 234, 0.24);
+
+  /* — Archive — */
+  --paper: #f3f1ec;
+  --paper-2: #eae7df;
+  --paper-3: #dfdbd1;
+  --paper-4: #cec8bb;
+  --paper-ink: #1d1c19;
+  --paper-ink-2: #44413a;
+  --paper-muted: #777168;
+  --paper-line: #d5d0c5;
+  --paper-line-strong: #b9b2a4;
+  --oxblood: #8d3b31;
+  --oxblood-dark: #6e2d25;
+  --oxblood-soft: rgba(141, 59, 49, 0.08);
+  --sage: #5d6b58;
+  --amber: #9e6b2e;
+
+  /* — Type: system sans only — */
+  --font-display: "Avenir Next", "SF Pro Display", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "SF Mono", "Menlo", "Monaco", "IBM Plex Mono", "Courier New", monospace;
+  /* — Measures — */
+  --gutter: 40px;
+  --head-h: 60px;
+  --rail-w: 228px;
+  --admin-top-h: 52px;
+  --max-w: 1720px;
+
+  /* — Motion — */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --slow: 800ms;
+  --base: 360ms;
+  --fast: 160ms;
+}
+
+@media (max-width: 1100px) {
+  :root {
+    --gutter: 28px;
+  }
+}
+@media (max-width: 720px) {
+  :root {
+    --gutter: 18px;
+    --head-h: 56px;
+  }
+}
