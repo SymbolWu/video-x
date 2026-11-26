@@ -3,6 +3,7 @@
   const params = new URLSearchParams(location.search);
   if (params.has('capture')) document.documentElement.classList.add('capture');
   const VX = window.VX;
+  const icon = window.VXI;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -22,6 +23,8 @@
     rating: 'all',
     sort: '添加时间',
     query: '',
+    collectionId: null,
+    scope: null,
     favorites: new Set(films.filter((f) => f.favorite).map((f) => f.id)),
     watched: new Set(films.filter((f) => f.watched).map((f) => f.id)),
     ratings: new Map(films.filter((f) => f.rating).map((f) => [f.id, f.rating])),
@@ -77,6 +80,8 @@
 
   function filterList() {
     let list = films.slice();
+    if (state.scope?.kind === 'actor') list = list.filter((f) => f.actors.includes(state.scope.id));
+    if (state.scope?.kind === 'series') list = list.filter((f) => f.series === state.scope.id);
     if (state.category !== 'all') {
       const cat = VX.categories.find((c) => c.id === state.category);
       list = list.filter((f) => f.category === cat?.name);
@@ -109,6 +114,11 @@
   }
 
   function renderLibrary() {
+    const scopeBar = $('[data-m-scope]');
+    if (scopeBar) {
+      scopeBar.hidden = !state.scope;
+      if (state.scope) scopeBar.querySelector('span').textContent = (state.scope.kind === 'actor' ? '演员 · ' : '系列 · ') + state.scope.name;
+    }
     $('[data-m-categories]').innerHTML = VX.categories.map((c) => `<button data-m-cat="${c.id}" aria-pressed="${state.category === c.id}">${esc(c.name)}</button>`).join('');
     const list = filterList();
     $('[data-m-count]').textContent = state.entity === 'films' ? list.length : state.entity === 'people' ? VX.people.length : VX.series.length;
@@ -160,7 +170,7 @@
         <div class="m-detail-body">
           <div class="m-detail-actions">
             <button class="m-detail-play" data-m-play="${f.id}">▶ ${resume ? '继续播放 · ' + Math.floor(resume.ms / 60000) + ':' + fmt(Math.floor((resume.ms % 60000) / 1000)) : '播放影片'}</button>
-            <button class="m-detail-edition" data-m-toast="版本选择面板在正式实现中打开">${esc(f.editions[0].name)} ▾</button>
+            <button class="m-detail-edition" data-m-open-edition>${esc(f.editions[0].name)} ▾</button>
           </div>
           ${resume ? `<p class="m-detail-resume"><span></span>上次看到 ${Math.floor(resume.ms / 60000)} 分 ${fmt(Math.floor((resume.ms % 60000) / 1000))} 秒 · ${esc(resume.edition || f.format)}</p>` : ''}
           <div class="m-detail-personal">
@@ -185,39 +195,172 @@
       <div class="m-player">
         <div class="m-player-top">
           <button class="m-round" data-m-close-player aria-label="关闭播放器">×</button>
-          <div class="m-player-title"><b>${esc(f.title)}</b><small>${esc(f.en || '')} · ${esc(f.editions[0].name)}</small></div>
+          <div class="m-player-title"><b>${esc(f.title)}</b><small>${esc(f.en || '')} · 演示片段</small></div>
         </div>
         <div class="m-player-stage">
           <div class="m-player-bg" style="background-image:url('${f.backdrop}')"></div>
-          <img src="${f.backdrop}" alt="" />
-          <span class="m-player-badge">4K UHD · HDR10</span>
+          <video data-m-video src="assets/preview.mp4" poster="${f.backdrop}" playsinline preload="metadata"></video>
+          <span class="m-player-badge">${esc(f.editions[0].name)} · HDR10</span>
           <button class="m-player-center" data-m-player-toggle aria-label="播放">▶</button>
         </div>
         <div class="m-player-controls">
-          <div class="m-player-time"><span>00:12:48</span><div class="m-player-rail"><i></i></div><span>02:46:00</span></div>
+          <div class="m-player-time"><span data-m-current>00:00</span><input class="m-player-seek" data-m-seek type="range" min="0" max="100" value="0" aria-label="播放进度" /><span data-m-duration>00:22</span></div>
           <div class="m-player-buttons">
-            <button data-m-player-toggle>▶</button>
-            <span>↺ 10</span>
-            <span>↻ 10</span>
-            <span class="end">◧</span>
-            <span>4K</span>
-            <span>⛶</span>
+            <button data-m-player-toggle aria-label="播放或暂停">▶</button>
+            <button data-m-skip="-10" aria-label="后退 10 秒">↺ 10</button>
+            <button data-m-skip="10" aria-label="前进 10 秒">↻ 10</button>
+            <span class="end">${icon('volume', 15)}</span>
+            <button data-m-version>${esc(f.editions[0].name)}</button>
+            <button data-m-fullscreen aria-label="全屏">⛶</button>
           </div>
         </div>
       </div>
     `;
+    const video = $('[data-m-video]', view);
+    const seek = $('[data-m-seek]', view);
+    const current = $('[data-m-current]', view);
+    const duration = $('[data-m-duration]', view);
+    const center = $('.m-player-center', view);
+    const fmtTime = (s) => Number.isFinite(s) ? String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0') : '00:00';
+    const paint = () => {
+      const d = video.duration || 22;
+      current.textContent = fmtTime(video.currentTime);
+      duration.textContent = fmtTime(d);
+      seek.value = String((video.currentTime / d) * 100);
+      seek.style.setProperty('--p', (video.currentTime / d) * 100 + '%');
+      center.textContent = video.paused ? '▶' : '❚❚';
+      center.classList.toggle('is-hidden', !video.paused);
+      $$('[data-m-player-toggle]', view).forEach((b) => { if (b !== center) b.textContent = video.paused ? '▶' : '❚❚'; });
+    };
+    video.addEventListener('loadedmetadata', paint);
+    video.addEventListener('timeupdate', paint);
+    video.addEventListener('play', paint);
+    video.addEventListener('pause', paint);
+    video.addEventListener('ended', paint);
+    $$('[data-m-player-toggle]', view).forEach((b) => b.addEventListener('click', () => {
+      if (video.paused) {
+        video.play().catch(() => {
+          video.muted = true;
+          video.play().then(() => toast('浏览器要求静音播放，已静音')).catch(() => toast('当前环境无法播放此片段'));
+        });
+      } else video.pause();
+    }));
+    $$('[data-m-skip]', view).forEach((b) => b.addEventListener('click', () => {
+      video.currentTime = Math.max(0, Math.min(video.duration || 22, video.currentTime + Number(b.dataset.mSkip)));
+    }));
+    seek.addEventListener('input', () => { video.currentTime = (Number(seek.value) / 100) * (video.duration || 22); });
+    $('[data-m-fullscreen]', view).addEventListener('click', () => {
+      const stage = $('.m-player-stage', view);
+      if (document.fullscreenElement) void document.exitFullscreen();
+      else if (stage.requestFullscreen) void stage.requestFullscreen().catch(() => toast('当前环境不支持全屏'));
+    });
+    $('[data-m-version]', view).addEventListener('click', () => openEditionSheet(f));
+    paint();
+  }
+
+  function openEditionSheet(f) {
+    const app = $('.m-app');
+    const layer = document.createElement('div');
+    layer.className = 'm-edition-layer';
+    layer.innerHTML = '<button class="m-sheet-scrim" data-edition-close aria-label="关闭"></button><section class="m-edition-sheet"><header><p class="m-eyebrow">版本</p><h2>选择播放版本</h2><button class="m-sheet-close" data-edition-close aria-label="关闭">×</button></header><div class="m-edition-list">' +
+      f.editions.map((e, i) => '<button data-edition-pick="' + i + '" aria-pressed="' + (i === 0) + '"><span><b>' + esc(e.name) + '</b><small>' + esc(e.resolution) + ' · ' + esc(e.codec) + ' · ' + esc(e.size) + '</small></span><em>' + (i === 0 ? '当前' : '') + '</em></button>').join('') +
+      '</div></section>';
+    layer.addEventListener('click', (event) => {
+      if (event.target.closest('[data-edition-close]')) layer.remove();
+      const pick = event.target.closest('[data-edition-pick]');
+      if (pick) {
+        layer.querySelectorAll('[data-edition-pick]').forEach((b) => b.setAttribute('aria-pressed', String(b === pick)));
+        toast('已选择 ' + f.editions[Number(pick.dataset.editionPick)].name);
+        setTimeout(() => layer.remove(), 350);
+      }
+    });
+    app.appendChild(layer);
+  }
+
+  function openMobileCollectionSheet(film) {
+    const app = $('.m-app');
+    const layer = document.createElement('div');
+    layer.className = 'm-edition-layer';
+    layer.innerHTML = '<button class="m-sheet-scrim" data-m-col-close aria-label="关闭"></button><section class="m-edition-sheet"><header><p class="m-eyebrow">收藏夹</p><h2>加入收藏夹</h2><button class="m-sheet-close" data-m-col-close aria-label="关闭">×</button></header><div class="m-collection-pick">' +
+      (VX.collections.length ? VX.collections.map((c) => '<label><input type="checkbox" data-m-col-pick="' + c.id + '"' + (c.filmIds.includes(film.id) ? ' checked' : '') + ' /><span><b>' + esc(c.name) + '</b><small>' + c.count + ' 部影片</small></span></label>').join('') : '<p class="m-profile-card" style="margin:12px 0">还没有收藏夹</p>') +
+      '</div><div class="m-sheet-foot"><button data-m-col-close>取消</button><button class="m-apply" data-m-col-save="' + film.id + '">完成</button></div></section>';
+    layer.addEventListener('click', (event) => {
+      if (event.target.closest('[data-m-col-close]')) layer.remove();
+      const save = event.target.closest('[data-m-col-save]');
+      if (save) {
+        const filmId = save.dataset.mColSave;
+        layer.querySelectorAll('[data-m-col-pick]').forEach((box) => {
+          const c = VX.collections.find((x) => x.id === box.dataset.mColPick);
+          if (!c) return;
+          const has = c.filmIds.includes(filmId);
+          if (box.checked && !has) c.filmIds.push(filmId);
+          if (!box.checked && has) c.filmIds = c.filmIds.filter((id) => id !== filmId);
+          c.count = c.filmIds.length;
+        });
+        layer.remove();
+        toast('收藏夹已更新');
+      }
+    });
+    app.appendChild(layer);
   }
 
   function renderCollectionsPage() {
     const body = $('[data-m-collections-body]');
+    const scope = state.collectionId ? VX.collections.find((c) => c.id === state.collectionId) : null;
+    if (scope) {
+      const members = scope.filmIds.map((id) => filmById.get(id)).filter(Boolean);
+      body.innerHTML = [
+        '<button class="m-collection-back" data-m-collection-back>← 全部收藏</button>',
+        '<header class="m-collection-detail-head"><h2>' + esc(scope.name) + '</h2><p>' + esc(scope.desc) + '</p><span>' + members.length + ' 部影片</span></header>',
+        '<div class="m-poster-grid">' + members.map(poster).join('') + '</div>'
+      ].join('');
+      return;
+    }
     body.innerHTML = [
+      '<header class="m-subhead"><h2>收藏夹</h2><button data-m-new-folder>＋ 新建</button></header>',
       '<div class="m-collection-grid">',
-      VX.collections.map((c) => '<button class="m-collection-card" data-m-toast="收藏夹「' + esc(c.name) + '」的成员页在正式实现中打开"><img src="' + c.cover + '" alt="" /><b>' + esc(c.name) + '</b><small>' + c.count + ' 部影片 · ' + esc(c.desc) + '</small></button>').join(''),
+      VX.collections.map((c) => '<button class="m-collection-card" data-m-collection-open="' + c.id + '"><img src="' + c.cover + '" alt="" /><b>' + esc(c.name) + '</b><small>' + c.count + ' 部影片 · ' + esc(c.desc) + '</small></button>').join(''),
       '</div>',
       '<header class="m-subhead"><h2>我喜欢的</h2><span>12 部</span></header>',
       '<div class="m-poster-grid">' + films.filter((f) => state.favorites.has(f.id)).slice(0, 9).map(poster).join('') + '</div>',
       '<div class="m-list-end">— 我的收藏 —</div>'
     ].join('');
+  }
+
+  function openLogoutSheet() {
+    const app = $('.m-app');
+    const layer = document.createElement('div');
+    layer.className = 'm-edition-layer';
+    layer.innerHTML = '<button class="m-sheet-scrim" data-logout-close aria-label="关闭"></button><section class="m-edition-sheet"><header><p class="m-eyebrow">账号</p><h2>退出登录</h2><button class="m-sheet-close" data-logout-close aria-label="关闭">×</button></header><p class="m-logout-note">这是单账号本机媒体库；退出后需要重新登录。</p><div class="m-sheet-foot"><button data-logout-close>取消</button><button class="m-apply" data-logout-confirm>退出</button></div></section>';
+    layer.addEventListener('click', (event) => {
+      if (event.target.closest('[data-logout-close]')) layer.remove();
+      if (event.target.closest('[data-logout-confirm]')) {
+        layer.remove();
+        toast('演示环境：已退出登录');
+      }
+    });
+    app.appendChild(layer);
+  }
+
+  function openNewFolderSheet() {
+    const app = $('.m-app');
+    const layer = document.createElement('div');
+    layer.className = 'm-edition-layer';
+    layer.innerHTML = '<button class="m-sheet-scrim" data-folder-close aria-label="关闭"></button><section class="m-edition-sheet"><header><p class="m-eyebrow">收藏夹</p><h2>新建收藏夹</h2><button class="m-sheet-close" data-folder-close aria-label="关闭">×</button></header><div class="m-folder-form"><label class="m-filter-label">名称</label><input data-folder-name placeholder="例如：周末重看" /><label class="m-filter-label">说明</label><input data-folder-desc placeholder="一句话说明这个片单" /></div><div class="m-sheet-foot"><button data-folder-close>取消</button><button class="m-apply" data-folder-save>创建</button></div></section>';
+    layer.addEventListener('click', (event) => {
+      if (event.target.closest('[data-folder-close]')) layer.remove();
+      if (event.target.closest('[data-folder-save]')) {
+        const name = layer.querySelector('[data-folder-name]').value.trim();
+        if (!name) return toast('请填写收藏夹名称');
+        const desc = layer.querySelector('[data-folder-desc]').value.trim();
+        VX.collections.unshift({ id: 'col-' + Date.now(), name: name, desc: desc, en: 'Collection', cover: 'assets/cinema/843-backdrop.jpg', filmIds: [], count: 0 });
+        layer.remove();
+        renderCollectionsPage();
+        toast('已创建收藏夹「' + name + '」');
+      }
+    });
+    app.appendChild(layer);
+    setTimeout(() => layer.querySelector('[data-folder-name]').focus(), 40);
   }
 
   function renderProfilePage() {
@@ -227,14 +370,18 @@
       '<div class="m-stat-grid"><div><b>39</b><small>影片</small></div><div><b>12</b><small>喜欢</small></div><div><b>27</b><small>已看</small></div></div>',
       '<div class="m-profile-links">',
       '<button data-go-m="collections"><span><b>我的收藏</b><small>3 个收藏夹</small></span><span>→</span></button>',
-      '<button data-m-toast="看过的影片范围在正式片库中打开"><span><b>看过的影片</b><small>27 部</small></span><span>→</span></button>',
-      '<button data-m-toast="退出登录在正式实现中处理"><span><b>退出登录</b><small>单账号 · 本机</small></span><span>→</span></button>',
+      '<button data-m-watched-link><span><b>看过的影片</b><small>27 部</small></span><span>→</span></button>',
+      '<button data-m-logout><span><b>退出登录</b><small>单账号 · 本机</small></span><span>→</span></button>',
       '</div>',
       '<div class="m-list-end">— 我的 —</div>'
     ].join('');
   }
 
   function showScreen(name) {
+    if (name !== 'player') {
+      const playing = $('[data-m-video]');
+      if (playing && !playing.paused) playing.pause();
+    }
     state.screen = name;
     $('[data-m-search]').hidden = true;
     $$('.m-view').forEach((v) => { v.hidden = v.dataset.mView !== name; });
@@ -308,7 +455,33 @@
     const go = e.target.closest('[data-go-m]');
     if (go) {
       e.preventDefault();
+      if (go.dataset.goM === 'collections') state.collectionId = null;
       showScreen(go.dataset.goM);
+      return;
+    }
+    if (e.target.closest('[data-m-watched-link]')) {
+      state.seen = 'seen';
+      state.collectionId = null;
+      showScreen('library');
+      toast('已筛选看过的影片');
+      return;
+    }
+    if (e.target.closest('[data-m-new-folder]')) { openNewFolderSheet(); return; }
+    if (e.target.closest('[data-m-logout]')) { openLogoutSheet(); return; }
+    const collectionOpen = e.target.closest('[data-m-collection-open]');
+    if (collectionOpen) {
+      state.collectionId = collectionOpen.dataset.mCollectionOpen;
+      renderCollectionsPage();
+      return;
+    }
+    if (e.target.closest('[data-m-collection-back]')) {
+      state.collectionId = null;
+      renderCollectionsPage();
+      return;
+    }
+    if (e.target.closest('[data-m-clear-scope]')) {
+      state.scope = null;
+      renderLibrary();
       return;
     }
     const film = e.target.closest('[data-m-film]');
@@ -351,9 +524,18 @@
       toast(state.ratings.get(id) ? '已评分 ' + n + ' 星' : '已取消评分');
       return;
     }
-    if (e.target.closest('[data-m-collection]')) { toast('收藏夹选择在正式实现中打开'); return; }
+    if (e.target.closest('[data-m-collection]')) {
+      const film = filmById.get(state.detailId);
+      if (film) openMobileCollectionSheet(film);
+      return;
+    }
+    if (e.target.closest('[data-m-open-edition]')) {
+      const film = filmById.get(state.detailId);
+      if (film) openEditionSheet(film);
+      return;
+    }
     if (e.target.closest('[data-m-toast]')) { toast(e.target.closest('[data-m-toast]').dataset.mToast); return; }
-    if (e.target.closest('[data-m-player-toggle]')) { toast('原型不包含真实视频；正式实现由原生播放器接管'); return; }
+
     const entity = e.target.closest('[data-m-entity]');
     if (entity) {
       state.entity = entity.dataset.mEntity;
@@ -417,17 +599,21 @@
     const person = e.target.closest('[data-m-person]');
     if (person) {
       e.preventDefault();
-      toast('演员作品范围在正式片库中打开');
+      const p = peopleById.get(person.dataset.mPerson);
+      state.scope = { kind: 'actor', id: person.dataset.mPerson, name: p ? p.name : '演员' };
       state.entity = 'films';
       showScreen('library');
+      toast('已按演员筛选');
       return;
     }
     const series = e.target.closest('[data-m-series]');
     if (series) {
       e.preventDefault();
-      toast('系列作品范围在正式片库中打开');
+      const s = seriesById.get(series.dataset.mSeries);
+      state.scope = { kind: 'series', id: series.dataset.mSeries, name: s ? s.name : '系列' };
       state.entity = 'films';
       showScreen('library');
+      toast('已按系列筛选');
       return;
     }
   });

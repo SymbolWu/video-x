@@ -55,6 +55,7 @@ shot admin-enrich "admin.html?capture=1&view=enrich" 1440 900
 shot admin-archive "admin.html?capture=1&view=archive" 1440 900
 shot admin-editor "admin.html?capture=1&view=editor" 1440 900
 shot admin-editor-versions "admin.html?capture=1&view=editor&tab=版本与文件" 1440 900
+shot admin-draft-editor "admin.html?capture=1&view=draft-editor&record=d7" 1440 900
 
 shot mobile-board "mobile.html" 1440 900
 shot mobile-discover "mobile.html?screen=discover&capture=1" 390 844

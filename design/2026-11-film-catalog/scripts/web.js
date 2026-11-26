@@ -23,6 +23,7 @@
     year: 'all',
     query: '',
     scope: null,
+    collectionScope: null,
     detailId: null,
     playerId: null,
     favorites: new Set(films.filter((f) => f.favorite).map((f) => f.id)),
@@ -173,19 +174,60 @@
   }
 
   function renderCollections() {
-    $('[data-collection-list]').innerHTML = VX.collections.map((c, i) => {
+    const list = $('[data-collection-list]');
+    const liked = $('[data-liked-section]');
+    const scope = state.collectionScope ? VX.collections.find((c) => c.id === state.collectionScope) : null;
+    if (scope) {
+      const members = scope.filmIds.map((id) => filmById.get(id)).filter(Boolean);
+      list.className = 'collection-detail';
+      list.innerHTML = [
+        '<button class="collection-back" data-collection-back>← 全部收藏</button>',
+        '<header class="collection-detail-head"><div><p class="eyebrow">收藏夹 / ' + esc(scope.en || 'Collection') + '</p><h2>' + esc(scope.name) + '</h2><p>' + esc(scope.desc || '') + '</p></div><span>' + members.length + ' 部影片</span></header>',
+        '<div class="poster-grid poster-grid-home">' + members.map((f) => posterCard(f)).join('') + '</div>'
+      ].join('');
+      liked.hidden = true;
+      return;
+    }
+    list.className = 'collection-list';
+    list.innerHTML = VX.collections.map((c, i) => {
       const film = filmById.get(c.filmIds[0]);
-      return `<a class="collection-card" href="#library" data-collection="${c.id}">
-        <img src="${c.cover}" alt="" />
-        <span class="collection-index">${fmt(i + 1)}</span>
-        <span class="collection-copy">
-          <p>${esc(c.en).toUpperCase()} / 收藏夹</p>
-          <h2>${esc(c.name)}</h2>
-          <p>${esc(c.desc)}</p>
-          <span>${c.count} 部影片 · ${esc(film.title)} 等 <span aria-hidden="true">→</span></span>
-        </span>
-      </a>`;
+      return '<a class="collection-card" href="#collections" data-collection="' + c.id + '">' +
+        '<img src="' + c.cover + '" alt="" />' +
+        '<span class="collection-index">' + fmt(i + 1) + '</span>' +
+        '<span class="collection-copy"><p>' + esc(c.en || 'Collection').toUpperCase() + ' / 收藏夹</p><h2>' + esc(c.name) + '</h2><p>' + esc(c.desc) + '</p><span>' + c.count + ' 部影片 · ' + esc(film ? film.title : '空收藏夹') + ' 等 <span aria-hidden="true">→</span></span></span>' +
+        '</a>';
     }).join('');
+    liked.hidden = false;
+    $('[data-liked-grid]').innerHTML = films.filter((f) => state.favorites.has(f.id)).slice(0, 7).map((f) => posterCard(f)).join('');
+  }
+
+  function openWebModal(content) {
+    const layer = $('[data-web-modal]');
+    $('[data-web-modal-content]').innerHTML = content;
+    layer.hidden = false;
+    document.body.classList.add('is-locked');
+  }
+
+  function closeWebModal() {
+    $('[data-web-modal]').hidden = true;
+    document.body.classList.remove('is-locked');
+  }
+
+  function newCollectionModal() {
+    openWebModal([
+      '<h2>新建收藏夹</h2><p class="web-modal-sub">收藏夹只影响个人片单，不改变影片资料。</p>',
+      '<div class="web-modal-fields"><label class="web-modal-field"><span>名称</span><input data-new-collection-name placeholder="例如：周末重看" /></label><label class="web-modal-field"><span>说明（可选）</span><input data-new-collection-desc placeholder="一句话说明这个片单" /></label></div>',
+      '<div class="web-modal-actions"><button class="web-modal-cancel" data-close-web-modal>取消</button><button class="web-modal-save" data-create-collection>创建收藏夹</button></div>'
+    ].join(''));
+    setTimeout(() => $('[data-new-collection-name]')?.focus(), 30);
+  }
+
+  function collectionPicker(film) {
+    openWebModal([
+      '<h2>加入收藏夹</h2><p class="web-modal-sub">' + esc(film.title) + ' · 可同时加入多个收藏夹</p>',
+      '<div class="collection-picker">' + (VX.collections.length ? VX.collections.map((c) => '<label><input type="checkbox" data-collection-pick="' + c.id + '"' + (c.filmIds.includes(film.id) ? ' checked' : '') + ' /><img src="' + c.cover + '" alt="" /><span><b>' + esc(c.name) + '</b><small>' + c.count + ' 部影片</small></span></label>').join('') : '<p class="web-modal-sub">还没有收藏夹。</p>') + '</div>',
+      '<div class="web-modal-actions"><button class="web-modal-cancel" data-new-collection-inline>新建收藏夹</button><button class="web-modal-save" data-save-collection-picks="' + film.id + '">完成</button></div>'
+    ].join(''));
   }
 
   function detailStills(f) {
@@ -226,7 +268,7 @@
             <div class="detail-actions">
               <a class="detail-play" href="#play/${f.id}">${icon('play', 16)} ${resume ? '继续播放 · ' + Math.floor(resume.ms / 60000) + ':' + fmt(Math.floor((resume.ms % 60000) / 1000)) : '播放影片'}</a>
               ${resume ? '<a class="detail-secondary" href="#play/' + f.id + '">从头播放</a>' : ''}
-              <a class="detail-secondary" href="#detail/${f.id}" data-detail-edition>4K UHD · 原版</a>
+              <a class="detail-secondary" href="#detail/${f.id}" data-detail-edition>${esc(f.editions[0].name)}</a>
             </div>
             ${resume ? `<p class="detail-progress-note"><span style="--p:${Math.min(100, (resume.ms / resume.duration) * 100)}%"></span> 上次看到 ${Math.floor(resume.ms / 60000)} 分 ${fmt(Math.floor((resume.ms % 60000) / 1000))} 秒 · ${esc(resume.edition || f.format)}</p>` : ''}
           </div>
@@ -306,7 +348,15 @@
       renderDetail(f.id);
       toast(state.watched.has(f.id) ? '已标记为看过' : '已取消已看');
     });
-    $('[data-detail-collection]', $('[data-view="detail"]')).addEventListener('click', () => toast('收藏夹选择面板在正式实现中打开'));
+    $('[data-detail-collection]', $('[data-view="detail"]')).addEventListener('click', () => collectionPicker(f));
+    $('[data-detail-edition]', $('[data-view="detail"]')).addEventListener('click', (e) => {
+      e.preventDefault();
+      openWebModal([
+        '<h2>播放版本</h2><p class="web-modal-sub">' + esc(f.title) + ' · 选择默认播放版本</p>',
+        '<div class="collection-picker">' + f.editions.map((ed, i) => '<label><input type="radio" name="edition" data-edition-choose="' + i + '"' + (i === 0 ? ' checked' : '') + ' /><span><b>' + esc(ed.name) + '</b><small>' + esc(ed.resolution) + ' · ' + esc(ed.codec) + ' · ' + esc(ed.size) + '</small></span><span>' + (i === 0 ? '默认' : '') + '</span></label>').join('') + '</div>',
+        '<div class="web-modal-actions"><button class="web-modal-cancel" data-close-web-modal>取消</button><button class="web-modal-save" data-save-edition="' + f.id + '">使用此版本</button></div>'
+      ].join(''));
+    });
     $$('[data-rate]', $('[data-view="detail"]')).forEach((b) => b.addEventListener('click', () => {
       const n = Number(b.dataset.rate);
       if (n === 0) state.ratings.delete(f.id); else if (state.ratings.get(f.id) === n) state.ratings.delete(f.id); else state.ratings.set(f.id, n);
@@ -331,32 +381,86 @@
     view.innerHTML = `
       <header class="player-top">
         <a class="icon-button" href="#detail/${f.id}" aria-label="关闭播放器">×</a>
-        <div class="player-title"><b>${esc(f.title)}</b><small>${esc(f.en || f.category)} · ${esc(f.editions[0].name)}</small></div>
-        <div class="player-top-right"><span>HDR10 · 5.1</span><span>自动续播已开启</span></div>
+        <div class="player-title"><b>${esc(f.title)}</b><small>${esc(f.en || f.category)} · 演示片段</small></div>
+        <div class="player-top-right"><span>HDR10 · 5.1</span><span>断点会记录</span></div>
       </header>
       <div class="player-stage">
-        <img src="${f.backdrop}" alt="" />
-        <button class="player-center" data-player-toggle aria-label="播放或暂停">${icon('play', 26)}</button>
+        <video data-player-video src="assets/preview.mp4" poster="${f.backdrop}" playsinline preload="metadata"></video>
+        <button class="player-center" data-player-toggle aria-label="播放">${icon('play', 26)}</button>
       </div>
       <div class="player-controls">
-        <div class="player-timeline"><span>00:12:48</span><div class="player-rail"><i></i></div><span>02:46:00</span></div>
+        <div class="player-timeline"><span data-player-current>00:00</span><input class="player-seek" data-player-seek type="range" min="0" max="100" value="0" aria-label="播放进度" /><span data-player-duration>00:22</span></div>
         <div class="player-buttons">
           <button data-player-toggle aria-label="播放或暂停">${icon('play', 18)}</button>
-          <button aria-label="后退 10 秒">${icon('arrow-left', 18)}</button>
-          <button aria-label="前进 10 秒">${icon('arrow-right', 18)}</button>
+          <button data-player-skip="-10" aria-label="后退 10 秒">${icon('arrow-left', 18)}</button>
+          <button data-player-skip="10" aria-label="前进 10 秒">${icon('arrow-right', 18)}</button>
           <span class="spacer"></span>
-          <button aria-label="音轨">${icon('volume', 18)}</button>
-          <button aria-label="版本">4K UHD</button>
-          <button aria-label="全屏">${icon('fullscreen', 18)}</button>
+          <button data-player-mute aria-label="静音">${icon('volume', 18)}</button>
+          <button class="player-version" data-player-version aria-label="切换版本">${esc(f.editions[0].name)}</button>
+          <button data-player-fullscreen aria-label="全屏">${icon('fullscreen', 18)}</button>
         </div>
       </div>
     `;
-    $$('[data-player-toggle]', view).forEach((b) => b.addEventListener('click', () => toast('原型不包含真实视频；正式实现由现有播放器接管')));
+    const video = $('[data-player-video]', view);
+    const seek = $('[data-player-seek]', view);
+    const current = $('[data-player-current]', view);
+    const duration = $('[data-player-duration]', view);
+    const center = $('.player-center', view);
+    const format = (s) => {
+      if (!Number.isFinite(s)) return '00:00';
+      return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+    };
+    const paint = () => {
+      const d = video.duration || 22;
+      current.textContent = format(video.currentTime);
+      duration.textContent = format(d);
+      seek.value = String((video.currentTime / d) * 100);
+      seek.style.setProperty('--p', (video.currentTime / d) * 100 + '%');
+      center.classList.toggle('is-hidden', !video.paused);
+      $$('[data-player-toggle]', view).forEach((b) => {
+        if (b === center) b.innerHTML = icon(video.paused ? 'play' : 'pause', 26);
+        else b.innerHTML = icon(video.paused ? 'play' : 'pause', 18);
+      });
+    };
+    video.addEventListener('loadedmetadata', paint);
+    video.addEventListener('timeupdate', paint);
+    video.addEventListener('play', paint);
+    video.addEventListener('pause', paint);
+    video.addEventListener('ended', paint);
+    $$('[data-player-toggle]', view).forEach((b) => b.addEventListener('click', () => {
+      if (video.paused) {
+        video.play().catch(() => {
+          video.muted = true;
+          video.play().then(() => toast('浏览器要求静音播放，已静音')).catch(() => toast('当前环境无法播放此片段'));
+        });
+      } else video.pause();
+    }));
+    $$('[data-player-skip]', view).forEach((b) => b.addEventListener('click', () => {
+      video.currentTime = Math.max(0, Math.min(video.duration || 22, video.currentTime + Number(b.dataset.playerSkip)));
+    }));
+    seek.addEventListener('input', () => {
+      video.currentTime = ((Number(seek.value) / 100) * (video.duration || 22));
+    });
+    $('[data-player-mute]', view).addEventListener('click', () => {
+      video.muted = !video.muted;
+      toast(video.muted ? '已静音' : '已取消静音');
+    });
+    $('[data-player-fullscreen]', view).addEventListener('click', () => {
+      const stage = $('.player-stage', view);
+      if (document.fullscreenElement) void document.exitFullscreen();
+      else if (stage.requestFullscreen) void stage.requestFullscreen().catch(() => toast('当前浏览器不支持全屏'));
+    });
+    let editionIndex = 0;
+    $('[data-player-version]', view).addEventListener('click', () => {
+      editionIndex = (editionIndex + 1) % f.editions.length;
+      $('[data-player-version]', view).textContent = f.editions[editionIndex].name;
+      toast('已切换为 ' + f.editions[editionIndex].name);
+    });
+    paint();
   }
 
   function renderProfile() {
-    const logout = $('[data-player-toggle-profile]');
-    if (logout) logout.addEventListener('click', () => toast('退出登录在正式实现中处理'));
+    /* Actions are handled by the document-level click delegate. */
   }
 
   function openEntity(entity, filterKind, id) {
@@ -380,7 +484,12 @@
   function renderRoute() {
     const hash = location.hash.replace(/^#/, '') || 'discover';
     const [path, id] = hash.split('/');
-    state.route = ['discover', 'library', 'collections', 'profile', 'detail', 'player'].includes(path) ? path : 'discover';
+    const route = ['discover', 'library', 'collections', 'profile', 'detail', 'player'].includes(path) ? path : 'discover';
+    if (route !== 'player') {
+      const playing = $('[data-player-video]');
+      if (playing && !playing.paused) playing.pause();
+    }
+    state.route = route;
     $$('[data-view]').forEach((v) => { v.hidden = v.dataset.view !== state.route; });
     $$('[data-nav]').forEach((a) => {
       const active = a.dataset.nav === state.route || (a.dataset.nav === 'library' && state.route === 'detail');
@@ -389,6 +498,7 @@
     document.body.classList.toggle('is-player', state.route === 'player');
     document.body.classList.toggle('is-detail', state.route === 'detail');
     if (state.route === 'library') renderLibrary();
+    if (state.route !== 'collections') state.collectionScope = null;
     if (state.route === 'collections') renderCollections();
     const avatar = $('[data-open-profile]');
     if (avatar) {
@@ -554,10 +664,79 @@
     const collection = e.target.closest('[data-collection]');
     if (collection) {
       e.preventDefault();
-      const c = VX.collections.find((x) => x.id === collection.dataset.collection);
+      state.collectionScope = collection.dataset.collection;
+      renderCollections();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      return;
+    }
+    if (e.target.closest('[data-collection-back]')) {
+      state.collectionScope = null;
+      renderCollections();
+      return;
+    }
+    if (e.target.closest('[data-new-collection]')) { e.preventDefault(); newCollectionModal(); return; }
+    if (e.target.closest('[data-new-collection-inline]')) { newCollectionModal(); return; }
+    if (e.target.closest('[data-close-web-modal]')) { closeWebModal(); return; }
+    if (e.target.closest('[data-create-collection]')) {
+      const name = $('[data-new-collection-name]')?.value.trim();
+      if (!name) { toast('请填写收藏夹名称'); return; }
+      const desc = $('[data-new-collection-desc]')?.value.trim() || '';
+      const collection = {
+        id: 'col-' + Date.now(), name: name, desc: desc, en: 'Collection',
+        cover: 'assets/cinema/843-backdrop.jpg', filmIds: [], count: 0
+      };
+      VX.collections.unshift(collection);
+      closeWebModal();
+      renderCollections();
+      toast('已创建收藏夹「' + name + '」');
+      return;
+    }
+    if (e.target.closest('[data-save-edition]')) {
+      const chosen = $('[data-edition-choose]:checked');
+      const filmId = e.target.closest('[data-save-edition]').dataset.saveEdition;
+      const film = filmById.get(filmId);
+      if (chosen && film) {
+        film.editions = film.editions.slice(Number(chosen.dataset.editionChoose)).concat(film.editions.slice(0, Number(chosen.dataset.editionChoose)));
+      }
+      closeWebModal();
+      renderDetail(filmId);
+      toast('已切换播放版本');
+      return;
+    }
+    if (e.target.closest('[data-save-collection-picks]')) {
+      const filmId = e.target.closest('[data-save-collection-picks]').dataset.saveCollectionPicks;
+      $$('[data-collection-pick]').forEach((box) => {
+        const c = VX.collections.find((x) => x.id === box.dataset.collectionPick);
+        if (!c) return;
+        const has = c.filmIds.includes(filmId);
+        if (box.checked && !has) c.filmIds.push(filmId);
+        if (!box.checked && has) c.filmIds = c.filmIds.filter((id) => id !== filmId);
+        c.count = c.filmIds.length;
+      });
+      closeWebModal();
+      renderCollections();
+      renderDetail(filmId);
+      toast('收藏夹已更新');
+      return;
+    }
+    if (e.target.closest('[data-watched-link]')) {
+      e.preventDefault();
+      state.seen = 'seen';
+      state.scope = null;
       state.category = 'all';
-      state.query = '';
-      toast('收藏夹「' + c.name + '」包含 ' + c.count + ' 部影片；正式实现进入成员列表');
+      location.hash = '#library';
+      return;
+    }
+    if (e.target.closest('[data-logout]')) {
+      openWebModal([
+        '<h2>退出登录</h2><p class="web-modal-sub">这是单账号本机媒体库；退出后需要重新登录。</p>',
+        '<div class="web-modal-actions"><button class="web-modal-cancel" data-close-web-modal>取消</button><button class="web-modal-save" data-confirm-logout>退出</button></div>'
+      ].join(''));
+      return;
+    }
+    if (e.target.closest('[data-confirm-logout]')) {
+      closeWebModal();
+      toast('演示环境不执行真实登出');
       return;
     }
   });
@@ -576,7 +755,8 @@
       openSearch();
     }
     if (e.key === 'Escape') {
-      if (!$('[data-search-layer]').hidden) closeSearch();
+      if (!$('[data-web-modal]').hidden) closeWebModal();
+      else if (!$('[data-search-layer]').hidden) closeSearch();
       else if (!$('[data-filter-layer]').hidden) closeFilter();
     }
   });

@@ -8,12 +8,12 @@
 
 在仓库根目录运行：
 
-    python3 -m http.server 8109 --bind 127.0.0.1 --directory design/2026-11-film-catalog
+    python3 -m http.server 8099 --bind 127.0.0.1 --directory design/2026-11-film-catalog
 
-- 设计总览：http://127.0.0.1:8109/
-- 观看端：http://127.0.0.1:8109/web.html
-- 管理端：http://127.0.0.1:8109/admin.html
-- 移动端：http://127.0.0.1:8109/mobile.html
+- 设计总览：http://127.0.0.1:8099/
+- 观看端：http://127.0.0.1:8099/web.html
+- 管理端：http://127.0.0.1:8099/admin.html
+- 移动端：http://127.0.0.1:8099/mobile.html
 
 管理端每个模块可直接打开，例如：
 
@@ -35,6 +35,8 @@
 - 版本与文件：/admin.html?view=editor&tab=版本与文件
 
 移动端用 **?screen=** 指定画面：discover、library、collections、profile、detail、filters、player。
+
+可直接照抄的尺寸、组件结构和正式数据替换方式见 [IMPLEMENTATION.md](IMPLEMENTATION.md)。
 
 ## 本次针对反馈的修正
 
@@ -100,6 +102,19 @@
 | 影片编辑 | PublishedWorkspace、FilmWorkspace、CommonFields、PublishedFiles |
 | 移动端 | LibraryApp.kt、FilmDetail.kt、LibraryFilters.kt、PlaybackScreen.kt |
 
+
+## 高保真交互
+
+这一版不是静态截图。页面内维护一份内存状态，刷新后恢复初始数据：
+
+- **管理端录入**：阶段与状态筛选、搜索、勾选、批量条启用条件、设置整理目标、创建分集容器、批量分类、抓取所选、批量核对、发布所选。核对、保存草稿、确认、发布都会更新列表与统计；核对通过右侧抽屉完成。
+- **管理端资料**：新增与编辑演员、系列、分类、标签、片商、收藏夹；分类显示开关；演员/系列详情页；演员照片、导演、系列、标签、片商的增删；封面与横图选择；影片编辑表单保存；草稿独立编辑页；来源对照与归档详情。
+- **观看端**：分类/筛选/排序、搜索、演员/系列范围、收藏夹创建与成员页、详情喜欢/评分/已看、收藏夹选择、播放版本、我的页统计与已看筛选。播放器使用 assets/preview.mp4 的 22 秒样片，支持播放/暂停、进度、前后 10 秒、静音、全屏与版本切换。
+- **移动端**：发现/片库/收藏/我的一级页面与底部 Tab；影片 3 列、系列 2 列；44px 分类按钮；筛选抽屉；演员/系列范围；收藏夹成员页与新建收藏夹；详情喜欢/评分/已看、版本底部面板、收藏夹选择；播放器使用同一样片。
+- **所有浮层**：抽屉/弹层/模态具备关闭按钮、遮罩关闭与 Esc 关闭；关闭后回到触发位置。
+
+外部副作用（真实登录、上传、来源抓取、数据库写入、真实视频解码）仍是本地模拟。样片只用于验证播放器布局与控件。
+
 ## 与“旧设计”的关系
 
 本目录没有引用 **design/2026-11-redesign** 或 **design/three-client-prototype** 的页面结构。旧目录保留为设计演进记录；本目录的字段、状态和操作来自当前分支的 **apps/** 代码。
@@ -127,7 +142,7 @@
     │   ├── mobile.js
     │   └── icons.js
     ├── assets/                    影片、影人、场景、来源清单
-    ├── screenshots/               34 张实现截图
+    ├── screenshots/               35 张实现截图
     └── tools/capture.sh           截图脚本
 
 ## 数据与边界
@@ -142,7 +157,7 @@
 ## 截图
 
 - 观看端 6 张：discover / library / detail / player / collections / profile。
-- 管理端 18 张：intake、intake-drawer、media、media-cards、people、person、franchises、franchise、categories、tags、organizations、collections、jobs、settings、enrich、archive、editor、editor-versions。
+- 管理端 19 张：intake、intake-drawer、media、media-cards、people、person、franchises、franchise、categories、tags、organizations、collections、jobs、settings、enrich、archive、editor、editor-versions、draft-editor。
 - 移动端 9 张：board、discover、library、series、collections、profile、detail、filters、player。
 - 总览 1 张。
 

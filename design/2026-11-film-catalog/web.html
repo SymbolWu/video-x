@@ -156,11 +156,11 @@
         <header class="page-head">
           <div class="page-title-row">
             <h1>收藏</h1>
-            <p class="page-count">03 个收藏夹 <i>/</i> 12 部喜欢</p>
+            <div class="page-title-actions"><p class="page-count">03 个收藏夹 <i>/</i> 12 部喜欢</p><button class="page-action" data-new-collection>＋ 新建收藏夹</button></div>
           </div>
         </header>
         <div class="collection-list" data-collection-list></div>
-        <section class="band band-liked">
+        <section class="band band-liked" data-liked-section>
           <header class="section-head">
             <div><h2>我喜欢的</h2></div>
             <p class="section-desc">喜欢与已看、评分各自独立；这里只收留偏爱。</p>
@@ -191,8 +191,8 @@
             </div>
             <div class="profile-links">
               <a href="#collections"><span><b>我的收藏</b><small>3 个收藏夹</small></span><span>→</span></a>
-              <a href="#library"><span><b>看过的影片</b><small>27 部</small></span><span>→</span></a>
-              <button data-player-toggle-profile><span><b>退出登录</b><small>单账号 · 本机</small></span><span>→</span></button>
+              <a href="#library" data-watched-link><span><b>看过的影片</b><small>27 部</small></span><span>→</span></a>
+              <button data-logout><span><b>退出登录</b><small>单账号 · 本机</small></span><span>→</span></button>
             </div>
           </div>
         </div>
@@ -256,6 +256,11 @@
       <div class="search-results" data-search-results>
         <p class="search-hint">输入片名或演员姓名，按 Esc 关闭。</p>
       </div>
+    </div>
+
+    <div class="web-modal-layer" data-web-modal hidden>
+      <button class="web-modal-scrim" data-close-web-modal aria-label="关闭"></button>
+      <section class="web-modal" data-web-modal-content role="dialog" aria-modal="true"></section>
     </div>
 
     <div class="toast" data-toast role="status" aria-live="polite"></div>
