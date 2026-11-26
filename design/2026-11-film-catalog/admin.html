@@ -28,6 +28,19 @@
         <header class="studio-top">
           <p class="crumb"><span>管理端</span><i>/</i><b data-crumb>录入工作台</b></p>
           <div class="top-actions">
+            <div class="theme-picker">
+              <button class="theme-trigger" data-act="theme" aria-expanded="false" aria-haspopup="true">
+                <span class="theme-dots" data-theme-dots aria-hidden="true"></span>
+                <span>主题</span>
+                <i aria-hidden="true">⌄</i>
+              </button>
+              <div class="theme-popover" data-theme-popover hidden>
+                <header><div><p class="eyebrow">Appearance</p><h2>主题</h2></div><button data-act="theme-close" aria-label="关闭">×</button></header>
+                <div class="theme-list" data-theme-list></div>
+                <div class="theme-radius"><span>圆角</span><div data-radius-list></div></div>
+                <footer><button data-act="theme-reset">恢复默认</button><small>保存在本机</small></footer>
+              </div>
+            </div>
             <a class="watch-link" href="web.html">观看端 <span aria-hidden="true">↗</span></a>
             <button class="exit" data-act="logout">退出</button>
           </div>

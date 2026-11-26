@@ -32,6 +32,21 @@
       { id: "archive", label: "归档" }
     ] }
   ];
+
+  const adminThemes = [
+    { id: "archive", name: "Archive", note: "暖纸 / 牛血红", colors: ["#f3f1ec", "#1d1c19", "#8d3b31", "#5d6b58"] },
+    { id: "graphite", name: "Graphite", note: "中性纸 / 深青", colors: ["#f1f0eb", "#1f201d", "#3f5b53", "#8d3b31"] },
+    { id: "cool", name: "Cool Paper", note: "冷灰 / 灰蓝", colors: ["#f3f4f1", "#1e2422", "#3e5f76", "#9a6a3a"] },
+    { id: "museum", name: "Museum", note: "奶油 / 墨绿", colors: ["#f1eee5", "#23251f", "#4e6250", "#9a6a3a"] },
+    { id: "dark", name: "Dark Ops", note: "碳黑 / 黄铜", colors: ["#151514", "#eae5d9", "#c7a25c", "#b04a3e"] }
+  ];
+  const adminRadii = [
+    { id: "sharp", label: "直角", note: "0 / 0 / 0" },
+    { id: "restrained", label: "克制", note: "3 / 6 / 9" },
+    { id: "soft", label: "偏软", note: "4 / 8 / 12" }
+  ];
+  let adminTheme = "archive";
+  let adminRadius = "restrained";
   const labels = {
     intake: "录入工作台", media: "影片资料库", people: "演员", franchises: "系列",
     collections: "收藏夹", categories: "分类维护", tags: "标签维护",
@@ -1262,6 +1277,69 @@
     toast("已保存本次修改");
   }
 
+
+  const storeTheme = (key, value) => {
+    try { localStorage.setItem(key, value); } catch (error) { /* static prototype */ }
+  };
+
+  function closeThemePicker() {
+    const popover = $("[data-theme-popover]");
+    const trigger = $("[data-act=theme]");
+    if (popover) popover.hidden = true;
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+  }
+
+  function applyAdminTheme(theme, radius, persist) {
+    adminTheme = adminThemes.some((item) => item.id === theme) ? theme : "archive";
+    adminRadius = adminRadii.some((item) => item.id === radius) ? radius : "restrained";
+    document.body.dataset.adminTheme = adminTheme;
+    document.body.dataset.adminRadius = adminRadius;
+    const current = adminThemes.find((item) => item.id === adminTheme);
+    const size = adminRadii.find((item) => item.id === adminRadius);
+    const dots = $("[data-theme-dots]");
+    if (dots) dots.innerHTML = current.colors.map((color) => '<i style="--c:' + color + '"></i>').join("");
+    $$("[data-act=theme-pick]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.value === adminTheme)));
+    $$("[data-act=radius-pick]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.value === adminRadius)));
+    if (persist) {
+      storeTheme("vx-admin-theme", adminTheme);
+      storeTheme("vx-admin-radius", adminRadius);
+    }
+    const trigger = $("[data-act=theme]");
+    if (trigger) trigger.setAttribute("aria-label", "主题：" + current.name + "，圆角：" + size.label);
+  }
+
+  function initThemePicker(params) {
+    const themeList = $("[data-theme-list]");
+    const radiusList = $("[data-radius-list]");
+    if (!themeList || !radiusList) return;
+    themeList.innerHTML = adminThemes.map((item) => [
+      '<button class="theme-choice" data-act="theme-pick" data-value="' + item.id + '" aria-pressed="false">',
+      '<span class="theme-dots">' + item.colors.map((color) => '<i style="--c:' + color + '"></i>').join("") + '</span>',
+      '<span><b>' + esc(item.name) + '</b><small>' + esc(item.note) + '</small></span>',
+      item.id === "graphite" ? '<em>推荐</em>' : '',
+      '</button>'
+    ].join("")).join("");
+    radiusList.innerHTML = adminRadii.map((item) =>
+      '<button data-act="radius-pick" data-value="' + item.id + '" aria-pressed="false">' + esc(item.label) + '</button>'
+    ).join("");
+    const capture = params.has("capture");
+    let theme = params.get("theme") || (capture ? "archive" : "archive");
+    let radius = params.get("radius") || (capture ? "restrained" : "restrained");
+    if (!capture) {
+      try {
+        theme = localStorage.getItem("vx-admin-theme") || theme;
+        radius = localStorage.getItem("vx-admin-radius") || radius;
+      } catch (error) { /* static prototype */ }
+    }
+    applyAdminTheme(theme, radius, false);
+    if (params.get("picker") === "1") {
+      const popover = $("[data-theme-popover]");
+      if (popover) popover.hidden = false;
+      const trigger = $("[data-act=theme]");
+      if (trigger) trigger.setAttribute("aria-expanded", "true");
+    }
+  }
+
   function render() {
     renderRail();
     $("[data-crumb]").textContent = labels[state.view] || "管理";
@@ -1313,6 +1391,8 @@
   }
 
   document.addEventListener("click", (e) => {
+    const popover = $("[data-theme-popover]");
+    if (popover && !popover.hidden && !e.target.closest(".theme-picker")) closeThemePicker();
     const nav = e.target.closest("[data-nav]");
     if (nav) {
       state.view = nav.dataset.nav;
@@ -1328,6 +1408,17 @@
     if (!act) return;
     const action = act.dataset.act;
     const id = act.dataset.id;
+    if (action === "theme") {
+      const themePopover = $("[data-theme-popover]");
+      const open = themePopover.hidden;
+      themePopover.hidden = !open;
+      act.setAttribute("aria-expanded", String(open));
+      return;
+    }
+    if (action === "theme-close") return closeThemePicker();
+    if (action === "theme-pick") return applyAdminTheme(act.dataset.value, adminRadius, true);
+    if (action === "radius-pick") return applyAdminTheme(adminTheme, act.dataset.value, true);
+    if (action === "theme-reset") return applyAdminTheme("archive", "restrained", true);
     if (action === "inbox") return openOverlay("inbox", "");
     if (action === "set-target") { state.selected = new Set([id]); return openOverlay("target", ""); }
     if (action === "review" || action === "preview") return openOverlay("draft", id);
@@ -1569,6 +1660,7 @@
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && state.overlay) closeOverlay();
+    if (e.key === "Escape" && !$("[data-theme-popover]").hidden) closeThemePicker();
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
       e.preventDefault();
       const input = $("[data-global-search]");
@@ -1591,5 +1683,6 @@
   if (params.get("tab")) state.editorTab = params.get("tab");
   if (params.get("mode")) state.mediaMode = params.get("mode");
   if (params.get("drawer")) state.overlay = { type: "draft", id: params.get("drawer") };
+  initThemePicker(params);
   render();
 })();

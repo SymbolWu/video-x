@@ -38,6 +38,8 @@
 
 管理端配色与圆角对照：http://127.0.0.1:8099/theme-lab.html
 
+管理端顶栏“主题”可选择 Archive / Graphite / Cool Paper / Museum / Dark Ops 五种配色，以及直角 / 克制 / 偏软三档圆角。默认 Archive + 克制；选择会保存在本机。
+
 可直接照抄的尺寸、组件结构和正式数据替换方式见 [IMPLEMENTATION.md](IMPLEMENTATION.md)。
 
 ## 本次针对反馈的修正
@@ -147,7 +149,7 @@
     │   ├── theme-lab.js
     │   └── icons.js
     ├── assets/                    影片、影人、场景、来源清单
-    ├── screenshots/               37 张实现截图
+    ├── screenshots/               38 张实现截图
     └── tools/capture.sh           截图脚本
 
 ## 数据与边界
@@ -162,7 +164,7 @@
 ## 截图
 
 - 观看端 7 张：discover / library / detail / stills / player / collections / profile。
-- 管理端 20 张：intake、intake-drawer、media、media-cards、people、person、franchises、franchise、categories、tags、organizations、collections、jobs、settings、enrich、archive、editor、editor-versions、draft-editor、theme-lab。
+- 管理端 21 张：intake、intake-drawer、media、media-cards、people、person、franchises、franchise、categories、tags、organizations、collections、jobs、settings、enrich、archive、editor、editor-versions、draft-editor、theme-picker、theme-lab。
 - 移动端 9 张：board、discover、library、series、collections、profile、detail、filters、player。
 - 总览 1 张。
 
