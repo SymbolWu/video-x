@@ -189,72 +189,120 @@
 
   function renderPlayer(id) {
     const f = filmById.get(id) || filmById.get('693134');
+    if (state.mPlayerStop) state.mPlayerStop();
     state.playerId = f.id;
+    const editionName = f.editions[0].name;
     const view = $('[data-m-view="player"]');
     view.innerHTML = `
       <div class="m-player">
         <div class="m-player-top">
           <button class="m-round" data-m-close-player aria-label="关闭播放器">×</button>
-          <div class="m-player-title"><b>${esc(f.title)}</b><small>${esc(f.en || '')} · 演示片段</small></div>
+          <div class="m-player-title"><b>${esc(f.title)}</b><small>${esc(f.en || '')} · ${esc(editionName)} · 静帧预览</small></div>
         </div>
         <div class="m-player-stage">
           <div class="m-player-bg" style="background-image:url('${f.backdrop}')"></div>
-          <video data-m-video src="assets/preview.mp4" poster="${f.backdrop}" playsinline preload="metadata"></video>
-          <span class="m-player-badge">${esc(f.editions[0].name)} · HDR10</span>
-          <button class="m-player-center" data-m-player-toggle aria-label="播放">▶</button>
+          <img data-m-frame src="${f.backdrop}" alt="" />
+          <span class="m-player-badge">${esc(editionName)} · HDR10</span>
+          <button class="m-player-center" data-m-player-toggle aria-label="播放">${icon('play', 22)}</button>
         </div>
         <div class="m-player-controls">
           <div class="m-player-time"><span data-m-current>00:00</span><input class="m-player-seek" data-m-seek type="range" min="0" max="100" value="0" aria-label="播放进度" /><span data-m-duration>00:22</span></div>
           <div class="m-player-buttons">
-            <button data-m-player-toggle aria-label="播放或暂停">▶</button>
-            <button data-m-skip="-10" aria-label="后退 10 秒">↺ 10</button>
-            <button data-m-skip="10" aria-label="前进 10 秒">↻ 10</button>
-            <span class="end">${icon('volume', 15)}</span>
-            <button data-m-version>${esc(f.editions[0].name)}</button>
-            <button data-m-fullscreen aria-label="全屏">⛶</button>
+            <button data-m-player-toggle aria-label="播放或暂停">${icon('play', 18)}</button>
+            <button data-m-skip="-10" aria-label="后退 10 秒">${icon('arrow-left', 16)}<small>10</small></button>
+            <button data-m-skip="10" aria-label="前进 10 秒">${icon('arrow-right', 16)}<small>10</small></button>
+            <button data-m-volume-open aria-label="音量">${icon('volume', 16)}</button>
+            <button data-m-version aria-label="切换版本">${esc(editionName)}</button>
+            <button data-m-fullscreen aria-label="全屏">${icon('fullscreen', 16)}</button>
+          </div>
+          <div class="m-volume-pop" data-m-volume-pop hidden>
+            <button data-m-mute aria-label="静音">${icon('volume', 15)}</button>
+            <input data-m-volume type="range" min="0" max="1" step="0.01" value="1" aria-label="音量" />
           </div>
         </div>
       </div>
     `;
-    const video = $('[data-m-video]', view);
     const seek = $('[data-m-seek]', view);
     const current = $('[data-m-current]', view);
     const duration = $('[data-m-duration]', view);
     const center = $('.m-player-center', view);
+    const volumeOpen = $('[data-m-volume-open]', view);
+    const volumePop = $('[data-m-volume-pop]', view);
+    const volume = $('[data-m-volume]', view);
+    const muteButton = $('[data-m-mute]', view);
     const fmtTime = (s) => Number.isFinite(s) ? String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0') : '00:00';
-    const paint = () => {
-      const d = video.duration || 22;
-      current.textContent = fmtTime(video.currentTime);
-      duration.textContent = fmtTime(d);
-      seek.value = String((video.currentTime / d) * 100);
-      seek.style.setProperty('--p', (video.currentTime / d) * 100 + '%');
-      center.textContent = video.paused ? '▶' : '❚❚';
-      center.classList.toggle('is-hidden', !video.paused);
-      $$('[data-m-player-toggle]', view).forEach((b) => { if (b !== center) b.textContent = video.paused ? '▶' : '❚❚'; });
+    let time = 0;
+    let playing = false;
+    let volumeLevel = 1;
+    let muted = false;
+    let raf = 0;
+    let last = 0;
+    const durationSeconds = 22;
+    const updateVolume = () => {
+      volume.value = muted ? '0' : String(volumeLevel);
+      volume.style.setProperty('--v', (muted ? 0 : volumeLevel) * 100 + '%');
+      volumeOpen.innerHTML = icon(muted ? 'mute' : 'volume', 16);
+      muteButton.innerHTML = icon(muted ? 'mute' : 'volume', 15);
     };
-    video.addEventListener('loadedmetadata', paint);
-    video.addEventListener('timeupdate', paint);
-    video.addEventListener('play', paint);
-    video.addEventListener('pause', paint);
-    video.addEventListener('ended', paint);
-    $$('[data-m-player-toggle]', view).forEach((b) => b.addEventListener('click', () => {
-      if (video.paused) {
-        video.play().catch(() => {
-          video.muted = true;
-          video.play().then(() => toast('浏览器要求静音播放，已静音')).catch(() => toast('当前环境无法播放此片段'));
-        });
-      } else video.pause();
-    }));
+    const paint = () => {
+      current.textContent = fmtTime(time);
+      duration.textContent = fmtTime(durationSeconds);
+      seek.value = String((time / durationSeconds) * 100);
+      seek.style.setProperty('--p', (time / durationSeconds) * 100 + '%');
+      center.innerHTML = icon(playing ? 'pause' : 'play', 22);
+      center.classList.toggle('is-hidden', playing);
+      $$('[data-m-player-toggle]', view).forEach((b) => { if (b !== center) b.innerHTML = icon(playing ? 'pause' : 'play', 18); });
+      updateVolume();
+    };
+    const tick = (ts) => {
+      if (!playing) return;
+      if (!last) last = ts;
+      const delta = Math.min(0.1, (ts - last) / 1000);
+      last = ts;
+      time = Math.min(durationSeconds, time + delta);
+      if (time >= durationSeconds) playing = false;
+      paint();
+      if (playing) raf = requestAnimationFrame(tick);
+    };
+    const stop = () => { playing = false; cancelAnimationFrame(raf); view.classList.remove('is-playing'); };
+    const togglePlay = () => {
+      if (playing) {
+        playing = false;
+        cancelAnimationFrame(raf);
+        view.classList.remove('is-playing');
+        paint();
+        return;
+      }
+      if (time >= durationSeconds) time = 0;
+      playing = true;
+      view.classList.add('is-playing');
+      last = 0;
+      raf = requestAnimationFrame(tick);
+      paint();
+    };
+    $$('[data-m-player-toggle]', view).forEach((b) => b.addEventListener('click', togglePlay));
     $$('[data-m-skip]', view).forEach((b) => b.addEventListener('click', () => {
-      video.currentTime = Math.max(0, Math.min(video.duration || 22, video.currentTime + Number(b.dataset.mSkip)));
+      time = Math.max(0, Math.min(durationSeconds, time + Number(b.dataset.mSkip)));
+      paint();
     }));
-    seek.addEventListener('input', () => { video.currentTime = (Number(seek.value) / 100) * (video.duration || 22); });
+    seek.addEventListener('input', () => {
+      time = (Number(seek.value) / 100) * durationSeconds;
+      paint();
+    });
+    $('[data-m-close-player]', view).addEventListener('click', () => showScreen('detail'));
+    volumeOpen.addEventListener('click', () => { volumePop.hidden = !volumePop.hidden; });
+    volume.addEventListener('input', () => { volumeLevel = Number(volume.value); muted = volumeLevel === 0; updateVolume(); });
+    muteButton.addEventListener('click', () => {
+      if (muted || volumeLevel === 0) { muted = false; if (volumeLevel === 0) volumeLevel = 0.8; toast('已取消静音'); }
+      else { muted = true; toast('已静音'); }
+      updateVolume();
+    });
     $('[data-m-fullscreen]', view).addEventListener('click', () => {
-      const stage = $('.m-player-stage', view);
       if (document.fullscreenElement) void document.exitFullscreen();
-      else if (stage.requestFullscreen) void stage.requestFullscreen().catch(() => toast('当前环境不支持全屏'));
+      else if (view.requestFullscreen) void view.requestFullscreen().catch(() => toast('当前环境不支持全屏'));
     });
     $('[data-m-version]', view).addEventListener('click', () => openEditionSheet(f));
+    state.mPlayerStop = stop;
     paint();
   }
 
@@ -378,9 +426,9 @@
   }
 
   function showScreen(name) {
-    if (name !== 'player') {
-      const playing = $('[data-m-video]');
-      if (playing && !playing.paused) playing.pause();
+    if (name !== 'player' && state.mPlayerStop) {
+      state.mPlayerStop();
+      state.mPlayerStop = null;
     }
     state.screen = name;
     $('[data-m-search]').hidden = true;

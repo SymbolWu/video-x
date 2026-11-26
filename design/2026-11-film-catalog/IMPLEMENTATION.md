@@ -99,7 +99,7 @@
 
 ## 6. 观看端 / 移动端播放器
 
-- 原型实际使用 assets/preview.mp4（22 秒样片）。
+- 原型使用当前影片 backdrop 静帧 + 22 秒计时模拟播放；不依赖真实视频解码。
 - 控件：播放/暂停、进度、前后 10 秒、静音、版本、全屏。
 - 进度条为 input[type=range]；轨道 2px；滑块 8px。
 - 移动端使用同一套控件，版本按钮打开底部版本面板。
@@ -109,7 +109,7 @@
 - Web：features/playback/Playback.tsx / ScreeningRoom
 - Android：ui/playback/PlaybackScreen.kt
 
-正式播放器仍应接现有 API 的 playback plan/session，不要照搬样片 URL。
+正式播放器仍应接现有 API 的 playback plan/session；原型里的静帧与计时只用于验证控件布局和状态。
 
 ## 7. 移动端一级页面
 

@@ -1321,10 +1321,14 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  height: auto;
-  max-height: 100%;
-  object-fit: contain;
-  opacity: 0.92;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.94;
+  transition: transform 8s linear;
+}
+
+.m-player.is-playing .m-player-stage img {
+  transform: scale(1.025);
 }
 
 .m-player-stage::after {
@@ -2251,4 +2255,82 @@
   color: var(--ivory-3);
   font-size: 10px;
   line-height: 1.7;
+}
+
+
+.m-player-controls {
+  position: relative;
+}
+
+.m-player-buttons button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.m-player-buttons button small {
+  color: var(--ivory-4);
+  font-family: var(--font-mono);
+  font-size: 6.5px;
+}
+
+.m-volume-pop {
+  position: absolute;
+  right: 16px;
+  bottom: 76px;
+  z-index: 5;
+  width: 196px;
+  min-height: 44px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(12, 12, 11, 0.92);
+  border: 1px solid var(--dark-line-strong);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.m-volume-pop button {
+  color: var(--ivory-2);
+}
+
+.m-volume-pop input {
+  flex: 1;
+  height: 18px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+}
+
+.m-volume-pop input::-webkit-slider-runnable-track {
+  height: 2px;
+  background: linear-gradient(90deg, var(--brass) var(--v, 100%), rgba(242, 236, 225, 0.2) var(--v, 100%));
+}
+
+.m-volume-pop input::-webkit-slider-thumb {
+  appearance: none;
+  width: 8px;
+  height: 8px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--brass-bright);
+}
+
+.m-volume-pop input::-moz-range-track {
+  height: 2px;
+  background: rgba(242, 236, 225, 0.2);
+}
+
+.m-volume-pop input::-moz-range-progress {
+  height: 2px;
+  background: var(--brass);
+}
+
+.m-volume-pop input::-moz-range-thumb {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--brass-bright);
 }

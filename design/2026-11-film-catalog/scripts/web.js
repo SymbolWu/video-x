@@ -429,89 +429,212 @@
   function renderPlayer(id) {
     const f = filmById.get(id);
     if (!f) return;
+    if (state.playerStop) state.playerStop();
     state.playerId = id;
     const editionName = state.editions.get(f.id) || f.editions[0].name;
     const view = $('[data-view="player"]');
+    view.classList.remove('is-idle', 'is-playing');
     view.innerHTML = `
       <header class="player-top">
         <a class="icon-button" href="#detail/${f.id}" aria-label="关闭播放器">×</a>
-        <div class="player-title"><b>${esc(f.title)}</b><small>${esc(f.en || f.category)} · ${esc(editionName)} · 演示片段</small></div>
-        <div class="player-top-right"><span>HDR10 · 5.1</span><span>断点会记录</span></div>
+        <div class="player-title"><b>${esc(f.title)}</b><small>${esc(f.en || f.category)} · ${esc(editionName)} · 静帧预览</small></div>
+        <div class="player-top-right"><span>4K UHD · 5.1</span><span>断点会记录</span></div>
       </header>
-      <div class="player-stage">
-        <video data-player-video src="assets/preview.mp4" poster="${f.backdrop}" playsinline preload="metadata"></video>
+      <div class="player-stage" style="--poster:url('${f.backdrop}')">
+        <img class="player-frame" data-player-frame src="${f.backdrop}" alt="" />
         <button class="player-center" data-player-toggle aria-label="播放">${icon('play', 26)}</button>
       </div>
       <div class="player-controls">
-        <div class="player-timeline"><span data-player-current>00:00</span><input class="player-seek" data-player-seek type="range" min="0" max="100" value="0" aria-label="播放进度" /><span data-player-duration>00:22</span></div>
+        <div class="player-timeline">
+          <span data-player-current>00:00</span>
+          <div class="player-seek-wrap">
+            <span class="player-hover-time" data-player-hover>00:00</span>
+            <input class="player-seek" data-player-seek type="range" min="0" max="100" value="0" aria-label="播放进度" />
+          </div>
+          <span data-player-duration>00:22</span>
+        </div>
         <div class="player-buttons">
-          <button data-player-toggle aria-label="播放或暂停">${icon('play', 18)}</button>
+          <button class="player-main" data-player-toggle aria-label="播放或暂停">${icon('play', 18)}</button>
           <button data-player-skip="-10" aria-label="后退 10 秒">${icon('arrow-left', 18)}</button>
           <button data-player-skip="10" aria-label="前进 10 秒">${icon('arrow-right', 18)}</button>
+          <div class="player-volume"><button data-player-mute aria-label="静音">${icon('volume', 18)}</button><input data-player-volume type="range" min="0" max="1" step="0.01" value="1" aria-label="音量" /></div>
           <span class="spacer"></span>
-          <button data-player-mute aria-label="静音">${icon('volume', 18)}</button>
+          <button data-player-settings aria-label="播放设置">${icon('settings', 18)}</button>
           <button class="player-version" data-player-version aria-label="切换版本">${esc(editionName)}</button>
           <button data-player-fullscreen aria-label="全屏">${icon('fullscreen', 18)}</button>
         </div>
+        <div class="player-menu" data-player-menu hidden>
+          <div class="player-menu-head"><span>播放设置</span><small>静帧预览</small></div>
+          <div class="player-menu-row"><span>播放速度</span><div class="player-speed">${[0.75, 1, 1.25, 1.5].map((n) => '<button data-player-speed="' + n + '"' + (n === 1 ? ' class="is-active"' : '') + '>' + n + '×</button>').join('')}</div></div>
+          <p class="player-menu-note">音轨：原声 · 字幕：关闭</p>
+        </div>
       </div>
     `;
-    const video = $('[data-player-video]', view);
     const seek = $('[data-player-seek]', view);
     const current = $('[data-player-current]', view);
     const duration = $('[data-player-duration]', view);
     const center = $('.player-center', view);
+    const volume = $('[data-player-volume]', view);
+    const muteButton = $('[data-player-mute]', view);
+    const settingsButton = $('[data-player-settings]', view);
+    const menu = $('[data-player-menu]', view);
+    const hover = $('[data-player-hover]', view);
+    const stage = $('.player-stage', view);
     const format = (s) => {
       if (!Number.isFinite(s)) return '00:00';
       return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0');
     };
-    const paint = () => {
-      const d = video.duration || 22;
-      current.textContent = format(video.currentTime);
-      duration.textContent = format(d);
-      seek.value = String((video.currentTime / d) * 100);
-      seek.style.setProperty('--p', (video.currentTime / d) * 100 + '%');
-      center.classList.toggle('is-hidden', !video.paused);
-      $$('[data-player-toggle]', view).forEach((b) => {
-        if (b === center) b.innerHTML = icon(video.paused ? 'play' : 'pause', 26);
-        else b.innerHTML = icon(video.paused ? 'play' : 'pause', 18);
-      });
+    let time = 0;
+    let playing = false;
+    let rate = 1;
+    let volumeLevel = 1;
+    let muted = false;
+    let raf = 0;
+    let last = 0;
+    let idleTimer = 0;
+    const durationSeconds = 22;
+    const updateVolume = () => {
+      volume.value = muted ? '0' : String(volumeLevel);
+      volume.style.setProperty('--v', (muted ? 0 : volumeLevel) * 100 + '%');
+      muteButton.innerHTML = icon(muted ? 'mute' : 'volume', 18);
+      muteButton.setAttribute('aria-label', muted ? '取消静音' : '静音');
     };
-    video.addEventListener('loadedmetadata', paint);
-    video.addEventListener('timeupdate', paint);
-    video.addEventListener('play', paint);
-    video.addEventListener('pause', paint);
-    video.addEventListener('ended', paint);
-    $$('[data-player-toggle]', view).forEach((b) => b.addEventListener('click', () => {
-      if (video.paused) {
-        video.play().catch(() => {
-          video.muted = true;
-          video.play().then(() => toast('浏览器要求静音播放，已静音')).catch(() => toast('当前环境无法播放此片段'));
-        });
-      } else video.pause();
-    }));
-    $$('[data-player-skip]', view).forEach((b) => b.addEventListener('click', () => {
-      video.currentTime = Math.max(0, Math.min(video.duration || 22, video.currentTime + Number(b.dataset.playerSkip)));
-    }));
-    seek.addEventListener('input', () => {
-      video.currentTime = ((Number(seek.value) / 100) * (video.duration || 22));
-    });
-    $('[data-player-mute]', view).addEventListener('click', () => {
-      video.muted = !video.muted;
-      toast(video.muted ? '已静音' : '已取消静音');
-    });
-    $('[data-player-fullscreen]', view).addEventListener('click', () => {
-      const stage = $('.player-stage', view);
+    const paint = () => {
+      current.textContent = format(time);
+      duration.textContent = format(durationSeconds);
+      seek.value = String((time / durationSeconds) * 100);
+      seek.style.setProperty('--p', (time / durationSeconds) * 100 + '%');
+      center.classList.toggle('is-hidden', playing);
+      $$('[data-player-toggle]', view).forEach((b) => {
+        if (b === center) b.innerHTML = icon(playing ? 'pause' : 'play', 26);
+        else b.innerHTML = icon(playing ? 'pause' : 'play', 18);
+      });
+      updateVolume();
+    };
+    const showChrome = () => {
+      view.classList.remove('is-idle');
+      clearTimeout(idleTimer);
+      if (playing && menu.hidden) {
+        idleTimer = setTimeout(() => {
+          if (playing && menu.hidden) view.classList.add('is-idle');
+        }, 2600);
+      }
+    };
+    const seekTo = (next) => {
+      time = Math.max(0, Math.min(durationSeconds, next));
+      paint();
+      showChrome();
+    };
+    const seekBy = (delta) => seekTo(time + delta);
+    const togglePlay = () => {
+      showChrome();
+      if (playing) {
+        playing = false;
+        cancelAnimationFrame(raf);
+        view.classList.remove('is-playing');
+        paint();
+        return;
+      }
+      if (time >= durationSeconds) time = 0;
+      playing = true;
+      view.classList.add('is-playing');
+      last = 0;
+      raf = requestAnimationFrame(tick);
+      paint();
+    };
+    const tick = (ts) => {
+      if (!playing) return;
+      if (!last) last = ts;
+      const delta = Math.min(0.1, (ts - last) / 1000);
+      last = ts;
+      time = Math.min(durationSeconds, time + delta * rate);
+      if (time >= durationSeconds) {
+        playing = false;
+        view.classList.remove('is-playing');
+        clearTimeout(idleTimer);
+      }
+      paint();
+      if (playing) raf = requestAnimationFrame(tick);
+    };
+    const stop = () => {
+      playing = false;
+      cancelAnimationFrame(raf);
+      clearTimeout(idleTimer);
+      view.classList.remove('is-playing');
+      document.removeEventListener('keydown', onKey);
+    };
+    const toggleFullscreen = () => {
       if (document.fullscreenElement) void document.exitFullscreen();
-      else if (stage.requestFullscreen) void stage.requestFullscreen().catch(() => toast('当前浏览器不支持全屏'));
+      else if (view.requestFullscreen) void view.requestFullscreen().catch(() => toast('当前浏览器不支持全屏'));
+    };
+    const onKey = (e) => {
+      if (document.querySelector('[data-still-viewer]')) return;
+      if (e.target.closest('input, textarea, select')) return;
+      if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); seekBy(-5); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); seekBy(5); }
+      else if (e.key.toLowerCase() === 'm') { muteButton.click(); }
+      else if (e.key.toLowerCase() === 'f') { toggleFullscreen(); }
+      else if (e.key === 'Escape' && !menu.hidden) { menu.hidden = true; showChrome(); }
+    };
+    $$('[data-player-toggle]', view).forEach((b) => b.addEventListener('click', togglePlay));
+    $$('[data-player-skip]', view).forEach((b) => b.addEventListener('click', () => seekBy(Number(b.dataset.playerSkip))));
+    stage.addEventListener('click', (e) => {
+      if (e.target.closest('button, input, .player-menu')) return;
+      if (!menu.hidden) { menu.hidden = true; showChrome(); return; }
+      togglePlay();
     });
-    let editionIndex = Math.max(0, f.editions.findIndex((e) => e.name === editionName));
+    view.addEventListener('mousemove', showChrome);
+    seek.addEventListener('input', () => seekTo((Number(seek.value) / 100) * durationSeconds));
+    const seekWrap = $('.player-seek-wrap', view);
+    seekWrap.addEventListener('mousemove', (e) => {
+      const rect = seek.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      hover.textContent = format(ratio * durationSeconds);
+      hover.style.left = ratio * 100 + '%';
+    });
+    volume.addEventListener('input', () => {
+      volumeLevel = Number(volume.value);
+      muted = volumeLevel === 0;
+      updateVolume();
+    });
+    muteButton.addEventListener('click', () => {
+      if (muted || volumeLevel === 0) {
+        muted = false;
+        if (volumeLevel === 0) volumeLevel = 0.8;
+        toast('已取消静音');
+      } else {
+        muted = true;
+        toast('已静音');
+      }
+      updateVolume();
+      showChrome();
+    });
+    settingsButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.hidden = !menu.hidden;
+      showChrome();
+    });
+    $$('[data-player-speed]', view).forEach((b) => b.addEventListener('click', () => {
+      rate = Number(b.dataset.playerSpeed);
+      $$('[data-player-speed]', view).forEach((x) => x.classList.toggle('is-active', x === b));
+      menu.hidden = true;
+      showChrome();
+      toast('播放速度 ' + b.dataset.playerSpeed + '×');
+    }));
+    $('[data-player-fullscreen]', view).addEventListener('click', toggleFullscreen);
     $('[data-player-version]', view).addEventListener('click', () => {
-      editionIndex = (editionIndex + 1) % f.editions.length;
-      state.editions.set(f.id, f.editions[editionIndex].name);
-      $('[data-player-version]', view).textContent = f.editions[editionIndex].name;
-      toast('已切换为 ' + f.editions[editionIndex].name);
+      const list = f.editions;
+      const index = Math.max(0, list.findIndex((e) => e.name === (state.editions.get(f.id) || editionName)));
+      const next = list[(index + 1) % list.length];
+      state.editions.set(f.id, next.name);
+      $('[data-player-version]', view).textContent = next.name;
+      toast('已切换为 ' + next.name);
     });
+    state.playerStop = stop;
+    document.addEventListener('keydown', onKey);
     paint();
+    showChrome();
   }
 
   function renderProfile() {
@@ -539,10 +662,11 @@
   function renderRoute() {
     const hash = location.hash.replace(/^#/, '') || 'discover';
     const [path, id] = hash.split('/');
-    const route = ['discover', 'library', 'collections', 'profile', 'detail', 'player'].includes(path) ? path : 'discover';
-    if (route !== 'player') {
-      const playing = $('[data-player-video]');
-      if (playing && !playing.paused) playing.pause();
+    const routePath = path === 'play' ? 'player' : path;
+    const route = ['discover', 'library', 'collections', 'profile', 'detail', 'player'].includes(routePath) ? routePath : 'discover';
+    if (route !== 'player' && state.playerStop) {
+      state.playerStop();
+      state.playerStop = null;
     }
     state.route = route;
     $$('[data-view]').forEach((v) => { v.hidden = v.dataset.view !== state.route; });
