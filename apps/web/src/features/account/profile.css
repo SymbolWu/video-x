@@ -39,7 +39,7 @@
   color: var(--vx-text);
   margin-bottom: 5px;
 }
-.vx-profile > button {
+.vx-profile > :is(button, a) {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -49,8 +49,9 @@
   font-size: 13px;
   color: #c6c8d1;
   text-align: left;
+  text-decoration: none;
 }
-.vx-profile > button > svg:last-child {
+.vx-profile > :is(button, a) > svg:last-child {
   margin-left: auto;
   color: var(--vx-muted);
   width: 16px;

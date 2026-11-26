@@ -292,6 +292,23 @@
 .vx-desktop .vx-top-actions {
   margin-left: auto;
 }
+.vx-admin-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding-inline: 10px;
+  border-radius: 8px;
+  color: #afb0b8;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.vx-admin-link:hover {
+  color: var(--vx-text);
+  background: var(--vx-panel);
+}
 .vx-desktop .vx-avatar-letter[aria-current] {
   outline: 1px solid var(--vx-pink);
 }

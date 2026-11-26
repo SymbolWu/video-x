@@ -87,6 +87,12 @@ export function WatchHeader({
           >
             <Icon name="search" size={22} />
           </button>
+          {desktop && (
+            <a className="vx-admin-link" href="/manage/">
+              <Icon name="grid" size={16} />
+              管理端
+            </a>
+          )}
           <button
             aria-current={desktop && nav === "我的" ? "page" : undefined}
             className="vx-avatar-letter"

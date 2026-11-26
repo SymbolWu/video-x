@@ -39,6 +39,11 @@ export function ProfilePage({
         看过的影片
         <Icon name="chevron" />
       </button>
+      <a href="/manage/">
+        <Icon name="grid" />
+        进入管理端
+        <Icon name="chevron" />
+      </a>
       <button onClick={logout}>
         <Icon name="discover" />
         退出登录

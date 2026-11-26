@@ -1211,3 +1211,28 @@ test("下载目录设置在切换媒体盘后重新浏览，并提交盘身份",
     },
   ]);
 });
+
+test("桌面观看导航和移动端我的都能进入同环境的管理端", async (t) => {
+  const desktop = await openPage(t, "/", {
+    viewport: { width: 740, height: 800 },
+  });
+  const shortcut = desktop.getByRole("link", { name: "管理端", exact: true });
+  await shortcut.waitFor();
+  assert.equal(await shortcut.getAttribute("href"), "/manage/");
+  assert.ok(
+    await desktop
+      .locator(".vx-top")
+      .evaluate((node) => node.scrollWidth <= node.clientWidth),
+  );
+
+  const mobile = await openPage(t, "/", {
+    viewport: { width: 390, height: 844 },
+  });
+  await mobile
+    .getByRole("navigation", { name: "主导航" })
+    .getByRole("button", { name: "我的", exact: true })
+    .click();
+  const link = mobile.getByRole("link", { name: "进入管理端", exact: true });
+  await link.waitFor();
+  assert.equal(await link.getAttribute("href"), "/manage/");
+});
