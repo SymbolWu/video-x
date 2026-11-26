@@ -2288,6 +2288,11 @@
   z-index: 80;
 }
 
+/* The empty root must not cover the page and swallow every click. */
+.overlay-root:empty {
+  display: none;
+}
+
 .overlay-scrim {
   position: absolute;
   inset: 0;
