@@ -476,7 +476,7 @@
       rows.length ? '<div class="dict-card-grid">' : '<div class="empty-state">没有匹配的资料。</div>',
       rows.map((x) => [
         '<button class="dict-card-card" data-act="dict-edit" data-id="' + x.id + '" data-kind="' + kind + '">',
-        '<small>' + x.workCount + ' 部作品 · ' + (x.visible ? "显示中" : "已隐藏") + '</small>',
+        '<small>' + (x.visible ? "" : "已隐藏 · ") + x.workCount + ' 部作品</small>',
         '<h3>' + esc(x.name) + '</h3>',
         '<p>' + esc(x.detail) + (isTag ? ' · ' + esc(x.categoryName) : '') + '</p>',
         '<span>编辑资料 <i aria-hidden="true">→</i></span>',
@@ -499,8 +499,8 @@
       '<div class="collection-admin-grid">',
       D.collections.map((c) => [
         '<button class="collection-admin-card" data-act="collection-edit" data-id="' + c.id + '">',
-        '<span class="collection-art montage">' + c.filmIds.slice(0, 3).map((id) => { const f = VX.films.find((x) => x.id === id); return f ? '<img src="' + f.backdrop + '" alt="" />' : ''; }).join('') + '<i>' + c.count + '</i></span>',
-        '<span class="collection-copy"><strong>' + esc(c.name) + '</strong><small>' + esc(c.desc) + '</small><em>' + c.count + ' 部影片 · 编辑资料</em></span>',
+        '<span class="collection-art montage">' + c.filmIds.slice(0, 3).map((id) => { const f = VX.films.find((x) => x.id === id); return f ? '<img src="' + f.backdrop + '" alt="" />' : ''; }).join('') + '</span>',
+        '<span class="collection-copy"><small>' + c.count + ' 部影片</small><strong>' + esc(c.name) + '</strong><span>' + esc(c.desc) + '</span><em>编辑收藏夹</em></span>',
         '</button>'
       ].join('')).join(''),
       '</div>',

@@ -1523,23 +1523,30 @@
 
 .collection-copy strong {
   display: block;
-  font-size: 11px;
+  margin-top: 6px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .collection-copy small {
   display: block;
+  color: var(--paper-muted);
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+}
+
+.collection-copy > span {
+  display: block;
   margin-top: 2px;
   color: var(--paper-muted);
-  font-size: 8px;
+  font-size: 8.5px;
 }
 
 .collection-copy em {
   display: block;
-  margin-top: 5px;
-  color: var(--paper-line-strong);
-  font-family: var(--font-mono);
-  font-size: 6.5px;
+  margin-top: 8px;
+  color: var(--oxblood);
+  font-size: 8.5px;
   font-style: normal;
 }
 

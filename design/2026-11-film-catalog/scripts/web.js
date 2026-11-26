@@ -28,7 +28,8 @@
     playerId: null,
     favorites: new Set(films.filter((f) => f.favorite).map((f) => f.id)),
     watched: new Set(films.filter((f) => f.watched).map((f) => f.id)),
-    ratings: new Map(films.filter((f) => f.rating).map((f) => [f.id, f.rating]))
+    ratings: new Map(films.filter((f) => f.rating).map((f) => [f.id, f.rating])),
+    editions: new Map()
   };
 
   const years = [...new Set(films.map((f) => f.year))].sort((a, b) => b - a);
@@ -246,19 +247,13 @@
     const fav = state.favorites.has(f.id);
     const watched = state.watched.has(f.id);
     const resume = f.resume;
+    const selectedEdition = state.editions.get(f.id) || f.editions[0].name;
     const stills = detailStills(f);
     const view = $('[data-view="detail"]');
     view.innerHTML = `
+      <nav class="detail-crumb"><a href="#library">${icon('arrow-left', 15)} 返回</a><span aria-hidden="true">/</span><span>影片详情</span></nav>
       <div class="detail-hero">
         <div class="detail-hero-bg"><img src="${f.backdrop}" alt="" /></div>
-        <div class="detail-topline">
-          <a class="detail-back" href="#library">${icon('arrow-left', 16)} 返回片库</a>
-          <div class="detail-tools">
-            <button class="detail-tool" data-detail-fav aria-pressed="${fav}">${icon(fav ? 'heart-fill' : 'heart', 14)} ${fav ? '已喜欢' : '喜欢'}</button>
-            <button class="detail-tool" data-detail-collection>${icon('folder', 14)} 收藏夹</button>
-            <button class="detail-tool" data-detail-watched aria-pressed="${watched}">${icon('check', 14)} ${watched ? '已看过' : '标记已看'}</button>
-          </div>
-        </div>
         <div class="detail-main-row">
           <a class="detail-poster" href="#play/${f.id}" aria-label="播放 ${esc(f.title)}"><img src="${f.poster}" alt="${esc(f.title)} 海报" /></a>
           <div class="detail-title-block">
@@ -267,12 +262,20 @@
             <p class="detail-meta">${f.year}<i>·</i>${esc(f.category)}<i>·</i>${f.minutes} 分钟<i>·</i>${esc(f.director)}<i>·</i>${esc(f.format)}</p>
             <div class="detail-actions">
               <a class="detail-play" href="#play/${f.id}">${icon('play', 16)} ${resume ? '继续播放 · ' + Math.floor(resume.ms / 60000) + ':' + fmt(Math.floor((resume.ms % 60000) / 1000)) : '播放影片'}</a>
-              ${resume ? '<a class="detail-secondary" href="#play/' + f.id + '">从头播放</a>' : ''}
-              <a class="detail-secondary" href="#detail/${f.id}" data-detail-edition>${esc(f.editions[0].name)}</a>
+              ${resume ? '<a class="detail-restart" href="#play/' + f.id + '">从头播放</a>' : ''}
+              <label class="detail-version"><span>播放版本</span><select data-detail-edition-select>${f.editions.map((e) => '<option' + (e.name === selectedEdition ? ' selected' : '') + '>' + esc(e.name) + '</option>').join('')}</select></label>
             </div>
             ${resume ? `<p class="detail-progress-note"><span style="--p:${Math.min(100, (resume.ms / resume.duration) * 100)}%"></span> 上次看到 ${Math.floor(resume.ms / 60000)} 分 ${fmt(Math.floor((resume.ms % 60000) / 1000))} 秒 · ${esc(resume.edition || f.format)}</p>` : ''}
           </div>
         </div>
+      </div>
+      <div class="detail-personal-bar">
+        <div class="detail-tools">
+          <button data-detail-fav aria-pressed="${fav}">${icon(fav ? 'heart-fill' : 'heart', 16)} ${fav ? '已喜欢' : '喜欢'}</button>
+          <button data-detail-collection>${icon('folder', 16)} 收藏夹</button>
+          <button data-detail-watched aria-pressed="${watched}">${icon('check', 15)} ${watched ? '已看过' : '标记已看'}</button>
+        </div>
+        <div class="detail-rating" role="group" aria-label="我的评分"><span>我的评分</span>${[1,2,3,4,5].map((n) => `<button data-rate="${n}" aria-label="${n} 星" aria-pressed="${rating === n}">${icon(n <= (rating || 0) ? 'star-fill' : 'star', 17, n <= (rating || 0) ? 'is-on' : '')}</button>`).join('')}</div>
       </div>
       <div class="detail-body">
         <div class="detail-content">
@@ -301,16 +304,6 @@
         <aside class="detail-aside">
           <div class="detail-aside-inner">
             <div class="aside-block">
-              <span class="aside-label">我的评分 / Rating</span>
-              <div class="aside-rating">
-                <div class="stars" data-detail-stars>
-                  ${[1,2,3,4,5].map((n) => `<button data-rate="${n}" aria-label="${n} 星" aria-pressed="${rating === n}">${icon(n <= (rating || 0) ? 'star-fill' : 'star', 18, n <= (rating || 0) ? 'is-on' : '')}</button>`).join('')}
-                </div>
-                <small>${rating ? rating + ' / 5' : '未评分'}</small>
-              </div>
-              ${rating ? '<button class="rating-clear" data-rate="0">取消评分</button>' : ''}
-            </div>
-            <div class="aside-block">
               <span class="aside-label">资料 / Details</span>
               <dl class="fact-list">
                 <div><dt>DIRECTOR</dt><dd>${esc(f.director)}</dd></div>
@@ -324,7 +317,7 @@
             <div class="aside-block">
               <span class="aside-label">版本 / Editions</span>
               <div class="edition-list">
-                ${f.editions.map((e, i) => `<div class="edition-row ${i === 0 ? 'is-default' : ''}"><span><b>${esc(e.name)}</b><br /><small>${esc(e.resolution)} · ${esc(e.codec)} · ${esc(e.size)}</small></span>${i === 0 ? '<small>默认</small>' : ''}</div>`).join('')}
+                ${f.editions.map((e) => `<div class="edition-row ${e.name === selectedEdition ? 'is-default' : ''}"><span><b>${esc(e.name)}</b><br /><small>${esc(e.resolution)} · ${esc(e.codec)} · ${esc(e.size)}</small></span>${e.name === selectedEdition ? '<small>当前</small>' : ''}</div>`).join('')}
               </div>
             </div>
           </div>
@@ -349,13 +342,10 @@
       toast(state.watched.has(f.id) ? '已标记为看过' : '已取消已看');
     });
     $('[data-detail-collection]', $('[data-view="detail"]')).addEventListener('click', () => collectionPicker(f));
-    $('[data-detail-edition]', $('[data-view="detail"]')).addEventListener('click', (e) => {
-      e.preventDefault();
-      openWebModal([
-        '<h2>播放版本</h2><p class="web-modal-sub">' + esc(f.title) + ' · 选择默认播放版本</p>',
-        '<div class="collection-picker">' + f.editions.map((ed, i) => '<label><input type="radio" name="edition" data-edition-choose="' + i + '"' + (i === 0 ? ' checked' : '') + ' /><span><b>' + esc(ed.name) + '</b><small>' + esc(ed.resolution) + ' · ' + esc(ed.codec) + ' · ' + esc(ed.size) + '</small></span><span>' + (i === 0 ? '默认' : '') + '</span></label>').join('') + '</div>',
-        '<div class="web-modal-actions"><button class="web-modal-cancel" data-close-web-modal>取消</button><button class="web-modal-save" data-save-edition="' + f.id + '">使用此版本</button></div>'
-      ].join(''));
+    const editionSelect = $('[data-detail-edition-select]', $('[data-view="detail"]'));
+    editionSelect.addEventListener('change', () => {
+      state.editions.set(f.id, editionSelect.value);
+      toast('已选择 ' + editionSelect.value);
     });
     $$('[data-rate]', $('[data-view="detail"]')).forEach((b) => b.addEventListener('click', () => {
       const n = Number(b.dataset.rate);
@@ -377,11 +367,12 @@
     const f = filmById.get(id);
     if (!f) return;
     state.playerId = id;
+    const editionName = state.editions.get(f.id) || f.editions[0].name;
     const view = $('[data-view="player"]');
     view.innerHTML = `
       <header class="player-top">
         <a class="icon-button" href="#detail/${f.id}" aria-label="关闭播放器">×</a>
-        <div class="player-title"><b>${esc(f.title)}</b><small>${esc(f.en || f.category)} · 演示片段</small></div>
+        <div class="player-title"><b>${esc(f.title)}</b><small>${esc(f.en || f.category)} · ${esc(editionName)} · 演示片段</small></div>
         <div class="player-top-right"><span>HDR10 · 5.1</span><span>断点会记录</span></div>
       </header>
       <div class="player-stage">
@@ -396,7 +387,7 @@
           <button data-player-skip="10" aria-label="前进 10 秒">${icon('arrow-right', 18)}</button>
           <span class="spacer"></span>
           <button data-player-mute aria-label="静音">${icon('volume', 18)}</button>
-          <button class="player-version" data-player-version aria-label="切换版本">${esc(f.editions[0].name)}</button>
+          <button class="player-version" data-player-version aria-label="切换版本">${esc(editionName)}</button>
           <button data-player-fullscreen aria-label="全屏">${icon('fullscreen', 18)}</button>
         </div>
       </div>
@@ -450,9 +441,10 @@
       if (document.fullscreenElement) void document.exitFullscreen();
       else if (stage.requestFullscreen) void stage.requestFullscreen().catch(() => toast('当前浏览器不支持全屏'));
     });
-    let editionIndex = 0;
+    let editionIndex = Math.max(0, f.editions.findIndex((e) => e.name === editionName));
     $('[data-player-version]', view).addEventListener('click', () => {
       editionIndex = (editionIndex + 1) % f.editions.length;
+      state.editions.set(f.id, f.editions[editionIndex].name);
       $('[data-player-version]', view).textContent = f.editions[editionIndex].name;
       toast('已切换为 ' + f.editions[editionIndex].name);
     });
