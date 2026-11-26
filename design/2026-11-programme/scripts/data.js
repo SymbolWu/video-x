@@ -143,7 +143,11 @@ window.VX = {
    "favorite": true,
    "watched": true,
    "rating": 5,
-   "resume": null,
+   "resume": {
+    "ms": 1560000,
+    "duration": 7500000,
+    "edition": "1080p 原版"
+   },
    "editions": [
     {
      "name": "1080p 原版",

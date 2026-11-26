@@ -108,7 +108,7 @@
   }
 
   function renderHome() {
-    const resumeIds = ['693134', '157336', '843'];
+    const resumeIds = ['693134', '157336', '843', '129'];
     $('[data-resume-strip]').innerHTML = resumeIds.map((id) => {
       const f = filmById.get(id);
       const r = f.resume || { ms: 0, duration: f.minutes * 60000, edition: f.format };
@@ -121,10 +121,11 @@
         <span class="resume-progress"><i style="width:${pct}%"></i></span>
       </a>`;
     }).join('');
-    const homeIds = ['693134', '129', '157336', '120467', '324857', '313369'];
+    const homeIds = ['693134', '129', '157336', '120467', '324857', '313369', '272'];
     $('[data-home-grid]').innerHTML = homeIds.map((id) => posterCard(filmById.get(id))).join('');
-    const liked = films.filter((f) => state.favorites.has(f.id)).slice(0, 6);
+    const liked = films.filter((f) => state.favorites.has(f.id)).slice(0, 7);
     $('[data-liked-grid]').innerHTML = liked.map((f) => posterCard(f)).join('');
+    $('[data-home-categories]').innerHTML = VX.categories.map((c) => `<button type="button" data-home-cat="${c.id}"><span>${esc(c.name)}</span><b>${c.count}</b></button>`).join('');
   }
 
   function renderCategories() {
@@ -259,13 +260,13 @@
           <div class="detail-aside-inner">
             <div class="aside-block">
               <span class="aside-label">我的评分 / Rating</span>
-              <div class="aside-rating"><div class="stars" data-detail-stars>${stars(rating)}</div><small>${rating ? rating + ' / 5' : '未评分'}</small></div>
-              <div class="aside-actions">
-                <button class="aside-action" data-rate="1" aria-pressed="${rating === 1}">1 星 <span>★</span></button>
-                <button class="aside-action" data-rate="3" aria-pressed="${rating === 3}">3 星 <span>★★★</span></button>
-                <button class="aside-action" data-rate="5" aria-pressed="${rating === 5}">5 星 <span>★★★★★</span></button>
-                ${rating ? '<button class="aside-action" data-rate="0">取消评分 <span>×</span></button>' : ''}
+              <div class="aside-rating">
+                <div class="stars" data-detail-stars>
+                  ${[1,2,3,4,5].map((n) => `<button data-rate="${n}" aria-label="${n} 星" aria-pressed="${rating === n}">${icon(n <= (rating || 0) ? 'star-fill' : 'star', 18, n <= (rating || 0) ? 'is-on' : '')}</button>`).join('')}
+                </div>
+                <small>${rating ? rating + ' / 5' : '未评分'}</small>
               </div>
+              ${rating ? '<button class="rating-clear" data-rate="0">取消评分</button>' : ''}
             </div>
             <div class="aside-block">
               <span class="aside-label">资料 / Details</span>
@@ -275,7 +276,7 @@
                 <div><dt>RUNTIME</dt><dd>${f.durationLabel}</dd></div>
                 <div><dt>GENRE</dt><dd>${esc(f.category)}</dd></div>
                 <div><dt>IDENTIFIER</dt><dd>${esc(f.identifier)}</dd></div>
-                <div><dt>SHELF</dt><dd>馆藏 ${esc(f.identifier.slice(-4))}</dd></div>
+                <div><dt>文件</dt><dd>MEDIA-01 · ${esc(f.editions[0].resolution)}</dd></div>
               </dl>
             </div>
             <div class="aside-block">
@@ -470,9 +471,18 @@
 
   // Event wiring
   document.addEventListener('click', (e) => {
+    const homeCat = e.target.closest('[data-home-cat]');
+    if (homeCat) {
+      state.category = homeCat.dataset.homeCat;
+      state.scope = null;
+      location.hash = '#library';
+      renderLibrary();
+      return;
+    }
     const cat = e.target.closest('[data-category]');
     if (cat) {
       state.category = cat.dataset.category;
+      state.scope = null;
       renderLibrary();
       return;
     }

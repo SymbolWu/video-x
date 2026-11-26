@@ -45,6 +45,8 @@ shot admin-settings "admin.html?capture=1&view=settings" 1440 900
 shot mobile-board "mobile.html" 1440 900
 shot mobile-discover "mobile.html?screen=discover&capture=1" 390 844
 shot mobile-library "mobile.html?screen=library&capture=1" 390 844
+shot mobile-series "mobile.html?screen=library&entity=series&capture=1" 390 844
+shot mobile-collections "mobile.html?screen=collections&capture=1" 390 844
 shot mobile-detail "mobile.html?screen=detail&capture=1" 390 844
 shot mobile-filters "mobile.html?screen=filters&capture=1" 390 844
 shot mobile-player "mobile.html?screen=player&capture=1" 390 844

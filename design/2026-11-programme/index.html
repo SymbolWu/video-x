@@ -24,7 +24,7 @@
     <main class="hub-main">
       <section class="hub-hero">
         <div class="hub-hero-copy">
-          <p class="eyebrow">Design proposal · 2026.11 · 第 47 期</p>
+          <p class="eyebrow">Design proposal · 2026.11 · 第二版</p>
           <h1>把片库，做成一本<br /><em>可以翻开的<br />放映目录。</em></h1>
           <p class="hub-lede">
             不是把现有界面换个颜色，而是重写观看的节奏：让画面先说话，让资料退后半步。
@@ -36,7 +36,7 @@
             <a class="hub-cta" href="mobile.html"><span>移动端</span><b aria-hidden="true">→</b></a>
           </div>
           <dl class="hub-facts">
-            <div><dt>Scope</dt><dd>3 clients · 15 screens</dd></div>
+            <div><dt>Scope</dt><dd>3 clients · 18 captures</dd></div>
             <div><dt>Basis</dt><dd>existing routes &amp; data fields</dd></div>
             <div><dt>Build</dt><dd>static HTML / CSS / JS</dd></div>
           </dl>
@@ -73,7 +73,7 @@
 
           <a class="case case-mobile" href="mobile.html">
             <div class="case-art"><img src="screenshots/mobile-discover.jpg" alt="移动端发现页" /><span class="case-open">打开移动端 ↗</span></div>
-            <div class="case-copy"><span>02</span><div><h3>移动端</h3><p>两列海报、底部四项、上拉筛选。详情由返回栈接管，不出现双底栏。</p></div><em>390 × 844</em></div>
+            <div class="case-copy"><span>02</span><div><h3>移动端</h3><p>三列影片、2 列系列与收藏夹、44px 分类按钮；底部四项固定。详情由返回栈接管。</p></div><em>390 × 844</em></div>
           </a>
 
           <a class="case case-admin" href="admin.html">
@@ -138,7 +138,7 @@
 
         <div class="system-bottom">
           <div><span>Spacing</span><p>4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96 / 128</p></div>
-          <div><span>Grid</span><p>观看端 12 栏，海报 5／6 列；管理端 248 侧栏 + 固定内容线；移动端 20px 边距 + 2 列。</p></div>
+          <div><span>Grid</span><p>观看端 12 栏，海报 7 列；管理端 248 侧栏 + 固定内容线；移动端 3 列影片、2 列系列。</p></div>
           <div><span>Motion</span><p>进入 700–1000ms 缓出；悬停 180ms；播放器与抽屉 480ms。只用位移、透明度与 1.03 倍图片缩放。</p></div>
         </div>
       </section>
@@ -158,7 +158,7 @@
           <div class="map-row"><span><code>features/catalog/CatalogPage.tsx</code></span><span>管理端 · 资料库</span><span>列表作为默认密度，封面缩略图、文件状态与版本仍在同一行；筛选靠边。</span></div>
           <div class="map-row"><span><code>features/film-editor/FilmWorkspace.tsx</code></span><span>管理端 · 编辑</span><span>分区导航、表单、封面预览与发布检查三栏；保存栏吸底，状态不丢。</span></div>
           <div class="map-row"><span><code>features/operations/SystemStatus.tsx</code></span><span>管理端 · 系统</span><span>卷容量做成编目卡片；Worker、数据库、工具与恢复状态分成两组信息。</span></div>
-          <div class="map-row"><span><code>apps/android/.../LibraryApp.kt</code><br />FilmDetail / LibraryFilters</span><span>移动端</span><span>底部四项固定；2 列海报；筛选是 88% 高度的底部抽屉；详情隐藏底栏。</span></div>
+          <div class="map-row"><span><code>apps/android/.../LibraryApp.kt</code><br />FilmDetail / LibraryFilters</span><span>移动端</span><span>底部四项固定；3 列影片、2 列系列；筛选是 88% 高度的底部抽屉；详情隐藏底栏。</span></div>
         </div>
       </section>
 

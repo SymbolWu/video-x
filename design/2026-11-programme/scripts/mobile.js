@@ -72,7 +72,7 @@
         <span class="m-resume-progress"><i style="width:${pct}%"></i></span>
       </button>`;
     }).join('');
-    $('[data-m-home-grid]').innerHTML = ['693134', '129', '157336', '120467'].map((id) => poster(filmById.get(id))).join('');
+    $('[data-m-home-grid]').innerHTML = ['693134', '129', '157336', '120467', '324857', '313369'].map((id) => poster(filmById.get(id))).join('');
   }
 
   function filterList() {
@@ -124,8 +124,8 @@
       grid.className = 'm-people-grid';
       grid.innerHTML = VX.people.map((p) => `<a class="m-person" href="#" data-m-person="${p.id}"><span class="m-person-art"><img src="${p.portrait}" alt="${esc(p.name)}" /></span><b>${esc(p.name)}</b><small>${esc(p.category)} · ${films.filter((f) => f.actors.includes(p.id)).length} 部</small></a>`).join('');
     } else {
-      grid.className = 'm-series-list';
-      grid.innerHTML = VX.series.map((s) => `<button class="m-series-item" data-m-series="${s.id}"><img src="${s.cover}" alt="" /><span><b>${esc(s.name)}</b><small>${films.filter((f) => f.series === s.id).length} 部作品 · ${esc(s.category)}</small></span></button>`).join('');
+      grid.className = 'm-series-grid';
+      grid.innerHTML = VX.series.map((s) => `<button class="m-series-card" data-m-series="${s.id}"><img src="${s.cover}" alt="" /><b>${esc(s.name)}</b><small>${films.filter((f) => f.series === s.id).length} 部作品 · ${esc(s.category)}</small></button>`).join('');
     }
     $('[data-m-empty]').hidden = state.entity === 'films' ? list.length > 0 : true;
     $$('[data-m-entity]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mEntity === state.entity)));
@@ -174,10 +174,6 @@
           ${series ? `<section class="m-detail-section"><h2>所属系列</h2><button class="m-series-link" data-m-series="${series.id}"><img src="${series.cover}" alt="" /><span><b>${esc(series.name)}</b><small>${films.filter((x) => x.series === series.id).length} 部作品</small></span><span>→</span></button></section>` : ''}
         </div>
       </div>
-      <div class="m-detail-bar">
-        <button class="m-detail-play" data-m-play="${f.id}">▶ ${resume ? '继续播放' : '播放影片'}</button>
-        <button class="m-round ${fav ? 'is-fav' : ''}" data-m-fav aria-label="喜欢影片">${fav ? '♥' : '♡'}</button>
-      </div>
     `;
   }
 
@@ -225,7 +221,7 @@
         <button class="m-simple-card" data-m-toast="退出登录在正式实现中处理"><span style="width:100%;padding-left:2px"><b>退出登录</b><small>单账号 · 本机</small></span><span>→</span></button>
       `;
     } else {
-      $('[data-m-simple-body]').innerHTML = VX.collections.map((c) => `<h2>${esc(c.name)}</h2>${c.filmIds.map((id) => { const f = filmById.get(id); return `<button class="m-simple-card" data-m-film="${f.id}"><img src="${f.poster}" alt="" /><span><b>${esc(f.title)}</b><small>${f.year} · ${esc(f.category)}</small></span><span>→</span></button>`; }).join('')}`).join('');
+      $('[data-m-simple-body]').innerHTML = `<div class="m-collection-grid">${VX.collections.map((c) => `<button class="m-collection-card" data-m-toast="收藏夹「${esc(c.name)}」的成员页在正式实现中打开"><img src="${c.cover}" alt="" /><b>${esc(c.name)}</b><small>${c.count} 部影片</small></button>`).join('')}</div><h2>我喜欢的</h2><div class="m-poster-grid" style="padding:0">${films.filter((f) => state.favorites.has(f.id)).slice(0, 6).map(poster).join('')}</div>`;
     }
   }
 
@@ -450,9 +446,13 @@
   renderHome();
   renderLibrary();
   const initial = params.get('screen') || 'discover';
+  if (params.get('entity')) state.entity = params.get('entity');
   if (initial === 'filters') {
     showScreen('library');
     openFilter();
+  } else if (initial === 'collections' || initial === 'profile') {
+    showScreen('discover');
+    renderSimple(initial);
   } else {
     showScreen(initial);
   }

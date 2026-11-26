@@ -346,7 +346,7 @@
 
 /* — Page foundations — */
 .studio-content {
-  padding: 38px 40px 90px;
+  padding: 24px 40px 70px;
   max-width: 1640px;
   margin: 0 auto;
 }
@@ -356,35 +356,35 @@
   align-items: end;
   justify-content: space-between;
   gap: 40px;
-  padding-bottom: 32px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--paper-line);
 }
 
 .admin-page-head .eyebrow {
-  margin-bottom: 16px;
+  margin-bottom: 6px;
 }
 
 .admin-page-head h1 {
-  font-family: var(--font-serif);
-  font-size: 46px;
-  font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: 0.04em;
+  font-family: var(--font-sans);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .lede {
-  max-width: 600px;
-  margin-top: 13px;
+  max-width: 680px;
+  margin-top: 5px;
   color: var(--paper-muted);
-  font-size: 12px;
-  line-height: 1.9;
+  font-size: 11px;
+  line-height: 1.65;
 }
 
 .page-actions {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-bottom: 4px;
+  padding-bottom: 0;
 }
 
 .btn-outline,
@@ -428,6 +428,65 @@
 }
 
 /* — Metrics — */
+.metric-strip {
+  display: flex;
+  align-items: stretch;
+  margin-top: 14px;
+  border-top: 1px solid var(--paper-line);
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.metric-strip > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 11px 22px;
+  border-right: 1px solid var(--paper-line);
+}
+
+.metric-strip > div:first-child {
+  padding-left: 0;
+}
+
+.metric-strip > div:last-of-type {
+  border-right: 0;
+}
+
+.metric-strip b {
+  color: var(--paper-ink);
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.metric-strip b.is-alert {
+  color: var(--oxblood);
+}
+
+.metric-strip span {
+  color: var(--paper-ink-2);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.metric-strip small {
+  color: var(--paper-muted);
+  font-size: 8.5px;
+  white-space: nowrap;
+}
+
+.metric-strip .metric-note {
+  margin-left: auto;
+  align-self: center;
+  padding-right: 0;
+  color: var(--paper-muted);
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  letter-spacing: 0.04em;
+}
+
 .metric-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -490,9 +549,9 @@
 .intake-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 382px;
-  gap: 28px;
+  gap: 20px;
   align-items: start;
-  margin-top: 28px;
+  margin-top: 16px;
 }
 
 .queue-panel {
@@ -520,7 +579,7 @@
   display: flex;
   align-items: baseline;
   gap: 5px;
-  min-height: 50px;
+  min-height: 44px;
   color: var(--paper-muted);
   font-size: 10.5px;
   letter-spacing: 0.04em;
@@ -646,7 +705,7 @@
 }
 
 .queue-table td {
-  padding: 11px 11px;
+  padding: 9px 11px;
   border-bottom: 1px solid rgba(212, 201, 184, 0.62);
   vertical-align: middle;
 }
@@ -1133,7 +1192,7 @@
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 20px 0;
+  padding: 14px 0;
 }
 
 .catalog-search {
@@ -1371,7 +1430,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22px;
+  margin-bottom: 14px;
 }
 
 .back-link {
@@ -1435,11 +1494,11 @@
 }
 
 .editor-title h1 {
-  font-family: var(--font-serif);
-  font-size: 36px;
-  font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: 0.04em;
+  font-family: var(--font-sans);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
 }
 
 .editor-title p:last-child {
@@ -1766,7 +1825,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-top: 28px;
+  margin-top: 18px;
 }
 
 .volume-card,
@@ -2099,10 +2158,24 @@
   .admin-page-head {
     flex-direction: column;
     align-items: start;
-    gap: 18px;
+    gap: 14px;
   }
   .admin-page-head h1 {
-    font-size: 36px;
+    font-size: 28px;
+  }
+  .metric-strip {
+    flex-wrap: wrap;
+  }
+  .metric-strip > div {
+    flex: 1 1 50%;
+    border-bottom: 1px solid var(--paper-line);
+  }
+  .metric-strip > div:nth-child(2n) {
+    border-right: 0;
+  }
+  .metric-strip .metric-note {
+    flex: 1 1 100%;
+    padding: 7px 0;
   }
   .metric-row {
     grid-template-columns: 1fr 1fr;

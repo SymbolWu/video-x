@@ -70,7 +70,7 @@
               <div>
                 <p class="eyebrow">Ingest · 01</p>
                 <h1>录入工作台</h1>
-                <p class="lede">核对下载目录里的文件，补齐资料，再手动发布到片库。抓取结果只作为候选，不替你作决定。</p>
+                <p class="lede">核对下载目录中的文件与资料，确认后手动发布。</p>
               </div>
               <div class="page-actions">
                 <button class="btn-outline" data-toast="下载目录选择沿用现有系统状态页">手动新建</button>
@@ -78,11 +78,11 @@
               </div>
             </header>
 
-            <div class="metric-row">
-              <div class="metric"><span class="metric-label">待核对 <i>/ Pending</i></span><b>05</b><small>其中 2 条为分集线索</small></div>
-              <div class="metric"><span class="metric-label">可确认 <i>/ Ready</i></span><b>01</b><small>降临 · 资料齐全</small></div>
-              <div class="metric"><span class="metric-label">发布阻断 <i>/ Blocked</i></span><b class="is-alert">01</b><small>抓取失败 · 缺简介</small></div>
-              <div class="metric"><span class="metric-label">本月入藏 <i>/ Added</i></span><b>12</b><small>较上月 +5</small></div>
+            <div class="metric-strip">
+              <div><b>05</b><span>待核对</span><small>2 条分集线索</small></div>
+              <div><b>01</b><span>可确认</span><small>降临 · 资料齐全</small></div>
+              <div><b class="is-alert">01</b><span>发布阻断</span><small>抓取失败</small></div>
+              <div><b>12</b><span>本月入藏</span><small>较上月 +5</small></div>
             </div>
 
             <div class="intake-grid">
@@ -136,7 +136,7 @@
               <div>
                 <p class="eyebrow">Catalog · 02</p>
                 <h1>影片资料库</h1>
-                <p class="lede">已发布的正式资料与文件状态。列表用于扫描与校正，不承担发布决定。</p>
+                <p class="lede">已发布作品与文件状态，用于扫描、校正与进入编辑。</p>
               </div>
               <div class="page-actions">
                 <button class="btn-outline" data-toast="批量操作沿用现有选择范围">批量操作</button>
@@ -144,12 +144,12 @@
               </div>
             </header>
 
-            <div class="catalog-metrics">
-              <span><b>40</b> 部正式影片</span>
-              <span><b>02</b> 待检查文件</span>
-              <span><b>12</b> 个 4K 版本</span>
-              <span><b>03</b> 个分集容器</span>
-              <span class="metric-note">最近一次扫描：今天 09:42</span>
+            <div class="metric-strip">
+              <div><b>40</b><span>部正式影片</span></div>
+              <div><b>02</b><span>待检查文件</span></div>
+              <div><b>12</b><span>个 4K 版本</span></div>
+              <div><b>03</b><span>个分集容器</span></div>
+              <small class="metric-note">最近扫描 09:42</small>
             </div>
 
             <div class="catalog-toolbar">
@@ -288,7 +288,7 @@
               <div>
                 <p class="eyebrow">Operations · 04</p>
                 <h1>系统状态</h1>
-                <p class="lede">卷容量、Worker 心跳、数据库与工具版本。所有信息来自本机只读查询与最近一次探测。</p>
+                <p class="lede">卷容量、Worker、数据库与工具版本，来自本机只读查询。</p>
               </div>
               <div class="page-actions"><span class="health"><i></i>全部正常</span><button class="btn-outline" data-toast="重新检查在正式实现中打开">重新检查</button></div>
             </header>
