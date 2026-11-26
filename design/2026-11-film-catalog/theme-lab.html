@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>video—x · 管理端配色与圆角对照</title>
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/theme-lab.css" />
+  </head>
+  <body class="lab-body">
+    <header class="lab-head">
+      <a class="wordmark" href="index.html">video<span>—</span>x <small>设计对照</small></a>
+      <p>管理端 / Palette &amp; Radius</p>
+      <a class="lab-back" href="admin.html">返回管理端 <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main class="lab-main">
+      <section class="lab-intro">
+        <div>
+          <p class="eyebrow">Theme Lab / 2026.11</p>
+          <h1>同一套录入界面，<br />五种温度。</h1>
+        </div>
+        <p>切换左侧配色与圆角，右侧的队列、卡片、表单和按钮即时变化。表格与图像始终保持直角。</p>
+      </section>
+
+      <div class="lab-layout">
+        <aside class="lab-controls" aria-label="设计变量">
+          <section class="lab-control-block">
+            <header><span>01</span><h2>配色</h2></header>
+            <div class="theme-options" id="theme-options"></div>
+          </section>
+
+          <section class="lab-control-block">
+            <header><span>02</span><h2>圆角</h2></header>
+            <div class="radius-options" id="radius-options">
+              <button data-radius-choice="sharp" aria-pressed="false"><b>直角</b><small>0 / 0 / 0</small></button>
+              <button data-radius-choice="restrained" aria-pressed="true"><b>克制</b><small>3 / 6 / 9</small></button>
+              <button data-radius-choice="soft" aria-pressed="false"><b>偏软</b><small>4 / 8 / 12</small></button>
+            </div>
+            <div class="radius-scale" aria-hidden="true">
+              <span style="--r:0px"><i></i><small>0</small></span>
+              <span style="--r:3px"><i></i><small>3</small></span>
+              <span style="--r:6px"><i></i><small>6</small></span>
+              <span style="--r:9px"><i></i><small>9</small></span>
+            </div>
+          </section>
+
+          <section class="lab-note">
+            <p class="eyebrow">Current direction</p>
+            <h2 id="theme-note-title">Archive</h2>
+            <p id="theme-note-copy">暖纸、牛血红，偏档案馆。结构直角，控件克制圆角。</p>
+            <dl>
+              <div><dt>Paper</dt><dd id="paper-value">#F3F1EC</dd></div>
+              <div><dt>Accent</dt><dd id="accent-value">#8D3B31</dd></div>
+              <div><dt>Radius</dt><dd id="radius-value">3 / 6 / 9</dd></div>
+            </dl>
+          </section>
+        </aside>
+
+        <section class="lab-preview" aria-live="polite">
+          <div class="specimen" id="specimen" data-theme="archive" data-radius="restrained">
+            <aside class="spec-rail">
+              <div class="spec-brand"><b>video—x</b><small>ADMIN</small></div>
+              <nav>
+                <p>工作流</p>
+                <a class="is-active">录入工作台 <em>12</em></a>
+                <a>影片资料库 <em>39</em></a>
+                <a>演员 <em>100</em></a>
+                <a>系列 <em>07</em></a>
+                <p>资料</p>
+                <a>分类 <em>09</em></a>
+                <a>标签 <em>10</em></a>
+                <a>片商 <em>08</em></a>
+                <a>收藏夹 <em>03</em></a>
+                <p>系统</p>
+                <a>后台任务 <em>04</em></a>
+                <a>系统状态</a>
+              </nav>
+              <div class="spec-rail-foot"><span>VX</span><p>个人媒体库<small>本地管理</small></p></div>
+            </aside>
+
+            <div class="spec-main">
+              <div class="spec-top">
+                <span>管理端 <i>/</i> 录入工作台</span>
+                <div><a>观看端 ↗</a><span>本地 · 已连接</span><button class="spec-exit">退出</button></div>
+              </div>
+
+              <div class="spec-page">
+                <header class="spec-page-head">
+                  <div><p class="eyebrow">Ingest</p><h1>录入工作台</h1></div>
+                  <button class="spec-btn spec-btn-dark">从下载目录选择文件</button>
+                </header>
+
+                <div class="spec-counts">
+                  <div><b>12</b><span>待核对</span></div>
+                  <div><b>05</b><span>缺少资料</span></div>
+                  <div><b>03</b><span>发布阻断</span></div>
+                  <div><b>02</b><span>探测失败</span></div>
+                  <div><b>01</b><span>已确认</span></div>
+                </div>
+
+                <div class="spec-toolbar">
+                  <div class="spec-tabs"><b>全部</b><span>分集线索</span><span>缺少资料</span><span>发布阻断</span><span>探测失败</span></div>
+                  <label class="spec-search">搜索文件或标题<input aria-label="搜索文件或标题" /></label>
+                </div>
+
+                <table class="spec-table">
+                  <thead><tr><th>作品 / 文件</th><th>状态</th><th>整理目标</th><th>资料</th><th>操作</th></tr></thead>
+                  <tbody>
+                    <tr class="is-selected">
+                      <td class="spec-work"><span class="spec-check">✓</span><img src="assets/cinema/693134-poster.jpg" alt="" /><span><b>沙丘 2</b><small>Dune.Part.Two.2024.2160p.mkv</small></span></td>
+                      <td><span class="spec-status is-pending">待核对</span></td>
+                      <td>电影 / 科幻</td>
+                      <td><span class="spec-coverage">4 / 6</span></td>
+                      <td><button class="spec-link">核对 →</button></td>
+                    </tr>
+                    <tr>
+                      <td class="spec-work"><span class="spec-check"></span><img src="assets/cinema/129-poster.jpg" alt="" /><span><b>千与千寻</b><small>Spirited.Away.2001.1080p.mkv</small></span></td>
+                      <td><span class="spec-status is-fetched">已抓取</span></td>
+                      <td>电影 / 动画</td>
+                      <td><span class="spec-coverage">6 / 6</span></td>
+                      <td><button class="spec-link">核对 →</button></td>
+                    </tr>
+                    <tr>
+                      <td class="spec-work"><span class="spec-check"></span><img src="assets/cinema/569094-poster.jpg" alt="" /><span><b>蜘蛛侠：纵横宇宙</b><small>Spider-Man.Across.the.Spider-Verse.2023.mkv</small></span></td>
+                      <td><span class="spec-status is-missing">缺少资料</span></td>
+                      <td>—</td>
+                      <td><span class="spec-coverage is-warn">2 / 6</span></td>
+                      <td><button class="spec-link">核对 →</button></td>
+                    </tr>
+                    <tr>
+                      <td class="spec-work"><span class="spec-check"></span><img src="assets/cinema/76341-poster.jpg" alt="" /><span><b>疯狂的麦克斯：狂暴之路</b><small>Mad.Max.Fury.Road.2015.2160p.mkv</small></span></td>
+                      <td><span class="spec-status is-blocked">发布阻断</span></td>
+                      <td>电影 / 科幻</td>
+                      <td><span class="spec-coverage is-warn">5 / 6</span></td>
+                      <td><button class="spec-link">核对 →</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="spec-batch">
+                  <span>已选 <b>2</b> 项</span>
+                  <button>设置整理目标</button>
+                  <button>创建分集容器</button>
+                  <span class="spec-grow"></span>
+                  <button>批量核对</button>
+                  <button class="spec-btn spec-btn-dark spec-btn-sm">发布所选</button>
+                </div>
+
+                <div class="spec-panels">
+                  <section class="spec-panel">
+                    <header><h2>标签</h2><small>10</small></header>
+                    <div class="spec-tags">
+                      <button><b>史诗</b><small>12 部作品</small></button>
+                      <button><b>沙漠</b><small>08 部作品</small></button>
+                      <button><b>赛博朋克</b><small>06 部作品</small></button>
+                    </div>
+                  </section>
+
+                  <section class="spec-panel">
+                    <header><h2>收藏夹</h2><small>03</small></header>
+                    <div class="spec-collection" style="--covers:url('assets/cinema/129-backdrop.jpg')">
+                      <div class="spec-montage"><img src="assets/cinema/129-backdrop.jpg" alt="" /><img src="assets/cinema/843-backdrop.jpg" alt="" /><img src="assets/cinema/693134-backdrop.jpg" alt="" /></div>
+                      <b>周末片单</b><small>3 部影片 · 编辑收藏夹</small>
+                    </div>
+                  </section>
+
+                  <section class="spec-panel">
+                    <header><h2>操作面板</h2><small>Drawer</small></header>
+                    <div class="spec-form">
+                      <label>整理目标<input value="电影 / 科幻" aria-label="整理目标" /></label>
+                      <div><button>取消</button><button class="spec-btn spec-btn-dark spec-btn-sm">保存</button></div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="lab-caption"><span id="lab-caption">Archive · 克制圆角</span><small>表格 / 图像始终 0 圆角</small></p>
+        </section>
+      </div>
+    </main>
+
+    <footer class="lab-foot">
+      <span class="wordmark">video<span>—</span>x</span>
+      <p>管理端视觉对照 · 基于 feat/film-catalog 的现有字段与密度</p>
+      <div><a href="theme-lab.html">对照页</a><a href="admin.html">管理端</a><a href="index.html">设计总览</a></div>
+    </footer>
+
+    <script src="scripts/theme-lab.js"></script>
+  </body>
+</html>

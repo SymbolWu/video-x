@@ -36,6 +36,8 @@
 
 移动端用 **?screen=** 指定画面：discover、library、collections、profile、detail、filters、player。
 
+管理端配色与圆角对照：http://127.0.0.1:8099/theme-lab.html
+
 可直接照抄的尺寸、组件结构和正式数据替换方式见 [IMPLEMENTATION.md](IMPLEMENTATION.md)。
 
 ## 本次针对反馈的修正
@@ -126,6 +128,7 @@
     ├── web.html                   观看端
     ├── admin.html                 管理端
     ├── mobile.html                移动端
+    ├── theme-lab.html             管理端配色 / 圆角对照
     ├── tokens.json                设计 token
     ├── styles/
     │   ├── tokens.css
@@ -133,6 +136,7 @@
     │   ├── web.css
     │   ├── admin.css
     │   ├── mobile.css
+    │   ├── theme-lab.css
     │   └── hub.css
     ├── scripts/
     │   ├── data.js                影片、演员、系列演示数据
@@ -140,9 +144,10 @@
     │   ├── admin.js               13 个管理视图与抽屉
     │   ├── web.js
     │   ├── mobile.js
+    │   ├── theme-lab.js
     │   └── icons.js
     ├── assets/                    影片、影人、场景、来源清单
-    ├── screenshots/               36 张实现截图
+    ├── screenshots/               37 张实现截图
     └── tools/capture.sh           截图脚本
 
 ## 数据与边界
@@ -157,7 +162,7 @@
 ## 截图
 
 - 观看端 7 张：discover / library / detail / stills / player / collections / profile。
-- 管理端 19 张：intake、intake-drawer、media、media-cards、people、person、franchises、franchise、categories、tags、organizations、collections、jobs、settings、enrich、archive、editor、editor-versions、draft-editor。
+- 管理端 20 张：intake、intake-drawer、media、media-cards、people、person、franchises、franchise、categories、tags、organizations、collections、jobs、settings、enrich、archive、editor、editor-versions、draft-editor、theme-lab。
 - 移动端 9 张：board、discover、library、series、collections、profile、detail、filters、player。
 - 总览 1 张。
 
