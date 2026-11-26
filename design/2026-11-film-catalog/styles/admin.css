@@ -1172,20 +1172,21 @@
 
 .series-index {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
 }
 
 .series-card {
   display: block;
   text-align: left;
-  background: #fbfaf7;
-  border: 1px solid var(--paper-line);
+  background: var(--paper-2);
 }
 
 .series-art {
+  position: relative;
   display: block;
-  aspect-ratio: 16 / 8.6;
+  aspect-ratio: 1.22 / 1;
   overflow: hidden;
   background: var(--paper-2);
 }
@@ -1202,31 +1203,35 @@
   transform: scale(1.03);
 }
 
-.series-copy {
-  display: block;
-  padding: 9px 11px 11px;
+.series-caption {
+  position: absolute;
+  z-index: 2;
+  inset: auto 0 0;
+  padding: 30px 9px 8px;
+  color: var(--paper);
+  background: linear-gradient(transparent, rgba(20, 18, 15, 0.95) 62%);
 }
 
-.series-copy strong {
+.series-caption strong {
   display: block;
-  color: var(--paper-ink);
-  font-size: 12px;
+  overflow: hidden;
+  color: var(--paper);
+  font-size: 13px;
   font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.series-copy small {
+.series-caption small {
   display: block;
   margin-top: 1px;
-  color: var(--paper-muted);
+  color: rgba(243, 241, 236, 0.65);
   font-size: 8px;
 }
 
-.series-copy span {
-  display: block;
-  margin-top: 4px;
-  color: var(--paper-line-strong);
-  font-size: 9px;
-  line-height: 1.45;
+.series-card:hover .series-art {
+  outline: 1px solid var(--paper-line-strong);
+  outline-offset: 2px;
 }
 
 /* — Record detail — */
@@ -1473,6 +1478,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  margin-top: 14px;
 }
 
 .collection-admin-card {
@@ -2306,6 +2312,7 @@
   position: absolute;
   inset: 0 0 0 auto;
   width: min(540px, 94vw);
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--paper);
@@ -2388,6 +2395,7 @@
 
 .drawer-body {
   flex: 1;
+  min-height: 0;
   overflow: auto;
   padding: 16px 24px;
 }
@@ -2483,6 +2491,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 7px;
+  margin-top: auto;
   padding: 12px 24px 16px;
   border-top: 1px solid var(--paper-line);
   background: var(--paper);
@@ -2599,7 +2608,7 @@
   .status-grid { grid-template-columns: 1fr 1fr; }
   .editor-grid { grid-template-columns: 110px minmax(0, 1fr); }
   .editor-preview { grid-column: 2; grid-template-columns: 1fr 1fr; }
-  .series-index { grid-template-columns: 1fr 1fr; }
+  .series-index { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
 
 @media (max-width: 760px) {
@@ -2621,7 +2630,8 @@
   .batch-actions { width: 100%; margin-left: 0; overflow-x: auto; }
   .people-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .works-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .series-index, .collection-admin-grid, .dict-grid, .two-col, .status-grid { grid-template-columns: 1fr; }
+  .series-index { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .collection-admin-grid, .dict-card-grid, .two-col, .status-grid { grid-template-columns: 1fr; }
   .media-grid.poster-mode, .media-grid.backdrop-mode { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .record-head, .series-head { grid-template-columns: 100px minmax(0, 1fr); gap: 14px; }
   .record-portrait { width: 100px; }
@@ -2840,4 +2850,210 @@
 
 .artwork-picker.cover-picker img {
   aspect-ratio: 16 / 9;
+}
+
+
+/* Tag / studio compact cards (mirrors StudioCard compact grid) */
+.dict-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.dict-card-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 136px;
+  padding: 15px 16px;
+  background: #fbfaf7;
+  border: 1px solid var(--paper-line);
+  text-align: left;
+  transition: border-color var(--fast), background var(--fast);
+}
+
+.dict-card-card:hover {
+  background: #f6f2ea;
+  border-color: var(--paper-line-strong);
+}
+
+.dict-card-card > small {
+  color: var(--paper-muted);
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.03em;
+}
+
+.dict-card-card h3 {
+  margin-top: 10px;
+  color: var(--paper-ink);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.dict-card-card p {
+  margin-top: 3px;
+  color: var(--paper-muted);
+  font-size: 9px;
+}
+
+.dict-card-card > span {
+  margin-top: auto;
+  padding-top: 16px;
+  color: var(--oxblood);
+  font-size: 8.5px;
+}
+
+.dict-card-card i {
+  margin-left: 5px;
+  font-style: normal;
+}
+
+/* Series montage: horizontal 3-slice contact sheet, matching the current RecordGrid */
+.series-art.montage,
+.record-cover.montage,
+.collection-art.montage {
+  display: flex;
+  gap: 1px;
+  background: var(--paper-3);
+}
+
+.series-art.montage img,
+.record-cover.montage img,
+.collection-art.montage img {
+  min-width: 0;
+  width: 0;
+  flex: 1;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+.series-art {
+  position: relative;
+}
+
+.series-count {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  padding: 2px 5px;
+  color: var(--paper);
+  background: rgba(29, 28, 25, 0.72);
+  font-family: var(--font-mono);
+  font-size: 6.5px;
+  font-style: normal;
+  letter-spacing: 0.04em;
+}
+
+.series-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, rgba(29, 28, 25, 0.22), transparent 35%);
+}
+
+/* Table spacing: the count strip and table header need a gap */
+.table-frame {
+  margin-top: 14px;
+}
+
+.data-table th {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* Drawer breathing room */
+.drawer-head {
+  padding-top: 22px;
+  padding-bottom: 16px;
+}
+
+.drawer-body {
+  padding: 28px 26px 24px;
+}
+
+.drawer-body .field {
+  margin-bottom: 18px;
+}
+
+.drawer-body > .field:first-child {
+  margin-top: 4px;
+}
+
+.drawer-body > .drawer-note:first-child {
+  margin-top: 0;
+  line-height: 1.7;
+}
+
+
+
+/* Category cards (matches the current StudioCard categories route) */
+.category-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 154px;
+  padding: 20px;
+  background: #fbfaf7;
+  border: 1px solid var(--paper-line);
+}
+
+.category-card > small {
+  color: var(--paper-muted);
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.03em;
+}
+
+.category-card h3 {
+  margin-top: 12px;
+  color: var(--paper-ink);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.category-card p {
+  margin-top: 4px;
+  color: var(--paper-muted);
+  font-size: 9px;
+}
+
+.category-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--paper-line);
+}
+
+.category-actions button {
+  color: var(--oxblood);
+  font-size: 8.5px;
+}
+
+.category-actions button + button {
+  color: var(--paper-muted);
+}
+
+.category-actions button:hover {
+  color: var(--oxblood-dark);
+}
+
+@media (max-width: 1100px) {
+  .category-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .category-cards { grid-template-columns: 1fr; }
 }

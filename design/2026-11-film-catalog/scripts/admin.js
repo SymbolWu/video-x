@@ -92,7 +92,6 @@
       '<header class="admin-page-head">',
       '<div class="page-head-copy">',
       '<h1>' + esc(title) + '</h1>',
-      description ? '<p class="lede">' + esc(description) + '</p>' : '',
       '</div>',
       actions ? '<div class="page-actions">' + actions + '</div>' : '',
       '</header>'
@@ -406,12 +405,14 @@
       '<span class="toolbar-note">按作品数量排序</span>',
       '</div>',
       rows.length ? '<div class="series-index">' : '<div class="empty-state">没有匹配的系列。</div>',
-      rows.map((s) => [
-        '<button class="series-card" data-act="franchise" data-id="' + s.id + '">',
-        '<span class="series-art"><img src="' + s.cover + '" alt="" /></span>',
-        '<span class="series-copy"><strong>' + esc(s.name) + '</strong><small>' + esc(s.category) + ' · ' + s.workCount + ' 部作品</small><span>' + esc(s.description) + '</span></span>',
-        '</button>'
-      ].join('')).join(''),
+      rows.map((s) => {
+        const covers = s.works.slice(0, 3).map((w) => w.backdrop);
+        return [
+          '<button class="series-card" data-act="franchise" data-id="' + s.id + '">',
+          '<span class="series-art montage">' + (covers.length ? covers.map((src) => '<img src="' + src + '" alt="" />').join('') : '<img src="' + s.cover + '" alt="" />') + '<span class="series-caption"><strong>' + esc(s.name) + '</strong><small>' + esc(s.category) + ' · ' + s.workCount + ' 部作品</small></span></span>',
+          '</button>'
+        ].join('');
+      }).join(''),
       rows.length ? '</div>' : '',
       '<div class="table-foot"><span>' + rows.length + ' 个系列</span><span></span></div>',
       '</section>'
@@ -424,7 +425,7 @@
       '<section class="admin-page record-page">',
       '<button class="back-link" data-act="back-franchises">← 返回系列列表</button>',
       '<header class="record-head series-head">',
-      '<span class="record-cover"><img src="' + s.cover + '" alt="" /></span>',
+      '<span class="record-cover montage">' + s.works.slice(0, 3).map((w) => '<img src="' + w.backdrop + '" alt="" />').join('') + '</span>',
       '<div class="record-copy"><p class="eyebrow">系列资料 / ' + esc(s.category) + '</p><h1>' + esc(s.name) + '</h1><p class="record-en">' + s.workCount + ' 部作品</p><p class="record-desc">' + esc(s.description) + '</p></div>',
       '<button class="btn-outline" data-act="record-edit" data-id="' + s.id + '" data-kind="franchise">编辑系列</button>',
       '</header>',
@@ -443,9 +444,16 @@
         { value: D.categories.filter((c) => c.visible).length, label: "片库中显示" },
         { value: VX.films.length, label: "部已发布影片" }
       ]),
-      '<div class="table-frame"><table class="data-table simple-table"><thead><tr><th>分类</th><th>上级</th><th>作品</th><th>顺序</th><th>观看端</th><th class="row-actions">操作</th></tr></thead><tbody>',
-      D.categories.map((c) => '<tr><td><strong>' + esc(c.name) + '</strong><small class="mono-line">' + esc(c.en) + '</small></td><td>' + esc(c.parent) + '</td><td>' + c.workCount + ' 部</td><td class="mono-line">' + c.order + '</td><td><span class="status ' + (c.visible ? "ok" : "muted") + '"><i></i>' + (c.visible ? "显示" : "隐藏") + '</span></td><td class="row-actions"><button class="inline-link" data-act="category-toggle" data-id="' + c.id + '">' + (c.visible ? "隐藏" : "显示") + '</button><button class="inline-link" data-act="dict-edit" data-id="' + c.id + '" data-kind="categories">编辑</button></td></tr>').join(''),
-      '</tbody></table></div>',
+      '<div class="category-cards">',
+      D.categories.map((c) => [
+        '<article class="category-card">',
+        '<small>' + (c.visible ? "片库中显示" : "已隐藏") + ' · ' + c.workCount + ' 部影片</small>',
+        '<h3>' + esc(c.name) + '</h3>',
+        '<p>' + (c.parent && c.parent !== "—" ? "上级：" + esc(c.parent) : "顶级分类") + ' · 顺序 ' + c.order + '</p>',
+        '<div class="category-actions"><button data-act="category-toggle" data-id="' + c.id + '">' + (c.visible ? "隐藏分类" : "显示分类") + '</button><button data-act="dict-edit" data-id="' + c.id + '" data-kind="categories">编辑资料</button></div>',
+        '</article>'
+      ].join('')).join(''),
+      '</div>',
       '</section>'
     ].join('');
   }
@@ -465,12 +473,13 @@
       searchBox("搜索" + (isTag ? "标签" : "片商") + "名称", "dictionaryQuery", state.dictionaryQuery),
       '<span class="toolbar-note">' + rows.length + ' 项</span>',
       '</div>',
-      rows.length ? '<div class="dict-grid">' : '<div class="empty-state">没有匹配的资料。</div>',
+      rows.length ? '<div class="dict-card-grid">' : '<div class="empty-state">没有匹配的资料。</div>',
       rows.map((x) => [
-        '<button class="dict-card" data-act="dict-edit" data-id="' + x.id + '" data-kind="' + kind + '">',
-        '<span class="dict-mark">' + esc(x.name.slice(0, 1)) + '</span>',
-        '<span class="dict-copy"><strong>' + esc(x.name) + '</strong><small>' + esc(x.detail) + (isTag ? ' · ' + esc(x.categoryName) : '') + '</small><em>' + x.workCount + ' 部作品 · ' + (x.visible ? "显示中" : "已隐藏") + '</em></span>',
-        '<span class="dict-arrow">→</span>',
+        '<button class="dict-card-card" data-act="dict-edit" data-id="' + x.id + '" data-kind="' + kind + '">',
+        '<small>' + x.workCount + ' 部作品 · ' + (x.visible ? "显示中" : "已隐藏") + '</small>',
+        '<h3>' + esc(x.name) + '</h3>',
+        '<p>' + esc(x.detail) + (isTag ? ' · ' + esc(x.categoryName) : '') + '</p>',
+        '<span>编辑资料 <i aria-hidden="true">→</i></span>',
         '</button>'
       ].join('')).join(''),
       rows.length ? '</div>' : '',
@@ -490,7 +499,7 @@
       '<div class="collection-admin-grid">',
       D.collections.map((c) => [
         '<button class="collection-admin-card" data-act="collection-edit" data-id="' + c.id + '">',
-        '<span class="collection-art"><img src="' + c.cover + '" alt="" /><i>' + c.count + '</i></span>',
+        '<span class="collection-art montage">' + c.filmIds.slice(0, 3).map((id) => { const f = VX.films.find((x) => x.id === id); return f ? '<img src="' + f.backdrop + '" alt="" />' : ''; }).join('') + '<i>' + c.count + '</i></span>',
         '<span class="collection-copy"><strong>' + esc(c.name) + '</strong><small>' + esc(c.desc) + '</small><em>' + c.count + ' 部影片 · 编辑资料</em></span>',
         '</button>'
       ].join('')).join(''),
@@ -887,7 +896,13 @@
       ].join('');
     } else if (kind === "category") {
       title = (isNew ? "新增" : "编辑") + "分类";
-      body = '<label class="field"><span>分类名称 <i>*</i></span><input data-of="name" value="' + esc(category ? category.name : "") + '" /></label><p class="drawer-note">分类决定影片、演员与系列的主分类；层级和隐藏状态在列表中维护。</p>';
+      body = '<label class="field"><span>分类名称 <i>*</i></span><input data-of="name" value="' + esc(category ? category.name : "") + '" /></label>' +
+        '<div class="drawer-section"><div class="drawer-section-head"><span>分类信息</span><small>只读</small></div><dl class="fact-list">' +
+        '<div><dt>上级</dt><dd>' + esc(category ? category.parent : "—") + '</dd></div>' +
+        '<div><dt>作品</dt><dd>' + (category ? category.workCount : 0) + ' 部</dd></div>' +
+        '<div><dt>顺序</dt><dd>' + (category ? category.order : D.categories.length + 1) + '</dd></div>' +
+        '<div><dt>观看端</dt><dd>' + (category ? (category.visible ? "显示" : "隐藏") : "新建后显示") + '</dd></div>' +
+        '</dl></div>';
     } else if (kind === "tag") {
       title = (isNew ? "新增" : "编辑") + "标签";
       body = [
@@ -960,11 +975,14 @@
           ? '<div class="drawer-actions"><button class="btn-outline" data-act="close-overlay">取消</button><button class="btn-dark" data-act="logout-confirm">退出</button></div>'
           : '<div class="drawer-actions"><button class="btn-outline" data-act="close-overlay">取消</button><button class="btn-dark" data-act="overlay-save">保存资料</button></div>';
     }
+    const wrappedBody = (type === "draft" || type === "group")
+      ? body
+      : '<div class="drawer-body">' + body + '</div>';
     root.innerHTML = [
       '<button class="overlay-scrim" data-act="close-overlay" aria-label="关闭"></button>',
       '<aside class="drawer" role="dialog" aria-modal="true" aria-label="' + esc(title) + '">',
       '<header class="drawer-head"><div><p class="eyebrow">资料操作</p><h2>' + esc(title) + '</h2></div><button class="drawer-close" data-act="close-overlay" aria-label="关闭">×</button></header>',
-      body,
+      wrappedBody,
       actions,
       '</aside>'
     ].join('');
