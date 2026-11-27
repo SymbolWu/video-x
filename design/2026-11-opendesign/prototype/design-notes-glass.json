@@ -1,0 +1,158 @@
+{
+  "project": "video—x 观看端就地版本菜单与深色玻璃精修",
+  "entry": "index.html",
+  "changedFiles": [
+    "app.js",
+    "style.css",
+    "edition-menu.js",
+    "design-notes-glass.json"
+  ],
+  "unchangedFiles": [
+    "data/library.json",
+    "references/sources.json",
+    "navigation.js",
+    "index.html",
+    "detail.html",
+    "actor.html",
+    "series.html"
+  ],
+  "designDirection": "延续现有近黑、玫瑰强调、暖白播放按钮和真实海报体系。材质仅服务导航、浏览控制与局部浮层，不为正文或图片增加整层模糊。",
+  "materials": [
+    {
+      "regions": [
+        "所有页面顶栏"
+      ],
+      "treatment": "顶栏保持顶部吸附；半透明近黑底、16px背景模糊、轻微饱和度与极轻边缘高光。模糊由独立背景伪元素承载，避免改变手机固定底栏的定位参照。滚动时可透出下方真实页面内容。",
+      "mobile": "12px背景模糊，保留搜索展开高度。"
+    },
+    {
+      "regions": [
+        "所有页面手机底栏"
+      ],
+      "treatment": "12px深色背景模糊、细顶边与轻阴影；预留底部安全区和正文空间。"
+    },
+    {
+      "regions": [
+        "片库影片／演员／系列目录控制区",
+        "演员作品页控制区",
+        "系列作品页控制区"
+      ],
+      "treatment": "在顶栏下方吸附的窄玻璃控制带；保持现有对齐、控件高度和分组，不添加厚重彩色外卡。随列表滚动透出下方海报或内容。",
+      "mobile": "控制区仅8px背景模糊，避免大面积多层高模糊。"
+    },
+    {
+      "regions": [
+        "影片详情版本菜单"
+      ],
+      "treatment": "较实的深色半透明浮层、20px背景模糊、细边缘高光与集中阴影，正文和规格高对比显示。",
+      "mobile": "14px背景模糊；按钮本身取消移动端背景模糊。"
+    },
+    {
+      "regions": [
+        "系列组合封面底部标题与馆藏数"
+      ],
+      "treatment": "轻量深色玻璃底签与细亮边；背景仅来自原有成员海报的低亮模糊底图，主要成员海报完整、清晰。",
+      "mobile": "移除底签额外模糊，保留半透明材质。"
+    },
+    {
+      "regions": [
+        "少量现有提示浮层"
+      ],
+      "treatment": "提示条共享深色玻璃配方；手机海报状态与喜欢按钮使用较实底色，取消逐卡背景模糊，降低叠加成本。"
+    }
+  ],
+  "menu": {
+    "surface": "同一套就地菜单用于桌面和手机；不使用居中版本弹窗、确认步骤、抽屉、全屏遮罩或全页焦点锁。",
+    "content": "只展示data/library.json中实际记录的版本。每行完整显示名称、可得分辨率、视频编码与音频信息，缺规格明确标记；当前项显示勾选，默认项显示轻标签。单版本显示“仅有此版本”。",
+    "selection": "点击或键盘选择后立即保存editionIndex，更新版本按钮、详情规格和影片信息中的当前版本，然后收起。点击已选项仅收起。喜欢、已看、评分和播放断点均不修改；切换本身不会播放。",
+    "missingRecords": "取消旧逻辑自动补写的“1080p 原版”。无版本记录显示不可展开的资料未记录状态；linkedFileCount为0时保持播放禁用且不提供虚构版本。其他样本仍沿用原有设计预览播放提示。",
+    "positioning": {
+      "mount": "菜单挂载到body；支持时使用非模态原生popover顶层，否则使用body下的固定定位浮层，避开hero裁切、滤镜与堆叠上下文。",
+      "anchor": "默认贴版本按钮下方8px，右侧对齐；下方空间不足时优先向上展开。",
+      "width": "常用宽度312px，依据按钮与visualViewport调整；视口两侧至少12px留边，支持390px与320px宽度。",
+      "height": "最多360px，按可用空间进一步限高并允许内部滚动；避开顶栏和固定手机底栏。",
+      "updates": "窗口、可视视口或滚动变化时更新定位；按钮离开可见安全区域后关闭。"
+    },
+    "keyboard": [
+      "版本按钮上Enter或Space切换开合，抑制按住按键的重复激活。",
+      "版本按钮上ArrowDown打开并聚焦首项，ArrowUp打开并聚焦末项；常规展开聚焦当前选择。",
+      "菜单内ArrowUp／ArrowDown循环移动，Home／End跳至首末项；Enter／Space立即选择。",
+      "Esc关闭并将焦点交回版本按钮。",
+      "Tab关闭并移动到按钮后方的正常页面控件；Shift+Tab关闭并回到版本按钮，不锁住全页。"
+    ],
+    "touchAndPointer": [
+      "点击或触摸版本按钮切换开合；每行提供足够点击面积。",
+      "点击版本行立即选择并关闭；菜单事件不会穿透触发主播放按钮。",
+      "点击菜单外关闭，外部控件保留自己的正常行为。"
+    ],
+    "accessibility": "按钮的aria-haspopup=menu、aria-controls和aria-expanded与实际展开状态同步。菜单采用role=menu，选项采用menuitemradio和aria-checked，使用移动焦点与可见描边。",
+    "buttonGeometry": "播放与版本按钮仍是同一行内48px实际border-box高度，保留height／min-height／max-height及短规格省略策略。"
+  },
+  "fallbacks": {
+    "noBackdropFilter": "默认先提供实色深底；仅在支持backdrop-filter或-webkit-backdrop-filter时启用透明与模糊。",
+    "reducedTransparency": "prefers-reduced-transparency:reduce启用实色表面，关闭相关背景模糊和系列装饰底图，保留勾选、焦点、层级与交互。",
+    "reducedMotion": "沿用既有prefers-reduced-motion规则；版本按钮箭头反馈不会要求过渡动画。",
+    "mobileCost": "降低顶栏／控制带／菜单模糊强度，移除系列底签、版本按钮、逐卡状态与喜欢浮层的移动端额外模糊。"
+  },
+  "validation": {
+    "syntax": {
+      "app.js": "node --check通过",
+      "edition-menu.js": "node --check通过",
+      "navigation.js": "node --check通过"
+    },
+    "localResources": {
+      "status": "通过",
+      "count": 33,
+      "htmlEntries": 4
+    },
+    "cssDelimiterCheck": "pass",
+    "unchangedFileHashCheck": "通过；data/library.json、references/sources.json、navigation.js与四个HTML入口逐字节保持一致。",
+    "glassTextContrast": {
+      "method": "依据声明的主要文字色和玻璃背景，对白色底图进行alpha合成后计算；不代表浏览器截图验收。",
+      "ratios": {
+        "chrome": 5.13,
+        "controls": 5.34,
+        "menu": 6.68,
+        "seriesCaption": 4.72
+      },
+      "minimum": 4.72
+    },
+    "browserStarted": false,
+    "httpServerStarted": false,
+    "dependenciesInstalled": false,
+    "assetsDownloaded": false
+  },
+  "pendingRootVerification": [
+    "1440×900、390×844与320px视口中的菜单位置、两侧留边、向上展开、内部滚动及底栏避让。",
+    "带横幅与无横幅详情的弹层层级，原生popover及固定定位回退下是否存在裁切。",
+    "播放／版本按钮实际48px高度、上边线与下边线对齐。",
+    "Enter／Space、方向键、Home／End、Esc、Tab与Shift+Tab，触摸选择、再次点击、点击外部关闭及无播放误触。",
+    "多版本、单版本、缺规格、无版本记录与无文件记录分支；当前资料只有沙丘2显式提供两个版本，未为验收修改样本数据。",
+    "切换后个人状态和断点不变；目录、固定成员范围、筛选取消、会话状态与逐层返回继续正常。",
+    "滚动时玻璃材质的实际可感知程度、图片清晰度、局部文字对比，以及减少透明度／不支持背景模糊时的实色回退。"
+  ],
+  "rootBrowserReview": {
+    "record": "browser-review-glass.json",
+    "checksPassed": 117,
+    "failures": 0,
+    "viewports": [
+      "1440x900",
+      "390x844",
+      "320x640"
+    ],
+    "shortViewportHeight": 540,
+    "actualPlaybackButtonHeight": 48,
+    "actualVersionButtonHeight": 48,
+    "verified": [
+      "pointer and touch menu selection",
+      "Home/End/arrow/Enter/Space keyboard control",
+      "Escape focus restoration",
+      "outside click and Tab dismissal",
+      "scroll and viewport positioning",
+      "one and twelve isolated sample versions",
+      "reduced-transparency solid fallback",
+      "sharp loaded posters"
+    ],
+    "productionSourceModified": false
+  }
+}

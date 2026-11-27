@@ -1,0 +1,439 @@
+{
+  "date": "2026-11-27",
+  "scope": {
+    "mode": "targeted",
+    "target": "actor.html and series.html: scopedBody .scoped-controls and its adjacent result-summary",
+    "job": "从演员或系列进入，查看当前实体馆藏，按条件筛选或排序后打开一部作品并返回原位置。",
+    "problems": [
+      "截图框出的工具区表面和控件过重",
+      "标题、范围标签与数量占据额外行高",
+      "分类与次级工具尺度不一致"
+    ],
+    "preserve": [
+      "全局导航与品牌",
+      "演员与系列资料区",
+      "主色令牌和已有组件",
+      "样本成员关系和全部操作",
+      "独立URL与逐层返回状态",
+      "片库和影片详情布局"
+    ],
+    "states": [
+      "有结果",
+      "筛选启用",
+      "零结果及清除",
+      "排序展开",
+      "桌面",
+      "手机"
+    ],
+    "assumptions": "沿用用户已接受的片库Header轻量方向，仅调整演员与系列作品工具区，不重做整页。"
+  },
+  "audit": {
+    "scope": "演员与系列作品区工具条；不含上方资料区和全局导航。",
+    "source": "本轮实际页面截图与当前原型源码",
+    "steps": [
+      {
+        "step": 1,
+        "name": "演员作品页",
+        "health": "资料和范围清楚，工具区表面较重",
+        "evidence": "screenshots/before-actor-desktop.png"
+      },
+      {
+        "step": 2,
+        "name": "系列作品页",
+        "health": "影片集身份保留；工具区重复同样的底板和数量行",
+        "evidence": "screenshots/before-series-mobile.png"
+      }
+    ],
+    "issues": [
+      {
+        "issue": "独立底板和上下边框使作品工具区成为又一整块面板",
+        "source": "scoped-controls height122px desktop"
+      },
+      {
+        "issue": "作品标题与片库内作品标签分占首行，结果数量又独占一行",
+        "source": "scopedBody .scope-locked and results .result-summary"
+      },
+      {
+        "issue": "窄屏排序和切换布局的排列不一致，320px演员页增至209px",
+        "source": "before-capture.json narrow actor"
+      }
+    ],
+    "preserve": [
+      "资料区与全局导航",
+      "影片卡片",
+      "成员关系",
+      "排序筛选行为",
+      "返回和恢复焦点"
+    ],
+    "changes": [
+      "取消底板与吸顶，仅留底部分隔线",
+      "作品数量并入标题，移除重复结果行和范围图标标签",
+      "统一为标题和次级工具、下方分类；窄屏重排并保留44px命中区"
+    ],
+    "limits": "Mobbin付费限制，未引用商业产品。截图不证明完整无障碍合规，另以浏览器核对键盘与返回流程。"
+  },
+  "browser": {
+    "checks": [
+      "1440px actor toolbar is transparent and not sticky",
+      "1440px actor one visible result count",
+      "1440px actor sort applies and restores trigger focus",
+      "1440px actor filtered count stays within entity",
+      "1440px actor active filter state is visible",
+      "1440px actor film return restores scoped title",
+      "1440px actor film return restores controls and card focus",
+      "1440px actor empty search retains entity total",
+      "1440px actor reset keeps actor or series membership",
+      "1440px actor no horizontal overflow",
+      "1440px series toolbar is transparent and not sticky",
+      "1440px series one visible result count",
+      "1440px series sort applies and restores trigger focus",
+      "1440px series filtered count stays within entity",
+      "1440px series active filter state is visible",
+      "1440px series film return restores scoped title",
+      "1440px series film return restores controls and card focus",
+      "1440px series empty search retains entity total",
+      "1440px series reset keeps actor or series membership",
+      "1440px series no horizontal overflow",
+      "390px actor toolbar is transparent and not sticky",
+      "390px actor one visible result count",
+      "390px actor sort applies and restores trigger focus",
+      "390px actor filtered count stays within entity",
+      "390px actor active filter state is visible",
+      "390px actor film return restores scoped title",
+      "390px actor film return restores controls and card focus",
+      "390px actor empty search retains entity total",
+      "390px actor reset keeps actor or series membership",
+      "390px actor no horizontal overflow",
+      "390px actor touch targets remain 44px",
+      "390px series toolbar is transparent and not sticky",
+      "390px series one visible result count",
+      "390px series sort applies and restores trigger focus",
+      "390px series filtered count stays within entity",
+      "390px series active filter state is visible",
+      "390px series film return restores scoped title",
+      "390px series film return restores controls and card focus",
+      "390px series empty search retains entity total",
+      "390px series reset keeps actor or series membership",
+      "390px series no horizontal overflow",
+      "390px series touch targets remain 44px",
+      "320px actor toolbar is transparent and not sticky",
+      "320px actor one visible result count",
+      "320px actor sort applies and restores trigger focus",
+      "320px actor filtered count stays within entity",
+      "320px actor active filter state is visible",
+      "320px actor film return restores scoped title",
+      "320px actor film return restores controls and card focus",
+      "320px actor empty search retains entity total",
+      "320px actor reset keeps actor or series membership",
+      "320px actor no horizontal overflow",
+      "320px actor touch targets remain 44px",
+      "320px series toolbar is transparent and not sticky",
+      "320px series one visible result count",
+      "320px series sort applies and restores trigger focus",
+      "320px series filtered count stays within entity",
+      "320px series active filter state is visible",
+      "320px series film return restores scoped title",
+      "320px series film return restores controls and card focus",
+      "320px series empty search retains entity total",
+      "320px series reset keeps actor or series membership",
+      "320px series no horizontal overflow",
+      "320px series touch targets remain 44px",
+      "library keeps its accepted header",
+      "film detail does not load scoped styles",
+      "no page script errors"
+    ],
+    "errors": [],
+    "failures": []
+  },
+  "before": [
+    {
+      "view": "desktop",
+      "name": "actor",
+      "path": "actor.html?name=%E4%B8%BD%E8%B4%9D%E5%8D%A1%C2%B7%E5%BC%97%E6%A0%BC%E6%A3%AE",
+      "errors": [],
+      "width": 1440,
+      "scrollWidth": 1432,
+      "toolbarHeight": 122,
+      "firstPosterTop": 510.25,
+      "heading": "丽贝卡·弗格森",
+      "count": 2,
+      "toolbar": {
+        "x": 40,
+        "y": 328.25,
+        "width": 1352,
+        "height": 122,
+        "top": 328.25,
+        "right": 1392,
+        "bottom": 450.25,
+        "left": 40
+      }
+    },
+    {
+      "view": "desktop",
+      "name": "series",
+      "path": "series.html?id=dune",
+      "errors": [],
+      "width": 1440,
+      "scrollWidth": 1432,
+      "toolbarHeight": 122,
+      "firstPosterTop": 519.328125,
+      "heading": "沙丘",
+      "count": 2,
+      "toolbar": {
+        "x": 40,
+        "y": 337.328125,
+        "width": 1352,
+        "height": 122,
+        "top": 337.328125,
+        "right": 1392,
+        "bottom": 459.328125,
+        "left": 40
+      }
+    },
+    {
+      "view": "mobile",
+      "name": "actor",
+      "path": "actor.html?name=%E4%B8%BD%E8%B4%9D%E5%8D%A1%C2%B7%E5%BC%97%E6%A0%BC%E6%A3%AE",
+      "errors": [],
+      "width": 390,
+      "scrollWidth": 382,
+      "toolbarHeight": 157,
+      "firstPosterTop": 502.203125,
+      "heading": "丽贝卡·弗格森",
+      "count": 2,
+      "toolbar": {
+        "x": 20,
+        "y": 289.203125,
+        "width": 342,
+        "height": 157,
+        "top": 289.203125,
+        "right": 362,
+        "bottom": 446.203125,
+        "left": 20
+      }
+    },
+    {
+      "view": "mobile",
+      "name": "series",
+      "path": "series.html?id=dune",
+      "errors": [],
+      "width": 390,
+      "scrollWidth": 382,
+      "toolbarHeight": 157,
+      "firstPosterTop": 495.75,
+      "heading": "沙丘",
+      "count": 2,
+      "toolbar": {
+        "x": 20,
+        "y": 282.75,
+        "width": 342,
+        "height": 157,
+        "top": 282.75,
+        "right": 362,
+        "bottom": 439.75,
+        "left": 20
+      }
+    },
+    {
+      "view": "narrow",
+      "name": "actor",
+      "path": "actor.html?name=%E4%B8%BD%E8%B4%9D%E5%8D%A1%C2%B7%E5%BC%97%E6%A0%BC%E6%A3%AE",
+      "errors": [],
+      "width": 320,
+      "scrollWidth": 312,
+      "toolbarHeight": 209,
+      "firstPosterTop": 554.203125,
+      "heading": "丽贝卡·弗格森",
+      "count": 2,
+      "toolbar": {
+        "x": 20,
+        "y": 289.203125,
+        "width": 272,
+        "height": 209,
+        "top": 289.203125,
+        "right": 292,
+        "bottom": 498.203125,
+        "left": 20
+      }
+    },
+    {
+      "view": "narrow",
+      "name": "series",
+      "path": "series.html?id=dune",
+      "errors": [],
+      "width": 320,
+      "scrollWidth": 312,
+      "toolbarHeight": 157,
+      "firstPosterTop": 495.75,
+      "heading": "沙丘",
+      "count": 2,
+      "toolbar": {
+        "x": 20,
+        "y": 282.75,
+        "width": 272,
+        "height": 157,
+        "top": 282.75,
+        "right": 292,
+        "bottom": 439.75,
+        "left": 20
+      }
+    }
+  ],
+  "after": [
+    {
+      "view": "desktop",
+      "name": "actor",
+      "path": "actor.html?name=%E4%B8%BD%E8%B4%9D%E5%8D%A1%C2%B7%E5%BC%97%E6%A0%BC%E6%A3%AE",
+      "errors": [],
+      "width": 1440,
+      "scrollWidth": 1432,
+      "toolbarHeight": 89,
+      "firstPosterTop": 439.25,
+      "heading": "丽贝卡·弗格森",
+      "count": 2,
+      "toolbar": {
+        "x": 40,
+        "y": 328.25,
+        "width": 1352,
+        "height": 89,
+        "top": 328.25,
+        "right": 1392,
+        "bottom": 417.25,
+        "left": 40
+      }
+    },
+    {
+      "view": "desktop",
+      "name": "series",
+      "path": "series.html?id=dune",
+      "errors": [],
+      "width": 1440,
+      "scrollWidth": 1432,
+      "toolbarHeight": 89,
+      "firstPosterTop": 448.328125,
+      "heading": "沙丘",
+      "count": 2,
+      "toolbar": {
+        "x": 40,
+        "y": 337.328125,
+        "width": 1352,
+        "height": 89,
+        "top": 337.328125,
+        "right": 1392,
+        "bottom": 426.328125,
+        "left": 40
+      }
+    },
+    {
+      "view": "mobile",
+      "name": "actor",
+      "path": "actor.html?name=%E4%B8%BD%E8%B4%9D%E5%8D%A1%C2%B7%E5%BC%97%E6%A0%BC%E6%A3%AE",
+      "errors": [],
+      "width": 390,
+      "scrollWidth": 382,
+      "toolbarHeight": 139,
+      "firstPosterTop": 448.203125,
+      "heading": "丽贝卡·弗格森",
+      "count": 2,
+      "toolbar": {
+        "x": 20,
+        "y": 289.203125,
+        "width": 342,
+        "height": 139,
+        "top": 289.203125,
+        "right": 362,
+        "bottom": 428.203125,
+        "left": 20
+      }
+    },
+    {
+      "view": "mobile",
+      "name": "series",
+      "path": "series.html?id=dune",
+      "errors": [],
+      "width": 390,
+      "scrollWidth": 382,
+      "toolbarHeight": 139,
+      "firstPosterTop": 441.75,
+      "heading": "沙丘",
+      "count": 2,
+      "toolbar": {
+        "x": 20,
+        "y": 282.75,
+        "width": 342,
+        "height": 139,
+        "top": 282.75,
+        "right": 362,
+        "bottom": 421.75,
+        "left": 20
+      }
+    },
+    {
+      "view": "narrow",
+      "name": "actor",
+      "path": "actor.html?name=%E4%B8%BD%E8%B4%9D%E5%8D%A1%C2%B7%E5%BC%97%E6%A0%BC%E6%A3%AE",
+      "errors": [],
+      "width": 320,
+      "scrollWidth": 312,
+      "toolbarHeight": 139,
+      "firstPosterTop": 448.203125,
+      "heading": "丽贝卡·弗格森",
+      "count": 2,
+      "toolbar": {
+        "x": 20,
+        "y": 289.203125,
+        "width": 272,
+        "height": 139,
+        "top": 289.203125,
+        "right": 292,
+        "bottom": 428.203125,
+        "left": 20
+      }
+    },
+    {
+      "view": "narrow",
+      "name": "series",
+      "path": "series.html?id=dune",
+      "errors": [],
+      "width": 320,
+      "scrollWidth": 312,
+      "toolbarHeight": 139,
+      "firstPosterTop": 441.75,
+      "heading": "沙丘",
+      "count": 2,
+      "toolbar": {
+        "x": 20,
+        "y": 282.75,
+        "width": 272,
+        "height": 139,
+        "top": 282.75,
+        "right": 292,
+        "bottom": 421.75,
+        "left": 20
+      }
+    }
+  ],
+  "sourceHashes": [
+    {
+      "file": "scoped-header.css",
+      "sha256": "8e2581ddc5b3b5f43beceece30015e73601a6f3003118289cd10bfc171942181"
+    },
+    {
+      "file": "app.js",
+      "sha256": "32f8f826f55a3ea4f2cfc72cf14e83c86b236b164764d68b47e800fe37967449"
+    },
+    {
+      "file": "actor.html",
+      "sha256": "7e1b5e475a1edf9d6893e2ce1446a6e02303a6f91853caa72f66437cbde77d27"
+    },
+    {
+      "file": "series.html",
+      "sha256": "ff6754bc925213e30365cd66f418095e3c12b9cae17099c7c82471802a3134e2"
+    },
+    {
+      "file": "DESIGN.md",
+      "sha256": "038fc1ff008b829511ac0f79aa88f571ed1a91466c6f3518ea3658cc9b0638f0"
+    }
+  ],
+  "formalAppChanged": false
+}

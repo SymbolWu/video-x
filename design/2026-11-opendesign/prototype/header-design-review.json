@@ -1,0 +1,102 @@
+{
+  "scope": "Library header only: default, category filtering, actor and series tabs. Existing accepted cards and detail screens preserved.",
+  "method": "Product Design audit: current screenshot evidence, information hierarchy, control consistency, keyboard and responsive checks.",
+  "sources": [
+    {
+      "title": "Carbon Tabs",
+      "url": "https://www.carbondesignsystem.com/building-blocks/core/components/tabs/guidelines",
+      "applied": "Line tabs distinguish films, people and series; remove contained tab backgrounds."
+    },
+    {
+      "title": "Carbon Content Switcher",
+      "url": "https://www.carbondesignsystem.com/building-blocks/core/components/content-switcher/guidelines",
+      "applied": "The view switch is lower in hierarchy and changes the presentation of the same items."
+    },
+    {
+      "title": "Carbon Data Table Toolbar",
+      "url": "https://www.carbondesignsystem.com/building-blocks/core/components/data-table/guidelines",
+      "applied": "Keep utilities together and use consistent sizes; applied by analogy to a media grid, not a table clone."
+    },
+    {
+      "title": "Material Filter Chips",
+      "url": "https://developer.android.com/develop/ui/compose/components/chip",
+      "applied": "Category choices use a compact selected chip distinct from content navigation."
+    }
+  ],
+  "steps": [
+    {
+      "number": 1,
+      "name": "Default library",
+      "before": "High visual weight: full glass panel, nested selected surfaces and underlines, four competing control treatments.",
+      "after": "Clearer: quiet title, line tabs, grouped utilities, separate category chips and one result count.",
+      "evidence": [
+        "screenshots/before-01-library-header-desktop.png",
+        "screenshots/final-01-library-header-desktop.png"
+      ]
+    },
+    {
+      "number": 2,
+      "name": "Category filtering",
+      "before": "Selected category resembles a second navigation tab; mobile header occupies 218px.",
+      "after": "Distinct chip selection, result count updates. Mobile header is 159px at 390px viewport width. A selected category remains visible in its scroll container.",
+      "evidence": [
+        "screenshots/before-02-filtered-header-mobile.png",
+        "screenshots/final-02-filtered-header-mobile.png"
+      ]
+    },
+    {
+      "number": 3,
+      "name": "Actor directory",
+      "before": "Repeats the same heavy tab and filter surfaces.",
+      "after": "Same header rhythm with actor-specific filtering and sorting; compact actor cards preserved.",
+      "evidence": [
+        "screenshots/before-03-actors-header-desktop.png",
+        "screenshots/final-03-actors-header-desktop.png"
+      ]
+    },
+    {
+      "number": 4,
+      "name": "Series directory",
+      "before": "Same oversized header surface as the film view.",
+      "after": "Same hierarchy and result count, series-specific sorting; member cover compositions preserved.",
+      "evidence": [
+        "screenshots/before-04-series-header-desktop.png",
+        "screenshots/final-04-series-header-desktop.png"
+      ]
+    }
+  ],
+  "verification": {
+    "localRecord": "review.json",
+    "nativeRecord": "native-review.json",
+    "testedViewportWidths": [
+      1920,
+      1440,
+      1280,
+      1024,
+      900,
+      768,
+      700,
+      600,
+      520,
+      390,
+      360,
+      320
+    ],
+    "checks": [
+      "tab arrows and focus",
+      "category and entity filters",
+      "sort and layout switching",
+      "filter cancellation",
+      "zero-result recovery",
+      "return state and focus",
+      "44px mobile control targets",
+      "no horizontal page overflow",
+      "unchanged source outside header rendering"
+    ],
+    "limits": [
+      "Sample prototype only; no real media playback or server state.",
+      "No screen reader certification or full accessibility audit."
+    ]
+  },
+  "productionApplicationChanged": false
+}

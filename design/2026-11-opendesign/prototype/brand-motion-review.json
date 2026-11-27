@@ -1,0 +1,146 @@
+{
+  "checks": [
+    "desktop: authoritative accent",
+    "desktop: logo uses a loaded vector mask",
+    "desktop: indicator actually animates",
+    "desktop: list crossfades",
+    "desktop: indicator reaches selected tab",
+    "desktop: ghost layers cleaned",
+    "desktop: custom sort menu opens",
+    "desktop: actor sort applies",
+    "desktop: keyboard sort applies",
+    "desktop: filter trigger shows open state",
+    "desktop: filter dialog animates in",
+    "desktop: filter dialog animates out",
+    "desktop: filter cancel restores focus",
+    "desktop: applied filter has results and state",
+    "desktop: heart has real glass blur",
+    "desktop: favorite does not rebuild the grid",
+    "desktop: favorite animates",
+    "desktop: liked heart uses accent",
+    "desktop: rapid tab changes leave no overlays",
+    "desktop: no horizontal overflow",
+    "desktop: playback controls retain 48px",
+    "desktop: version menu still works",
+    "desktop: no script errors",
+    "mobile: authoritative accent",
+    "mobile: logo uses a loaded vector mask",
+    "mobile: indicator actually animates",
+    "mobile: list crossfades",
+    "mobile: indicator reaches selected tab",
+    "mobile: ghost layers cleaned",
+    "mobile: custom sort menu opens",
+    "mobile: actor sort applies",
+    "mobile: keyboard sort applies",
+    "mobile: filter trigger shows open state",
+    "mobile: filter dialog animates in",
+    "mobile: filter dialog animates out",
+    "mobile: filter cancel restores focus",
+    "mobile: applied filter has results and state",
+    "mobile: heart has real glass blur",
+    "mobile: favorite does not rebuild the grid",
+    "mobile: favorite animates",
+    "mobile: liked heart uses accent",
+    "mobile: rapid tab changes leave no overlays",
+    "mobile: no horizontal overflow",
+    "mobile: playback controls retain 48px",
+    "mobile: version menu still works",
+    "mobile: no script errors",
+    "narrow: authoritative accent",
+    "narrow: logo uses a loaded vector mask",
+    "narrow: indicator actually animates",
+    "narrow: list crossfades",
+    "narrow: indicator reaches selected tab",
+    "narrow: ghost layers cleaned",
+    "narrow: custom sort menu opens",
+    "narrow: actor sort applies",
+    "narrow: keyboard sort applies",
+    "narrow: filter trigger shows open state",
+    "narrow: filter dialog animates in",
+    "narrow: filter dialog animates out",
+    "narrow: filter cancel restores focus",
+    "narrow: applied filter has results and state",
+    "narrow: heart has real glass blur",
+    "narrow: favorite does not rebuild the grid",
+    "narrow: favorite animates",
+    "narrow: liked heart uses accent",
+    "narrow: rapid tab changes leave no overlays",
+    "narrow: no horizontal overflow",
+    "narrow: playback controls retain 48px",
+    "narrow: version menu still works",
+    "narrow: no script errors",
+    "reduced motion skips JS movement and ghost layers",
+    "reduced motion keeps sorting usable",
+    "reduced transparency restores solid favorite surface"
+  ],
+  "metrics": [
+    {
+      "view": "desktop",
+      "moving": {
+        "moving": "true",
+        "animations": [
+          {
+            "state": "running",
+            "duration": 280
+          }
+        ],
+        "left": 169.609375,
+        "target": 247.75
+      }
+    },
+    {
+      "view": "desktop",
+      "glass": {
+        "blur": "blur(15px) saturate(1.35)",
+        "background": "rgba(12, 18, 27, 0.2)",
+        "border": "rgba(255, 255, 255, 0.35)"
+      }
+    },
+    {
+      "view": "mobile",
+      "moving": {
+        "moving": "true",
+        "animations": [
+          {
+            "state": "running",
+            "duration": 280
+          }
+        ],
+        "left": 203.734375,
+        "target": 266
+      }
+    },
+    {
+      "view": "mobile",
+      "glass": {
+        "blur": "blur(15px) saturate(1.35)",
+        "background": "rgba(12, 18, 27, 0.2)",
+        "border": "rgba(255, 255, 255, 0.35)"
+      }
+    },
+    {
+      "view": "narrow",
+      "moving": {
+        "moving": "true",
+        "animations": [
+          {
+            "state": "running",
+            "duration": 280
+          }
+        ],
+        "left": 144,
+        "target": 200
+      }
+    },
+    {
+      "view": "narrow",
+      "glass": {
+        "blur": "blur(15px) saturate(1.35)",
+        "background": "rgba(12, 18, 27, 0.2)",
+        "border": "rgba(255, 255, 255, 0.35)"
+      }
+    }
+  ],
+  "errors": [],
+  "failures": []
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "video-x.design-archive/v1",
+  "date": "2026-11-27",
+  "branch": "feat/open-design-test",
+  "sourceProjectId": "video-x-watch-refinement-20261127",
+  "sourceProjectName": "video-x · 观看端精修 · 演员与系列",
+  "openDesignVersion": "0.27.2",
+  "codexPluginVersion": "0.5.3",
+  "entry": "prototype/index.html",
+  "previewCommand": "node design/2026-11-opendesign/scripts/preview.mjs",
+  "counts": {
+    "movies": 45,
+    "people": 6,
+    "series": 7
+  },
+  "longSeries": {
+    "id": "bond",
+    "count": 25
+  },
+  "accent": {
+    "source": "../../packages/design-tokens/tokens.css",
+    "variable": "--accent",
+    "snapshot": "#ff6f91"
+  },
+  "scope": "High-fidelity viewing prototype and its design assets; no production application or real media changes"
+}

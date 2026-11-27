@@ -1,0 +1,47 @@
+{
+  "entry": "http://127.0.0.1:61234/api/projects/video-x-watch-refinement-20261127/raw/index.html",
+  "observations": [
+    {
+      "desktop": {
+        "track": "8px",
+        "thumb": "rgb(81, 92, 108)",
+        "border": "2px",
+        "radius": "999px",
+        "gutter": "stable",
+        "scrollHeight": 1287,
+        "viewport": 900,
+        "overflow": false
+      }
+    },
+    {
+      "dragScrollY": 387
+    },
+    {
+      "wheelScrollY": 387
+    },
+    {
+      "pageDownScrolls": true
+    },
+    {
+      "keyboardReachesEnd": true
+    },
+    {
+      "stableHeaderWidth": true
+    },
+    {
+      "versionMenuScrollbar": {
+        "track": "8px",
+        "thumb": "rgb(81, 92, 108)",
+        "overflow": "auto"
+      }
+    },
+    {
+      "mobile": {
+        "overflow": false,
+        "gutter": "auto",
+        "categoryScrollbar": "none"
+      }
+    }
+  ],
+  "errors": []
+}

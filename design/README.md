@@ -1,6 +1,8 @@
 # Design
 
-当前评审版本：[2026-11-film-catalog](2026-11-film-catalog/README.md)。
+当前观看端视觉探索：[2026-11-opendesign](2026-11-opendesign/README.md)，包含完整 HTML 工程、叠放系列封面、长页样本、设计记录和 OpenDesign 安装说明。
+
+三端设计基线：[2026-11-film-catalog](2026-11-film-catalog/README.md)。
 
 - 基于 `feat/film-catalog` 现有实现重新设计，无宋体。
 - 观看端 6 个页面、管理端 13 个路由视图、移动端 7 个一级/播放页面。

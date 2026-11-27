@@ -1,0 +1,40 @@
+{
+  "reviewedAt": "2026-11-27",
+  "status": "recommended references, not an accepted product change",
+  "destination": "video-x visual exploration",
+  "references": [
+    {
+      "product": "Infuse",
+      "role": "Primary visual reference for viewing and detail hierarchy",
+      "platformNote": "Apple-platform product; Android should adapt the hierarchy to native Android interactions.",
+      "source": "https://firecore.com/infuse",
+      "images": [
+        {"file":"infuse-library.jpg","url":"https://firecore.com/themes/main/images/feature-library.jpg","observed":"Detail view with fanart, compact metadata, primary resume action, episode shelf and cast section."},
+        {"file":"infuse-devices.webp","url":"https://firecore.com/themes/main/images/infuse-hero_2x.webp","observed":"Official device composition showing continued-watching cards and detail layouts across Apple devices."},
+        {"file":"infuse-design.jpg","url":"https://static.firecore.com/images/blog/infuse8-design.jpg","observed":"Official Infuse 8 detail design from the 2024 launch article; historical reference, not a claim about every current screen."}
+      ]
+    },
+    {
+      "product": "Plex",
+      "role": "Library browsing, filtering, sorting and multi-selection patterns",
+      "source": "https://support.plex.tv/articles/200392126-using-the-library-view/",
+      "evidenceNote": "Official article text was available in search results; direct article access returned 403. The downloaded promotional TV image is not a Web library screenshot.",
+      "mobileSource": "https://forums.plex.tv/t/plex-for-mobile-tvs-android-mobile-ios-android-tv-tvos-fire-tv/909610"
+    },
+    {
+      "product": "Frame.io",
+      "role": "Administration workspace, resizable panels and asset metadata density",
+      "source": "https://help.frame.io/en/articles/9101032-panel-overview",
+      "layoutSource": "https://help.frame.io/en/articles/9101037-project-layout-overview",
+      "image": {"file":"frameio-workspace.jpg","url":"https://cdn.sanity.io/images/s6lu43cv/production-v4/7a478723f741b7c66f9f76ad116bc7d3fcfc05cd-3840x2160.jpg?auto=format&fit=max&h=1350&q=30&w=2400","sourcePage":"https://frame.io/","observed":"Navigation tree, selected media grid, large asset preview and separate comment/property area."}
+    }
+  ],
+  "nextIterationRecommendation": {
+    "mainVisualReference":"Infuse",
+    "browsingInteractionReference":"Plex",
+    "administrationReference":"Frame.io",
+    "firstScreens":["viewing library","viewing detail"],
+    "contentValidation":["varied artwork","long Chinese titles","missing artwork","resume progress"],
+    "preserve":"Existing browsing, playback, personal-state and publishing semantics."
+  }
+}

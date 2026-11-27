@@ -1,0 +1,150 @@
+{
+  "project": "video—x 观看端增量重设计",
+  "entry": "index.html",
+  "deliverables": [
+    "index.html",
+    "detail.html",
+    "actor.html",
+    "series.html",
+    "app.js",
+    "navigation.js",
+    "style.css",
+    "design-notes.json"
+  ],
+  "design": {
+    "direction": "延续现有近黑、玫瑰强调色、小面积暖白主按钮与真实电影海报；收紧控件与目录密度，不另建品牌。",
+    "colors": {
+      "background": "#0d1015",
+      "surface": "#181d25",
+      "accent": "#eca0b6",
+      "primary": "#f3f0e9",
+      "muted": "#a4adbb"
+    },
+    "typography": "沿用原有 LocalUI / SF Pro Display、苹方及中文系统字体；保留观看端紧凑信息层级。",
+    "basis": "用户给定品牌、五张本地参考图与现有原型；紧凑间距、头像完整显示和固定范围提示由设计实现补足。"
+  },
+  "requirements": [
+    {
+      "number": 1,
+      "topic": "顶部工具栏",
+      "finalHandling": [
+        "标题与影片／演员／系列页签相邻对齐；下层将分类或目录条件与显示、排序、筛选分组，以细分隔和统一节奏组织。",
+        "桌面控件40px、手机44px，功能图标16px；视图切换取消厚外框。选择态使用玫瑰强调或细下划线，悬浮使用深色底，键盘焦点为独立玫瑰描边。",
+        "影片保留分类、海报／横图、发行年双向与名称等排序、观看／喜欢筛选。演员仅提供头像条件、姓名与馆藏作品数排序。系列提供馆藏规模条件和保存顺序、名称、部数、最新发行年排序。",
+        "不同类型分别记忆浏览条件；搜索不再强制切回影片页签。"
+      ]
+    },
+    {
+      "number": 2,
+      "topic": "演员目录",
+      "finalHandling": [
+        "1440px桌面使用9列网格，头像约130px宽；按可用宽度逐级调整至8／7／6／5／4列，手机3列。",
+        "按本地185×277或185×278头像的完整比例显示，不放大裁脸；缺图使用同尺寸的人物图标与“暂无头像”。",
+        "姓名与当前馆藏作品数直接显示；作品数由people.mediaIds和影片演员关系去重后计算，仅统计实际存在的影片。"
+      ],
+      "sampleCounts": {
+        "提莫西·查拉梅": 3,
+        "赞达亚": 2,
+        "丽贝卡·弗格森": 2,
+        "乔什·布洛林": 2,
+        "艾米·亚当斯": 1,
+        "杰瑞米·雷纳": 1
+      }
+    },
+    {
+      "number": 3,
+      "topic": "系列封面",
+      "finalHandling": [
+        "以低亮模糊背景、影片集标识、不同成员海报的大小和上下基线层次、底部标题与馆藏部数组成封面。",
+        "2／3部使用不同成员海报，主要海报完整显示；1部仅展示一张真实海报，配馆藏编号与明确“1部馆藏”，不复制海报。",
+        "系列按data.series中的独立id和mediaIds显示；计数仅代表当前馆藏。长标题在目录最多两行，进入独立系列页可阅读全名。"
+      ],
+      "sampleCounts": {
+        "dune": 2,
+        "lotr": 3,
+        "matrix": 2,
+        "spiderverse": 2,
+        "madmax": 2,
+        "blade-runner": 1
+      }
+    },
+    {
+      "number": 4,
+      "topic": "独立作品页与分层返回",
+      "finalHandling": [
+        "新增actor.html?name=URL编码姓名与series.html?id=稳定id。两页分别具有独立身份、URL、标题、来源返回入口和“参演作品”／“系列作品”片库。",
+        "演员默认按发行年新到旧展示；系列默认严格沿mediaIds保存顺序展示。其他浏览排序只作用于派生列表，不改写成员保存顺序。",
+        "所有演员卡片、详情演职人员入口，以及系列目录、详情所属系列、系列标题与查看系列入口均进入独立页面。",
+        "成员范围由当前页面路由和本地关系确定，清空搜索／分类／个人筛选不会解除演员、系列或收藏夹范围。",
+        "navigation.js为每次访问记录父页面、筛选、视图、排序、滚动和语义焦点，并配合浏览器history与sessionStorage逐层返回；从后台页面缓存恢复时刷新共享个人状态。",
+        "直接访问演员／系列页分别返回演员／系列目录；直接访问影片返回片库。旧index演员／系列链接重定向到对应独立页。"
+      ],
+      "directEntries": [
+        "index.html?tab=people",
+        "index.html?tab=series",
+        "actor.html?name=%E6%8F%90%E8%8E%AB%E8%A5%BF%C2%B7%E6%9F%A5%E6%8B%89%E6%A2%85",
+        "series.html?id=dune"
+      ]
+    },
+    {
+      "number": 5,
+      "topic": "播放与版本按钮",
+      "finalHandling": [
+        "桌面和手机均使用48px实际border-box高度，同时设置height、min-height、max-height及一致边框厚度，统一零垂直padding和行高；同一行按顶部对齐。",
+        "主按钮保持一行“播放”或“继续播放 · 时间”。版本名称与短规格分两行，长名称和规格省略；完整名称、分辨率、编码、音轨在版本选择面板中换行阅读。",
+        "手机使用弹性列分配宽度，极窄屏允许分行而保持各自48px；版本选择只改变预览选择。",
+        "播放点击弹出明确提示：“当前为设计预览，尚未连接影片文件”。"
+      ],
+      "heightPx": 48,
+      "heightMeasuredInBrowser": false
+    }
+  ],
+  "dataAndState": {
+    "sources": [
+      "data/library.json",
+      "references/sources.json"
+    ],
+    "sourceFilesChanged": false,
+    "personalStates": "喜欢、已看与评分分别更新；再次点击当前星级清除评分，互不连带修改。个人选择在标签页内保存，不写回样本资料。",
+    "seriesOrder": "data.series[].mediaIds原始顺序保持不变。",
+    "missingInformation": "缺头像、缺海报、缺演职资料和未知条目均明确回退，不补写传记、人气或虚构图片。",
+    "scope": "仅使用当前项目本地样本与素材；未访问正式仓库、真实API、媒体盘或凭据；未下载素材、安装依赖或调用云端服务。"
+  },
+  "validation": {
+    "syntax": {
+      "app.js": "node --check 通过",
+      "navigation.js": "node --check 通过"
+    },
+    "resources": {
+      "status": "通过",
+      "localResources": 29,
+      "htmlEntries": [
+        "index.html",
+        "detail.html",
+        "actor.html",
+        "series.html"
+      ]
+    },
+    "dataRelations": {
+      "movies": 20,
+      "series": 6,
+      "memberReferences": "均存在，无系列内重复成员"
+    },
+    "browserChecks": "按用户分工交由根代理执行1440×900／390×844截图、实际按钮高度、成员范围和逐层返回验证；本轮未启动服务、浏览器或安装验收环境。"
+  },
+  "remainingConstraints": [
+    "实际视觉与浏览器交互尚待根代理实测；当前交付为可编辑本地设计预览，未接入影片文件。"
+  ],
+  "rootBrowserReview": {
+    "report": "browser-review.json",
+    "checksPassed": 104,
+    "failures": 0,
+    "viewports": [
+      "1440x900",
+      "390x844"
+    ],
+    "measuredPlaybackButtonHeight": 48,
+    "measuredVersionButtonHeight": 48,
+    "productionSourceModified": false
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "actor.html",
+  "entry": "actor.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-11-27T07:24:38.594Z",
+  "updatedAt": "2026-11-27T07:24:38.594Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

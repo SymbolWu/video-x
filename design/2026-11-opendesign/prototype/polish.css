@@ -1,0 +1,98 @@
+/* High-fidelity interaction layer. Accent values come from theme-tokens.css. */
+:root{--motion-fast:150ms;--motion-normal:240ms;--motion-ease:cubic-bezier(.22,1,.36,1)}
+.brand{display:inline-flex;align-items:center;gap:9px;letter-spacing:-.8px}
+.brand .brand-symbol{display:block;flex:none;width:34px;height:34px;background:var(--accent);mask:url('assets/brand/video-x-mark.svg') center/contain no-repeat;-webkit-mask:url('assets/brand/video-x-mark.svg') center/contain no-repeat;transition:transform var(--motion-normal) var(--motion-ease)}
+.brand .brand-wordmark{color:var(--text);font-size:24px;font-weight:650;letter-spacing:-1.1px;line-height:1}
+.brand .brand-x{color:var(--accent);font-weight:550;margin-left:1px;letter-spacing:-1px}
+.brand:hover .brand-symbol{transform:rotate(-5deg)}
+.brand:active .brand-symbol{transform:scale(.94)}
+.catalog-header .type-tabs{position:relative}
+body .catalog-header .type-tab[aria-selected=true]:after{display:none}
+.tab-indicator{position:absolute;bottom:0;height:2px;display:block;background:var(--accent);border-radius:2px;pointer-events:none;transform-origin:left center;will-change:transform;box-shadow:0 0 9px color-mix(in srgb,var(--accent) 13%,transparent)}
+.results-ghost{z-index:3;contain:layout paint;pointer-events:none;user-select:none}
+.results-ghost *{pointer-events:none!important}
+body .sort-control{padding:0;border:0;background:transparent;box-shadow:none;height:auto;min-height:0}
+.sort-control>select[hidden]{display:none!important}
+body .sort-control .sort-trigger{display:inline-flex;align-items:center;gap:7px;min-height:36px;height:36px;max-width:190px;padding:0 6px;border:1px solid transparent;border-radius:7px;background:transparent;color:#b7c1cf;font-size:12px;line-height:1.4;text-align:left;cursor:pointer;transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast),box-shadow var(--motion-fast)}
+.sort-trigger>span{min-width:0;max-width:122px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sort-trigger>.od-icon{width:16px;height:16px;--od-icon-size:16px;flex-shrink:0}
+.sort-trigger .sort-chevron{width:12px;height:12px;margin-left:7px;transition:transform var(--motion-normal) var(--motion-ease),color var(--motion-fast)}
+body .sort-control .sort-trigger[aria-expanded=true]{background:color-mix(in srgb,var(--accent) 8%,#151b25);border-color:color-mix(in srgb,var(--accent) 45%,transparent);color:var(--text)}
+.sort-trigger[aria-expanded=true] .sort-chevron{transform:rotate(180deg);color:var(--accent)}
+.sort-trigger:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.sort-menu .edition-menu-heading{padding-bottom:8px}
+.sort-menu .edition-option{min-height:40px;padding:10px 12px;gap:10px}
+.sort-menu .edition-option-name{font-size:12px;font-weight:450}
+.sort-menu .edition-option-specs:empty{display:none}
+.sort-menu .edition-option[aria-checked=true]{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.sort-menu .edition-option-check{color:var(--accent)}
+.edition-option{transition:background var(--motion-fast),color var(--motion-fast)}
+.edition-option[aria-checked=true]{background:color-mix(in srgb,var(--accent) 12%,#171e29)}
+.edition-option[aria-checked=true] .edition-option-check{color:var(--accent)}
+.edition-option:focus-visible{outline-color:var(--accent)}
+.edition-button[aria-expanded=true]{background:color-mix(in srgb,var(--accent) 14%,#171e29);border-color:color-mix(in srgb,var(--accent) 65%,transparent)}
+.catalog-header .filter-btn{transition:background var(--motion-fast),border-color var(--motion-fast),color var(--motion-fast),box-shadow var(--motion-fast)}
+.catalog-header .filter-btn[aria-expanded=true]{background:color-mix(in srgb,var(--accent) 8%,transparent);border-color:color-mix(in srgb,var(--accent) 65%,transparent);color:var(--accent)}
+.catalog-header .filter-btn.is-active{background:color-mix(in srgb,var(--accent) 8%,transparent);border-color:color-mix(in srgb,var(--accent) 50%,transparent);color:var(--accent)}
+.catalog-header .filter-dot{background:var(--accent);box-shadow:0 0 5px color-mix(in srgb,var(--accent) 24%,transparent)}
+dialog{transform-origin:center center}
+dialog::backdrop{animation:dialog-backdrop-in 180ms ease-out}
+dialog[data-closing]::backdrop{animation:dialog-backdrop-out 140ms ease-in forwards}
+dialog[data-closing]{pointer-events:none}
+@keyframes dialog-backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes dialog-backdrop-out{from{opacity:1}to{opacity:0}}
+/* Clear glass lens over the original poster. The tint stays light enough to
+   transmit artwork; the border, blur and inset highlight provide separation. */
+body .movie-card .card-favorite{width:44px;height:44px;top:3px;right:3px;padding:13px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;isolation:isolate;color:#fff;box-shadow:none;z-index:4;transition:opacity var(--motion-fast),color var(--motion-fast),transform var(--motion-fast)}
+body .movie-card .card-favorite:before{content:'';position:absolute;inset:4px;z-index:-1;border-radius:50%;border:1px solid #ffffff59;background:linear-gradient(135deg,#ffffff26,#ffffff08),rgb(12 18 27 / .20);backdrop-filter:blur(15px) saturate(135%);-webkit-backdrop-filter:blur(15px) saturate(135%);box-shadow:inset 0 1px 0 #ffffff30,0 3px 12px #0003;transition:background var(--motion-fast),border-color var(--motion-fast),box-shadow var(--motion-fast)}
+body .movie-card .card-favorite>.od-icon{width:18px;height:18px;--od-icon-size:18px;stroke-width:1.8;filter:drop-shadow(0 1px 1px #0005)}
+body .movie-card .card-favorite[aria-pressed=true]{color:var(--accent)}
+body .movie-card .card-favorite[aria-pressed=true]:before{background:linear-gradient(135deg,#ffffff29,#ffffff08),color-mix(in srgb,var(--accent) 8%,rgb(12 18 27 / .14));border-color:#ffffff66}
+body .movie-card .card-favorite[aria-pressed=true]>.od-icon{fill:var(--accent);stroke-width:0}
+body .movie-card .card-favorite:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+body .movie-card .card-favorite:active{transform:scale(.94)}
+@media(hover:hover){
+ body .sort-control .sort-trigger:hover{background:#ffffff07;color:#f2f4f7;border-color:#ffffff15}
+ body .sort-control .sort-trigger[aria-expanded=true]:hover{background:color-mix(in srgb,var(--accent) 12%,#171e29);border-color:var(--accent)}
+ .sort-menu .edition-option:hover,.sort-menu .edition-option[aria-checked=true]:hover{background:color-mix(in srgb,var(--accent) 15%,#252c38)}
+ .catalog-header .filter-btn:hover{border-color:color-mix(in srgb,var(--accent) 35%,#ffffff24)}
+ body .movie-card .card-favorite:hover:before{background:linear-gradient(135deg,#ffffff38,#ffffff12),rgb(12 18 27 / .16);border-color:#ffffff88;box-shadow:inset 0 1px 0 #ffffff40,0 4px 15px #0004}
+ body .movie-card .card-favorite:hover{transform:scale(1.06)}
+}
+@media(max-width:520px){
+ .brand{gap:7px}
+ .brand .brand-symbol{width:30px;height:30px}
+ .brand .brand-wordmark{font-size:22px}
+ body .sort-control .sort-trigger{min-height:44px;height:44px;max-width:126px;padding:0 3px;gap:5px;font-size:11px}
+ .sort-trigger>span{max-width:78px}
+ .sort-trigger .sort-chevron{margin-left:1px}
+ .sort-menu .edition-option{min-height:46px;padding:12px}
+ .sort-menu .edition-option-name{font-size:13px}
+ body .movie-card .card-favorite{opacity:1}
+}
+@media(prefers-reduced-transparency:reduce){
+ body .movie-card .card-favorite:before,body .movie-card .card-favorite[aria-pressed=true]:before{background:#242b37;backdrop-filter:none;-webkit-backdrop-filter:none}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){body .movie-card .card-favorite:before{background:#242b37}}
+@media(prefers-reduced-motion:reduce){
+ *,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+ .brand:hover .brand-symbol,.brand:active .brand-symbol,body .movie-card .card-favorite:hover,body .movie-card .card-favorite:active{transform:none}
+}
+
+/* Native scrolling, with a quiet track and a slim rounded thumb. */
+html,dialog,.edition-menu,.od-scroll{--scroll-thumb:#515c6c;--scroll-thumb-hover:#748196;scrollbar-width:thin;scrollbar-color:var(--scroll-thumb) transparent}
+@media(pointer:fine){html{scrollbar-gutter:stable}}
+@supports selector(::-webkit-scrollbar){
+ html,dialog,.edition-menu,.od-scroll{scrollbar-width:auto;scrollbar-color:auto}
+ html::-webkit-scrollbar,dialog::-webkit-scrollbar,.edition-menu::-webkit-scrollbar,.od-scroll::-webkit-scrollbar{width:8px;height:8px}
+ html::-webkit-scrollbar-track,dialog::-webkit-scrollbar-track,.edition-menu::-webkit-scrollbar-track,.od-scroll::-webkit-scrollbar-track{background:transparent}
+ html::-webkit-scrollbar-thumb,dialog::-webkit-scrollbar-thumb,.edition-menu::-webkit-scrollbar-thumb,.od-scroll::-webkit-scrollbar-thumb{background:var(--scroll-thumb);background-clip:padding-box;border:2px solid transparent;border-radius:999px;min-height:36px}
+ html::-webkit-scrollbar-thumb:hover,dialog::-webkit-scrollbar-thumb:hover,.edition-menu::-webkit-scrollbar-thumb:hover,.od-scroll::-webkit-scrollbar-thumb:hover{background-color:var(--scroll-thumb-hover)}
+ html::-webkit-scrollbar-thumb:active,dialog::-webkit-scrollbar-thumb:active,.edition-menu::-webkit-scrollbar-thumb:active,.od-scroll::-webkit-scrollbar-thumb:active{background-color:color-mix(in srgb,var(--accent) 65%,#9ba6b6)}
+ html::-webkit-scrollbar-corner,dialog::-webkit-scrollbar-corner,.edition-menu::-webkit-scrollbar-corner,.od-scroll::-webkit-scrollbar-corner{background:transparent}
+ html::-webkit-scrollbar-button,dialog::-webkit-scrollbar-button,.edition-menu::-webkit-scrollbar-button,.od-scroll::-webkit-scrollbar-button{display:none;width:0;height:0}
+}
+@media(forced-colors:active){
+ html,dialog,.edition-menu,.od-scroll{scrollbar-color:auto;scrollbar-width:auto;--scroll-thumb:CanvasText;--scroll-thumb-hover:Highlight}
+ html::-webkit-scrollbar-thumb:active,dialog::-webkit-scrollbar-thumb:active,.edition-menu::-webkit-scrollbar-thumb:active,.od-scroll::-webkit-scrollbar-thumb:active{background-color:Highlight}
+}

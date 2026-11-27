@@ -1,0 +1,365 @@
+{
+  "entry": "http://127.0.0.1:61234/api/projects/video-x-watch-refinement-20261127/raw/index.html",
+  "checks": [
+    "desktop: playback controls retain equal 48px height",
+    "desktop: anchored version menu opens",
+    "desktop: trigger exposes expanded state",
+    "desktop: menu has both real versions",
+    "desktop: selected version is marked",
+    "desktop: full specifications readable",
+    "desktop: initial menu fits viewport",
+    "desktop: initial page has no horizontal overflow",
+    "desktop: selection applies immediately",
+    "desktop: version selection preserves personal state and progress",
+    "desktop: selection does not start playback or navigate",
+    "desktop: Escape restores trigger focus",
+    "desktop: Escape leaves detail in place",
+    "desktop: trigger toggles menu closed",
+    "desktop: outside click closes menu",
+    "desktop: Home reaches first option",
+    "desktop: End reaches last option",
+    "desktop: arrow navigation reaches prior option",
+    "desktop: keyboard selection applies without confirmation",
+    "desktop: Tab can leave menu",
+    "desktop: short viewport menu fits viewport",
+    "desktop: short viewport page has no horizontal overflow",
+    "desktop: after scroll menu fits viewport",
+    "desktop: after scroll page has no horizontal overflow",
+    "desktop: open menu follows anchor when scrolling",
+    "desktop: absent version metadata stays honest",
+    "desktop: one recorded version produces one menu item",
+    "desktop: many long sample versions menu fits viewport",
+    "desktop: many long sample versions page has no horizontal overflow",
+    "desktop: long menu keyboard reaches last version",
+    "desktop: long version name keeps 48px button",
+    "desktop: missing file stays unavailable",
+    "desktop: six series remain",
+    "desktop: version changes preserve independent series navigation",
+    "desktop: all twenty movie samples remain",
+    "desktop: navigation has frosted surface",
+    "desktop: posters stay sharp and loaded",
+    "desktop: reduced transparency uses unblurred fallback",
+    "desktop: no runtime errors",
+    "mobile: playback controls retain equal 48px height",
+    "mobile: anchored version menu opens",
+    "mobile: trigger exposes expanded state",
+    "mobile: menu has both real versions",
+    "mobile: selected version is marked",
+    "mobile: full specifications readable",
+    "mobile: initial menu fits viewport",
+    "mobile: initial page has no horizontal overflow",
+    "mobile: selection applies immediately",
+    "mobile: version selection preserves personal state and progress",
+    "mobile: selection does not start playback or navigate",
+    "mobile: Escape restores trigger focus",
+    "mobile: Escape leaves detail in place",
+    "mobile: trigger toggles menu closed",
+    "mobile: outside click closes menu",
+    "mobile: Home reaches first option",
+    "mobile: End reaches last option",
+    "mobile: arrow navigation reaches prior option",
+    "mobile: keyboard selection applies without confirmation",
+    "mobile: Tab can leave menu",
+    "mobile: short viewport menu fits viewport",
+    "mobile: short viewport page has no horizontal overflow",
+    "mobile: after scroll menu fits viewport",
+    "mobile: after scroll page has no horizontal overflow",
+    "mobile: open menu follows anchor when scrolling",
+    "mobile: absent version metadata stays honest",
+    "mobile: one recorded version produces one menu item",
+    "mobile: many long sample versions menu fits viewport",
+    "mobile: many long sample versions page has no horizontal overflow",
+    "mobile: long menu keyboard reaches last version",
+    "mobile: long version name keeps 48px button",
+    "mobile: missing file stays unavailable",
+    "mobile: six series remain",
+    "mobile: version changes preserve independent series navigation",
+    "mobile: all twenty movie samples remain",
+    "mobile: navigation has frosted surface",
+    "mobile: posters stay sharp and loaded",
+    "mobile: reduced transparency uses unblurred fallback",
+    "mobile: no runtime errors",
+    "narrow: playback controls retain equal 48px height",
+    "narrow: anchored version menu opens",
+    "narrow: trigger exposes expanded state",
+    "narrow: menu has both real versions",
+    "narrow: selected version is marked",
+    "narrow: full specifications readable",
+    "narrow: initial menu fits viewport",
+    "narrow: initial page has no horizontal overflow",
+    "narrow: selection applies immediately",
+    "narrow: version selection preserves personal state and progress",
+    "narrow: selection does not start playback or navigate",
+    "narrow: Escape restores trigger focus",
+    "narrow: Escape leaves detail in place",
+    "narrow: trigger toggles menu closed",
+    "narrow: outside click closes menu",
+    "narrow: Home reaches first option",
+    "narrow: End reaches last option",
+    "narrow: arrow navigation reaches prior option",
+    "narrow: keyboard selection applies without confirmation",
+    "narrow: Tab can leave menu",
+    "narrow: short viewport menu fits viewport",
+    "narrow: short viewport page has no horizontal overflow",
+    "narrow: after scroll menu fits viewport",
+    "narrow: after scroll page has no horizontal overflow",
+    "narrow: open menu follows anchor when scrolling",
+    "narrow: absent version metadata stays honest",
+    "narrow: one recorded version produces one menu item",
+    "narrow: many long sample versions menu fits viewport",
+    "narrow: many long sample versions page has no horizontal overflow",
+    "narrow: long menu keyboard reaches last version",
+    "narrow: long version name keeps 48px button",
+    "narrow: missing file stays unavailable",
+    "narrow: six series remain",
+    "narrow: version changes preserve independent series navigation",
+    "narrow: all twenty movie samples remain",
+    "narrow: navigation has frosted surface",
+    "narrow: posters stay sharp and loaded",
+    "narrow: reduced transparency uses unblurred fallback",
+    "narrow: no runtime errors"
+  ],
+  "measurements": [
+    {
+      "view": "desktop",
+      "playHeight": 48,
+      "versionHeight": 48
+    },
+    {
+      "view": "desktop",
+      "label": "initial",
+      "rect": {
+        "x": 132,
+        "y": 448,
+        "width": 312,
+        "height": 190
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "view": "desktop",
+      "label": "short viewport",
+      "rect": {
+        "x": 132,
+        "y": 194,
+        "width": 312,
+        "height": 190
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 540
+      }
+    },
+    {
+      "view": "desktop",
+      "label": "after scroll",
+      "rect": {
+        "x": 132,
+        "y": 348,
+        "width": 312,
+        "height": 190
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "view": "desktop",
+      "label": "many long sample versions",
+      "rect": {
+        "x": 132,
+        "y": 448,
+        "width": 312,
+        "height": 360
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "view": "desktop",
+      "glass": {
+        "blur": "blur(16px) saturate(1.2)",
+        "background": "rgba(14, 19, 27, 0.76)",
+        "position": "sticky"
+      }
+    },
+    {
+      "view": "desktop",
+      "reduced": {
+        "matches": true,
+        "blur": "none"
+      }
+    },
+    {
+      "view": "mobile",
+      "playHeight": 48,
+      "versionHeight": 48
+    },
+    {
+      "view": "mobile",
+      "label": "initial",
+      "rect": {
+        "x": 56,
+        "y": 520,
+        "width": 312,
+        "height": 198
+      },
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "view": "mobile",
+      "label": "short viewport",
+      "rect": {
+        "x": 56,
+        "y": 210,
+        "width": 312,
+        "height": 198
+      },
+      "viewport": {
+        "width": 390,
+        "height": 540
+      }
+    },
+    {
+      "view": "mobile",
+      "label": "after scroll",
+      "rect": {
+        "x": 56,
+        "y": 372,
+        "width": 312,
+        "height": 198
+      },
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "view": "mobile",
+      "label": "many long sample versions",
+      "rect": {
+        "x": 56,
+        "y": 96,
+        "width": 312,
+        "height": 360
+      },
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "view": "mobile",
+      "glass": {
+        "blur": "blur(12px) saturate(1.2)",
+        "background": "rgba(14, 19, 27, 0.76)",
+        "position": "sticky"
+      }
+    },
+    {
+      "view": "mobile",
+      "reduced": {
+        "matches": true,
+        "blur": "none"
+      }
+    },
+    {
+      "view": "narrow",
+      "playHeight": 48,
+      "versionHeight": 48
+    },
+    {
+      "view": "narrow",
+      "label": "initial",
+      "rect": {
+        "x": 12,
+        "y": 351,
+        "width": 296,
+        "height": 198
+      },
+      "viewport": {
+        "width": 320,
+        "height": 640
+      }
+    },
+    {
+      "view": "narrow",
+      "label": "short viewport",
+      "rect": {
+        "x": 12,
+        "y": 89,
+        "width": 296,
+        "height": 198
+      },
+      "viewport": {
+        "width": 320,
+        "height": 540
+      }
+    },
+    {
+      "view": "narrow",
+      "label": "after scroll",
+      "rect": {
+        "x": 12,
+        "y": 251,
+        "width": 296,
+        "height": 198
+      },
+      "viewport": {
+        "width": 320,
+        "height": 640
+      }
+    },
+    {
+      "view": "narrow",
+      "label": "many long sample versions",
+      "rect": {
+        "x": 12,
+        "y": 67,
+        "width": 296,
+        "height": 220
+      },
+      "viewport": {
+        "width": 320,
+        "height": 640
+      }
+    },
+    {
+      "view": "narrow",
+      "glass": {
+        "blur": "blur(12px) saturate(1.2)",
+        "background": "rgba(14, 19, 27, 0.76)",
+        "position": "sticky"
+      }
+    },
+    {
+      "view": "narrow",
+      "reduced": {
+        "matches": true,
+        "blur": "none"
+      }
+    }
+  ],
+  "errors": [],
+  "failures": [],
+  "sampleOnly": true,
+  "validationNote": "320px uses the existing vertical button layout; both controls remain 48px tall. The initial same-row assertion was corrected and all narrow-width checks were rerun.",
+  "initialAttempt": "browser-review-initial.json",
+  "narrowRerun": "browser-review-narrow.json",
+  "sourceDigests": {
+    "app.js": "7569a1a9887f66b9aac2f281c294ebea0d70db3c291b3b54a22558b1b38e270e",
+    "style.css": "d47d39af3343253e62e660f1fe10fefd254a077d4f965fb78d0949859b82dcea",
+    "edition-menu.js": "b1f2457917ef8bde6c5659bf7137a0737c294ecdf8b3ca7591e7c246753ef095",
+    "navigation.js": "3da9b0c5a61cdf4f1cfc3759771328238cd64637bd59ffaf9efe8589715e5c9c"
+  },
+  "sourceStableBeforeScreenshots": true
+}

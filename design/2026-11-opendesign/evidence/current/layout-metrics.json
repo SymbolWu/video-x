@@ -1,0 +1,29 @@
+[
+  {
+    "view": "desktop",
+    "count": 25,
+    "errors": [],
+    "height": 1824,
+    "viewport": 900,
+    "overflow": false,
+    "images": []
+  },
+  {
+    "view": "mobile",
+    "count": 25,
+    "errors": [],
+    "height": 4623,
+    "viewport": 844,
+    "overflow": false,
+    "images": []
+  },
+  {
+    "view": "narrow",
+    "count": 25,
+    "errors": [],
+    "height": 3940,
+    "viewport": 750,
+    "overflow": false,
+    "images": []
+  }
+]

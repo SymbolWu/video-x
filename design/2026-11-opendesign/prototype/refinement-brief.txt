@@ -1,0 +1,18 @@
+本轮由用户明确要求：让 OpenDesign 重设计当前观看端原型。保持 Local Codex，不使用 OpenDesign Cloud 或 BYOK。当前项目已经复制了可运行的 index.html、detail.html、app.js、style.css，以及所有公开样本素材。请增量改进这些文件，直接完成设计，不再向用户提问。
+
+先看 references/user-toolbar.png、references/user-actors.png（用户标出问题的实际截图）与 references/before-library.png、references/before-detail.png、references/infuse-detail.jpg。保持现有近黑/玫瑰色、小面积暖白主按钮、真实电影海报的观看端气质，不重新做另一套品牌。
+
+必须逐项解决：
+1. 顶部工具栏重新设计。现在标题、远端页签、分类、裸排序文字、外框很重的视图切换各自散落，缺少共同的对齐和节奏。请做成紧凑精致、统一控件高度和图标尺度的控制区，减少无意义的外框与零散留白；让分类与显示/排序/筛选有清楚分组和基线，激活态/悬浮/键盘焦点有区别。不要把所有东西再套入巨大的彩色卡片。不同类型页签要有适合演员/系列的排序选项，不让影片工具在其他视图中成为无效装饰。
+2. 演员目录卡片缩小，不能把6个人物放成超大电影海报。桌面人像宽约110–140px、建议8至9列（空间不足自适应），姓名与馆藏作品数直接可读；手机约3列，缺头像依然整齐。可采用更轻的肖像比例或圆角头像，但不要靠脸部过度裁切。作品数按样本关系计算。
+3. data/library.json 已扩充为20部影片、6个系列，馆藏成员数覆盖1、2、3部。系列封面必须有“影片集”感，例如有层次的双/三张成员海报组合，配低亮背景与底部标题/馆藏部数，避免只有一张海报塞进横图空框。1部时也要像一个集子，不能复制同一张海报假装多部；单部显示诚实的“1部馆藏”，多部展示不同成员海报。封面组合的主要成员海报完整显示，不任意裁掉主体；可用模糊背景填边。系列标题长短、1/2/3部和不同封面色彩都要好看。计数是当前馆藏数，不是宣称全系列收齐。
+4. 新增 actor.html 与 series.html，两者是独立落地页，不能跳到 index.html 的筛选结果冒充详情。演员页有紧凑的头像/姓名/已入库作品数/返回来源，下面是“参演作品”范围内的片库；系列页有系列组合封面/名称/馆藏部数与“系列作品”，按保存顺序默认展示，允许选发行年等浏览排序，不能更改成员保存顺序。可共享内部网格组件和控制条，但页面身份、URL、标题、默认排序与返回位置必须独立。详情中所有演员/系列入口、演员/系列目录卡片都改为进入各自落地页。清空搜索/筛选不能解除人物或系列的固定成员范围。支持演员目录→演员作品→影片→返回演员作品→返回目录，以及影片详情→演员/系列→另一影片→逐层返回；各层恢复滚动/焦点/筛选，避免返回总是回到全部片库。直接访问也有明确返回入口。
+5. 影片详情的播放/继续播放与版本按钮统一为相同的实际外框高度（建议桌面48px，手机48或52px），在同一行时上边线与下边线完全一致；规范行高与padding，版本摘要采用短规格或省略，完整规格在选择面板中读。覆盖4K长规格、1080p、普通“播放”、有断点“继续播放”、窄屏。不要只给两者设置相同的min-height后任由内容再次撑高。
+
+产品/数据边界：本轮都是独立设计样本，不访问正式仓库、真实API、媒体盘或凭据。新 data/library.json 和 references/sources.json 是资料与来源；不下载更多素材、不安装依赖、不运行npm/npx、不启动HTTP服务或浏览器。不要改写个人状态的语义：喜欢、已看、评分独立，评分可清除，版本选择不实际播放；点击播放明确提示“当前为设计预览，尚未连接影片文件”。不得给演员杜撰传记和人气，不伪造图片，缺图保持诚实回退。
+
+工程方式：在现有代码上按模块逐步修改并及时落盘，不要长时间只规划、不要把整套代码堆成一个巨大写文件调用。先写工具栏和按钮尺寸，再写目录与独立下钻页，最后接导航和状态。所有页面共享本地CSS/JS，直接由OpenDesign预览，不需要构建。index.html?tab=people 和 index.html?tab=series 应能直接打开相应目录；actor.html?name=URL编码姓名（或稳定id）和series.html?id=dune（或稳定id）应可直接访问。
+
+交付：index.html、detail.html、actor.html、series.html，和设计说明 design-notes.json，说明五点对应的最终处理。使用 node --check 等轻量静态验证本地语法与资源。根代理会用已安装的Chrome/Playwright负责实际1440×900/390×844截图、按钮实际高度、成员范围与逐层返回验证，你无需安装或重复准备验收环境。完成可评审成品再结束。
+
+This run is already the selected Local Codex execution inside OpenDesign. Work directly in the current OpenDesign project. Do not invoke @open-design, the open-design MCP server, collect_brief, OpenDesign Cloud login, or another OpenDesign Plugin workflow. Do not route this request through OpenDesign again.

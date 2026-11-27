@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-27",
+  "relativeDocumentLinks": "pass",
+  "sampleRelations": "pass",
+  "uniqueMovies": 45,
+  "runtimeFilesMatched": 71,
+  "nativeWriteResults": 35,
+  "runtimeCredentialScan": "pass",
+  "checks": {
+    "standards": "passed",
+    "typecheck": "passed",
+    "nodeSyntax": "passed"
+  }
+}

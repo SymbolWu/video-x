@@ -1,0 +1,15 @@
+请由 OpenDesign 对当前现有观看端原型做小范围视觉与交互精修。用户已明确要求这次再由 OpenDesign 设计；继续使用 Local Codex，当前项目就是上一轮已完成的四种页面。直接设计、改代码并交付，无需再次提问。先阅读现有 app.js、style.css、navigation.js 与 DESIGN.md，不重新搭整套页面，不改影片、人物、系列数据和已有的独立下钻/分层返回逻辑。
+
+两项明确需求：
+1. 影片详情的版本选择，改为锚定在版本按钮下方的下拉菜单，取消目前居中的“选择播放版本”弹窗和“使用此版本”确认步骤。菜单不是全屏遮罩、不是抽屉。每行展示清楚的版本名、分辨率/视频/音频等可得规格；当前选择有勾选标记，默认版本可有轻标签，点击一个版本立即更新按钮和详情规格并收起。切换版本本身不开始播放，不修改影片喜欢、已看、评分或播放断点。继续保持播放与版本按钮实际外框同为48px。单版本仍有诚实可读状态；无文件记录保持不可播放，不凭空生成版本。
+   - 桌面与手机都用同一种就地菜单设计。宽度可以比触发按钮略宽，窄屏保证留边，不出390/320px视口，位置避开裁切和底部导航，必要时向上展开或限高滚动。菜单要浮在正确层级，不能被 hero 的 overflow/滤镜/堆叠上下文裁掉。
+   - 使用完整的键盘与触控交互：Enter/Space展开，方向键/首末项导航，Enter/Space选择；Esc关闭并把焦点交回版本按钮；点菜单外关闭，再点按钮可切换开合。Tab能正常离开，不锁住全页；不能误触主播放按钮。aria-expanded、aria-controls及菜单单选语义与实际状态一致；点击已选项也可以收起。
+2. 各页面适量增加毛玻璃。请设计一套克制的深色玻璃材质：半透明背景、可感知的背景模糊、极轻边缘高光和阴影，融入现有近黑/玫瑰色/暖白主按钮体系。重点落在顶栏、手机底栏、片库与演员/系列作品页的控制区、版本下拉菜单、系列组合封面或少量状态浮层。详情页的画面和文字仍有清楚层次，主播放按钮保持醒目。电影海报、人像和系列成员图片保持清晰，正文区不整体蒙上一层模糊，不堆很多厚重透明卡片、彩色光斑或泛白背景。
+   - 纯色背景上的blur不能只是写了CSS却看不出变化，可合理让固定导航滚动时透出下方内容，并使用微妙的材质差异体现层次；不要为特效引入大面积装饰图形。
+   - 检查文字对比、焦点、悬浮、选中和关闭状态；支持 prefers-reduced-transparency 或不支持backdrop-filter时使用实色回退，保持功能可用；减少移动端大面积多层模糊。
+
+边界：这是本机独立设计原型。只改当前 OpenDesign 项目的必要HTML/CSS/JS；所有样本仍来自 data/library.json 和 assets/media。保持演员小卡、6个系列、独立 actor.html/series.html、固定成员范围、逐层返回、筛选取消与会话个人状态。不要碰正式仓库、真实API、用户媒体、凭据，不实际播放，不发布，不调用OpenDesign Cloud或BYOK，不下载额外素材，不安装任何依赖，不运行npm/npx，不启动HTTP服务、浏览器或截图脚本。根代理已具备Chrome/Playwright，将负责实际桌面1440×900、手机390×844和320px菜单防溢出验收。
+
+请增量、小步写入并及时保存文件，先实现版本下拉，再统一毛玻璃材质。最后运行 node --check 与轻量本地资源检查，并写 design-notes-glass.json，列出材质用在哪些页面区域、菜单键盘/触控行为与尚待根代理实测项。不要把本段工程要求、实现名词或无关说明显示在产品界面。
+
+This run is already the selected Local Codex execution inside OpenDesign. Work directly in the current OpenDesign project. Do not invoke @open-design, the open-design MCP server, collect_brief, OpenDesign Cloud login, or another OpenDesign Plugin workflow. Do not route this request through OpenDesign again.

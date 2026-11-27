@@ -1,0 +1,388 @@
+{
+  "references": [
+    {
+      "file": "references/infuse-detail.jpg",
+      "source": "https://firecore.com/infuse",
+      "image": "https://firecore.com/themes/main/images/feature-library.jpg"
+    },
+    {
+      "file": "references/infuse-devices.webp",
+      "source": "https://firecore.com/infuse",
+      "image": "https://firecore.com/themes/main/images/infuse-hero_2x.webp"
+    }
+  ],
+  "artwork": [
+    {
+      "file": "assets/media/dune2-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/6izwz7rsy95ARzTR3poZ8H6c5pp.jpg",
+      "ok": true,
+      "bytes": 15701,
+      "error": null
+    },
+    {
+      "file": "assets/media/dune2-backdrop.jpg",
+      "url": "https://image.tmdb.org/t/p/w1280/o869RihWTdTyBcEZBjz0izvEsVf.jpg",
+      "ok": true,
+      "bytes": 284358,
+      "error": null
+    },
+    {
+      "file": "assets/media/arrival-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg",
+      "ok": true,
+      "bytes": 21306,
+      "error": null
+    },
+    {
+      "file": "assets/media/arrival-backdrop.jpg",
+      "url": "https://image.tmdb.org/t/p/w1280/hNCqkXbWd40eftqSdjq8TmV7Mqr.jpg",
+      "ok": true,
+      "bytes": 192371,
+      "error": null
+    },
+    {
+      "file": "assets/media/interstellar-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+      "ok": true,
+      "bytes": 65768,
+      "error": null
+    },
+    {
+      "file": "assets/media/blade-runner-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg",
+      "ok": true,
+      "bytes": 49291,
+      "error": null
+    },
+    {
+      "file": "assets/media/budapest-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/eWdyYQreja6JGCzqHWXpWHDrrPo.jpg",
+      "ok": true,
+      "bytes": 50250,
+      "error": null
+    },
+    {
+      "file": "assets/media/spirited-away-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg",
+      "ok": true,
+      "bytes": 37393,
+      "error": null
+    },
+    {
+      "file": "assets/media/past-lives-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/k3waqVXSnvCZWfJYNtdamTgTtTA.jpg",
+      "ok": true,
+      "bytes": 34596,
+      "error": null
+    },
+    {
+      "file": "assets/media/everything-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/w3LxiVYdWWRvEVdn5RYq6jIqkb1.jpg",
+      "ok": true,
+      "bytes": 87817,
+      "error": null
+    },
+    {
+      "file": "assets/media/moonlight-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/rcICfiL9fvwRjoWHxW8QeroLYrJ.jpg",
+      "ok": true,
+      "bytes": 44122,
+      "error": null
+    },
+    {
+      "file": "assets/media/mad-max-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/8tZYtuWezp8JbcsvHYO0O46tFbo.jpg",
+      "ok": true,
+      "bytes": 50341,
+      "error": null
+    },
+    {
+      "file": "assets/media/dune-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
+      "ok": true,
+      "bytes": 43243,
+      "error": null
+    },
+    {
+      "file": "assets/media/person-0.jpg",
+      "url": "https://image.tmdb.org/t/p/w185/BE2sdjpgsa2rNTFa66f7upkaOP.jpg",
+      "ok": true,
+      "bytes": 13816,
+      "error": null
+    },
+    {
+      "file": "assets/media/person-3.jpg",
+      "url": "https://image.tmdb.org/t/p/w185/sX2etBbIkxRaCsATyw5ZpOVMPTD.jpg",
+      "ok": true,
+      "bytes": 11640,
+      "error": null
+    },
+    {
+      "file": "assets/media/person-2.jpg",
+      "url": "https://image.tmdb.org/t/p/w185/lJloTOheuQSirSLXNA3JHsrMNfH.jpg"
+    },
+    {
+      "file": "assets/media/lotr1-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg",
+      "ok": true,
+      "bytes": 45636,
+      "movieId": "lotr1"
+    },
+    {
+      "file": "assets/media/lotr2-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/5VTN0pR8gcqV3EPUHHfMGnJYN9L.jpg",
+      "ok": true,
+      "bytes": 39905,
+      "movieId": "lotr2"
+    },
+    {
+      "file": "assets/media/lotr3-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg",
+      "ok": true,
+      "bytes": 54236,
+      "movieId": "lotr3"
+    },
+    {
+      "file": "assets/media/matrix1-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
+      "ok": true,
+      "bytes": 47483,
+      "movieId": "matrix1"
+    },
+    {
+      "file": "assets/media/matrix2-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/9TGHDvWrqKBzwDxDodHYXEmOE6J.jpg",
+      "ok": true,
+      "bytes": 44490,
+      "movieId": "matrix2"
+    },
+    {
+      "file": "assets/media/spider1-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg",
+      "ok": true,
+      "bytes": 30186,
+      "movieId": "spider1"
+    },
+    {
+      "file": "assets/media/spider2-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
+      "ok": true,
+      "bytes": 58512,
+      "movieId": "spider2"
+    },
+    {
+      "file": "assets/media/furiosa-poster.jpg",
+      "url": "https://image.tmdb.org/t/p/w342/iADOJ8Zymht2JPMoy3R7xceZprc.jpg",
+      "ok": true,
+      "bytes": 57028,
+      "movieId": "furiosa"
+    },
+    {
+      "file": "assets/media/bond-657-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/657-from-russia-with-love",
+      "url": "https://image.tmdb.org/t/p/w342/vh7KtT8HHS3XM4FW0GkUGf0T7GK.jpg",
+      "bytes": 30414,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-660-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/660-thunderball",
+      "url": "https://image.tmdb.org/t/p/w342/xzoQ5Iw9BWZ276Rifbwp73imTUM.jpg",
+      "bytes": 41694,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-658-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/658-goldfinger",
+      "url": "https://image.tmdb.org/t/p/w342/gowsJ3sHgxuMF0cWvwdvkqZOY81.jpg",
+      "bytes": 46094,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-646-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/646-dr-no",
+      "url": "https://image.tmdb.org/t/p/w342/ar5qJDOsPOjAMFho2VOItyWRPsr.jpg",
+      "bytes": 52824,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-667-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/667-you-only-live-twice",
+      "url": "https://image.tmdb.org/t/p/w342/ebutL2sxSJbP47TFaYYPjhdEFh4.jpg",
+      "bytes": 43163,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-668-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/668-on-her-majesty-s-secret-service",
+      "url": "https://image.tmdb.org/t/p/w342/kSpdYukU28GXzD4uG51tzUEdYjA.jpg",
+      "bytes": 46148,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-681-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/681-diamonds-are-forever",
+      "url": "https://image.tmdb.org/t/p/w342/4nh5y0Bl0CU4QVCqTEqoXgOl4Jz.jpg",
+      "bytes": 47721,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-253-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/253-live-and-let-die",
+      "url": "https://image.tmdb.org/t/p/w342/pmJMiBtY1PwffUNhOKxDnSQ2wSv.jpg",
+      "bytes": 54773,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-682-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/682-the-man-with-the-golden-gun",
+      "url": "https://image.tmdb.org/t/p/w342/kalfeiqn18Ady2f8b7WPXmta4e8.jpg",
+      "bytes": 44257,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-691-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/691-the-spy-who-loved-me",
+      "url": "https://image.tmdb.org/t/p/w342/8cBz4HNdbiYU93lA3eGAGOs7JFp.jpg",
+      "bytes": 45979,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-698-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/698-moonraker",
+      "url": "https://image.tmdb.org/t/p/w342/8ZJ6Tn4N7E1sv9EuGM02oqJ9ZvT.jpg",
+      "bytes": 59985,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-699-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/699-for-your-eyes-only",
+      "url": "https://image.tmdb.org/t/p/w342/8VJo26SzoqJVzHul40rdXHmH0cc.jpg",
+      "bytes": 44651,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-700-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/700-octopussy",
+      "url": "https://image.tmdb.org/t/p/w342/ceGFRLvSwthnAKo5lfenT8B6i0F.jpg",
+      "bytes": 51644,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-707-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/707-a-view-to-a-kill",
+      "url": "https://image.tmdb.org/t/p/w342/gixqzbaRUOGNiqG9vyNhVQDNq9n.jpg",
+      "bytes": 64208,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-708-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/708-the-living-daylights",
+      "url": "https://image.tmdb.org/t/p/w342/4gXOyYrj2h2ExbCzIvSxhmHnNmv.jpg",
+      "bytes": 66255,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-710-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/710-goldeneye",
+      "url": "https://image.tmdb.org/t/p/w342/5qD5eSKi1uCpgPcdjtZsaXy5rVX.jpg",
+      "bytes": 55019,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-709-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/709-licence-to-kill",
+      "url": "https://image.tmdb.org/t/p/w342/uODaDsXqeZsHsM7lMUviFlpklYS.jpg",
+      "bytes": 49117,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-714-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/714-tomorrow-never-dies",
+      "url": "https://image.tmdb.org/t/p/w342/5xF1rWo5v7S7jILyJKmeQhcvu1k.jpg",
+      "bytes": 45799,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-36643-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/36643-the-world-is-not-enough",
+      "url": "https://image.tmdb.org/t/p/w342/qtJsbZ9vISsI9nZzqreXolAKJpz.jpg",
+      "bytes": 59206,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-36669-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/36669-die-another-day",
+      "url": "https://image.tmdb.org/t/p/w342/b63hw5cUm3dBvEy8oowf0kg6fO.jpg",
+      "bytes": 61990,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-36557-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/36557-casino-royale",
+      "url": "https://image.tmdb.org/t/p/w342/htj7NS9tsiwXYvPpIhl5E9brVNW.jpg",
+      "bytes": 46956,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-10764-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/10764-quantum-of-solace",
+      "url": "https://image.tmdb.org/t/p/w342/rf7Ize99cJJeOnxr0G2xIl0n9dU.jpg",
+      "bytes": 55832,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-37724-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/37724-skyfall",
+      "url": "https://image.tmdb.org/t/p/w342/lo4EiHAp9O5uoUWT9ZS0L4LC3xn.jpg",
+      "bytes": 40287,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-206647-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/206647-spectre",
+      "url": "https://image.tmdb.org/t/p/w342/jv1fsUvPf76kE4bg3f6DbXqUUHE.jpg",
+      "bytes": 40170,
+      "ok": true,
+      "error": null
+    },
+    {
+      "file": "assets/media/bond-370172-poster.jpg",
+      "source": "https://www.themoviedb.org/movie/370172-no-time-to-die",
+      "url": "https://image.tmdb.org/t/p/w342/mXMePP0xelSJ1s69YrN7EYrwiTS.jpg",
+      "bytes": 54628,
+      "ok": true,
+      "error": null
+    }
+  ],
+  "note": "Public movie images for local design samples. Personal state and playback progress are synthetic.",
+  "sampleSeries": {
+    "id": "bond",
+    "source": "https://www.themoviedb.org/collection/645-james-bond-collection",
+    "count": 25,
+    "note": "已发行EON作品的滚动样本；个人状态为合成；未关联真实文件。排除非EON版本与未发行条目。"
+  }
+}
